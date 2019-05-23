@@ -1,0 +1,28 @@
+.sidebar {
+  color: #FFF;
+  position: fixed;
+  overflow-y: scroll;
+  overflow-x: auto;
+  top: 50px;
+  left: 0;
+  bottom: 0;
+  width: 250px;
+  white-space: nowrap;
+
+}
+
+.main-header {
+	top: 0px;
+  position: fixed;
+  width:100%;
+}
+
+body {
+    height: 100%;
+    margin-top: 30px;
+}
+
+#header {
+  position: fixed;
+  z-index: 100000;
+}
