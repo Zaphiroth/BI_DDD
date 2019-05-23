@@ -72,11 +72,14 @@ ui <- dashboardPage(
                 tags$div(
                   column(2,
                          selectInput("decile",
-                                     "Decile",
+                                     label = "Decile",
                                      c("ALL", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "Others", "#N/A"),
-                                     selected = "ALL",
+                                     # selected = "ALL",
                                      multiple = TRUE)),
-                  column(2, selectInput("region", "Region", "", multiple = TRUE)),
+                  conditionalPanel(
+                    condition = "output.main1 == 1",
+                    column(2, selectInput("region", "Region", "", multiple = TRUE))
+                  ),
                   column(2, selectInput("province", "Province", "", multiple = TRUE)),
                   column(2, selectInput("city", "City", "", multiple = TRUE)),
                   column(2, selectInput("veeva", "Veeva Code", "", multiple = TRUE)),
@@ -92,7 +95,8 @@ ui <- dashboardPage(
                              "100" = 100,
                              "ALL" = 100000
                            ),
-                           selected = 20
+                           selected = 20,
+                           multiple = FALSE
                          )),
                   column(2,
                          selectInput(
@@ -106,7 +110,8 @@ ui <- dashboardPage(
                              "YTD" = "ytd"
                              # ,"YEARLY" = "yrl"
                            ),
-                           selected = "qtr"
+                           selected = "qtr",
+                           multiple = FALSE
                          )),
                   column(2,
                          selectInput(
@@ -122,7 +127,15 @@ ui <- dashboardPage(
                          )),
                   column(2, selectInput("category", label = "Category", "", multiple = TRUE)),
                   column(2, selectInput("subcategory", label = "Subcategory",  "", multiple = TRUE)),
-                  column(2, selectInput("note", "Note", "", multiple = TRUE)),
+                  conditionalPanel(
+                    condition = "output.main2 == 1",
+                    column(2, selectInput("note", label = "Note", "", multiple = TRUE))
+                  ),
+                  conditionalPanel(
+                    condition = "output.main2 == 2",
+                    column(2, selectInput("bl", label = "BI/Lilly", "", multiple = TRUE))
+                  ),
+                  # column(2, selectInput("note", label = "Note", "", multiple = TRUE)),
                   style = "color: #1F497D"
                 ),
                 style = "background: #DDD9C4"

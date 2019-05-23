@@ -48,9 +48,22 @@ server <- function(input, output, session) {
     unique(summary()$Main)
   })
   
-  output$main <- reactive({
-    unique(summary()$Main)
+  output$main1 <- eventReactive(input$summary, {
+    if (main() %in% c("Anti-PD", "Anti-thrombus", "In hospital", 
+                      "Out hospital", "SPAF", "Onco", "IPF", "Pain")) {
+      1
+    }
   })
+  outputOptions(output, "main1", suspendWhenHidden = FALSE)
+  
+  output$main2 <- eventReactive(input$summary, {
+    if (main() == "Out hospital") {
+      1
+    } else if (main() == "Diabetes") {
+      2
+    }
+  })
+  outputOptions(output, "main2", suspendWhenHidden = FALSE)
   
   ##--- Category and Sub Category
   categorytype <- reactive({
@@ -86,25 +99,46 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$category, {
-    updateSelectInput(session,
-                      "subcategory",
-                      choices =  subcategorytype(),
-                      selected = subcategorytype())
+    if (main() == "HTN" & input$category == "ARB") {
+      updateSelectizeInput(session,
+                           "subcategory",
+                           choices = subcategorytype(),
+                           selected = "Mono",
+                           options = list(
+                             maxItems = 1
+                           ))
+    } else if (main() == "HTN" & input$category != "ARB") {
+      updateSelectizeInput(session,
+                           "subcategory",
+                           choices = subcategorytype(),
+                           selected = subcategorytype(),
+                           options = list(
+                             maxItems = 1
+                           ))
+    } else {
+      updateSelectizeInput(session,
+                           "subcategory",
+                           choices = subcategorytype(),
+                           selected = subcategorytype(),
+                           options = list(
+                             maxItems = 999
+                           ))
+    }
   })
   
   ##--- Decile information
-  # decile_list <- reactive({
-  #   decile_list <- summary()$Decile[!duplicated(summary()$Decile)]
-  #   decile_list <- decile_list[order(decile_list)]
-  #   decile_list <- c("ALL", decile_list)
-  # })
-  # 
-  # observeEvent(input$summary, {
-  #   updateSelectInput(session,
-  #                     "decile",
-  #                     choices = decile_list(),
-  #                     selected = "D1")
-  # })
+  decile_list <- reactive({
+    decile_list <- summary()$Decile[!duplicated(summary()$Decile)]
+    decile_list <- decile_list[order(decile_list)]
+    decile_list <- c("ALL", decile_list)
+  })
+
+  observeEvent(input$summary, {
+    updateSelectInput(session,
+                      "decile",
+                      choices = decile_list(),
+                      selected = "ALL")
+  })
   
   ##--- Region information
   reglist <- reactive({
@@ -124,6 +158,18 @@ server <- function(input, output, session) {
                       "region",
                       choices = reglist(),
                       selected = "ALL")
+    # if (main() %in% c("Anti-PD", "Anti-Thrombus", "In hospital", 
+    #                   "Out hospital", "SPAF", "Onco", "IPF", "Pain")) {
+    #   updateSelectInput(session,
+    #                     "region",
+    #                     choices = reglist(),
+    #                     selected = "ALL")
+    # } else {
+    #   updateSelectInput(session,
+    #                     "region",
+    #                     choices = "ALL",
+    #                     selected = "ALL")
+    # }
   })
   
   ##--- Province information
@@ -308,12 +354,25 @@ server <- function(input, output, session) {
     }
     # summary1 <- summary[summary$Region %in% "Beijing", ]
     notelist <- summary$Note[!duplicated(summary$Note)]
-    notelist <- notelist[order(notelist)]
-    notelist <- c("ALL", notelist)
+    notelist <- replace_na(notelist, "NA")
+    # notelist <- notelist[order(notelist)]
+    # notelist <- c("ALL", notelist)
   })
   
-  observeEvent(input$hospital, {
-    updateSelectInput(session, "note", choices = note(), selected = "ALL")
+  observeEvent(c(input$hospital, input$category), {
+    if (main() == "Diabetes") {
+      updateSelectInput(session,
+                        inputId = "bl",
+                        label = "BI/Lily",
+                        choices = note(),
+                        selected = "BI")
+    } else if (main() == "Out hospital") {
+      updateSelectInput(session,
+                        inputId = "note",
+                        label = "Note",
+                        choices = note(),
+                        selected = note())
+    }
   })
   
   ##--- Top
