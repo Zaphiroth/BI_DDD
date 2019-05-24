@@ -99,7 +99,7 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$category, {
-    if (main() == "HTN" & input$category == "ARB") {
+    if ("HTN" %in% main() & "ARB" %in% input$category) {
       updateSelectizeInput(session,
                            "subcategory",
                            choices = subcategorytype(),
@@ -107,7 +107,7 @@ server <- function(input, output, session) {
                            options = list(
                              maxItems = 1
                            ))
-    } else if (main() == "HTN" & input$category != "ARB") {
+    } else if ("HTN" %in% main() & !("ARB" %in% input$category)) {
       updateSelectizeInput(session,
                            "subcategory",
                            choices = subcategorytype(),
@@ -126,99 +126,132 @@ server <- function(input, output, session) {
     }
   })
   
-  ##--- Decile information
-  decile_list <- reactive({
-    decile_list <- summary()$Decile[!duplicated(summary()$Decile)]
-    decile_list <- decile_list[order(decile_list)]
-    decile_list <- c("ALL", decile_list)
-  })
-
-  observeEvent(input$summary, {
+  ##--- BI/Lilly
+  # bl_list <- reactive({
+  #   summary <- summary()
+  #   summary <- summary[summary$Category_CN %in% input$category, ]
+  #   summary <- summary[summary$Sub.category %in% input$subcategory, ]
+  #   
+  #   bl_list <- summary$Note[!duplicated(summary$Note)]
+  # })
+  
+  observeEvent(input$subcategory, {
     updateSelectInput(session,
-                      "decile",
-                      choices = decile_list(),
-                      selected = "ALL")
+                      inputId = "bl",
+                      label = "BI/Lilly",
+                      choices = c("BI", "Lilly"),
+                      selected = "BI")
   })
   
   ##--- Region information
   reglist <- reactive({
-    if ("ALL" %in% input$decile) {
-      summary <- summary()
-    } else {
-      summary <- summary()[summary()$Decile %in% input$decile,]
-    }
+    # if ("ALL" %in% input$decile) {
+    #   summary <- summary()
+    # } else {
+    #   summary <- summary()[summary()$Decile %in% input$decile,]
+    # }
     # summary <- summary()[summary()$Decile %in% input$decile,]
+    
+    summary <- summary()
+    summary <- summary[summary$Category_CN %in% input$category, ]
+    summary <- summary[summary$Sub.category %in% input$subcategory, ]
+    
+    if (main() == "Diabetes") {
+      summary <- summary[summary$Note %in% input$bl, ]
+    }
+    
     reglist <- summary()$Region[!duplicated(summary()$Region)]
     reglist <- reglist[order(reglist)]
     reglist <- c("ALL", reglist)
   })
   
-  observeEvent(input$summary, {
+  observeEvent(input$subcategory, {
     updateSelectInput(session,
                       "region",
                       choices = reglist(),
                       selected = "ALL")
-    # if (main() %in% c("Anti-PD", "Anti-Thrombus", "In hospital", 
-    #                   "Out hospital", "SPAF", "Onco", "IPF", "Pain")) {
-    #   updateSelectInput(session,
-    #                     "region",
-    #                     choices = reglist(),
-    #                     selected = "ALL")
-    # } else {
-    #   updateSelectInput(session,
-    #                     "region",
-    #                     choices = "ALL",
-    #                     selected = "ALL")
-    # }
   })
   
   ##--- Province information
   province <- reactive({
-    if ("ALL" %in% input$decile) {
-      summary <- summary()
-    } else {
-      summary <- summary()[summary()$Decile %in% input$decile,]
+    # if ("ALL" %in% input$decile) {
+    #   summary <- summary()
+    # } else {
+    #   summary <- summary()[summary()$Decile %in% input$decile,]
+    # }
+    
+    summary <- summary()
+    summary <- summary[summary$Category_CN %in% input$category, ]
+    summary <- summary[summary$Sub.category %in% input$subcategory, ]
+    
+    if (main() == "Diabetes") {
+      summary <- summary[summary$Note %in% input$bl, ]
     }
+    
+    
+    # if (main() %in% c("Anti-PD", "Anti-Thrombus", "In hospital", 
+    #                   "Out hospital", "SPAF", "Onco", "IPF", "Pain")) {
+    #   if ("ALL" %in% input$region) {
+    #     summary <- summary
+    #   } else {
+    #     summary <- summary[summary$Region %in% input$region, ]
+    #   }
+    # } else {
+    #   summary <- summary
+    # }
     
     if ("ALL" %in% input$region) {
       summary <- summary
     } else {
-      summary <- summary[summary$Region %in% input$region,]
+      summary <- summary[summary$Region %in% input$region, ]
     }
+    
     # summary <- summary()[summary()$Region %in% input$region,]
     # summary1 <- summary[summary$Region %in% "Beijing", ]
-    provlist <-
-      summary$Province_CN[!duplicated(summary$Province_CN)]
+    provlist <- summary$Province_CN[!duplicated(summary$Province_CN)]
     provlist <- provlist[order(provlist)]
     provlist <- c("ALL", provlist)
   })
   
-  observeEvent(input$region, {
+  observeEvent(input$bl, {
     updateSelectInput(session, 
                       "province",
                       choices =  province(),
                       selected = "ALL")
   })
   
-  
   ##--- City information
   city <- reactive({
-    if ("ALL" %in% input$decile) {
-      summary <- summary()
-    } else {
-      summary <- summary()[summary()$Decile %in% input$decile,]
+    # if ("ALL" %in% input$decile) {
+    #   summary <- summary()
+    # } else {
+    #   summary <- summary()[summary()$Decile %in% input$decile,]
+    # }
+    
+    # if ("ALL" %in% input$region) {
+    #   summary <- summary()
+    # } else {
+    #   summary <- summary()[summary()$Region %in% input$region, ]
+    # }
+    
+    summary <- summary()
+    summary <- summary[summary$Category_CN %in% input$category, ]
+    summary <- summary[summary$Sub.category %in% input$subcategory, ]
+    
+    if (main() == "Diabetes") {
+      summary <- summary[summary$Note %in% input$bl, ]
     }
     
     if ("ALL" %in% input$region) {
       summary <- summary
     } else {
-      summary <- summary[summary$Region %in% input$region,]
+      summary <- summary[summary$Region %in% input$region, ]
     }
     
     if ("ALL" %in% input$province) {
       summary <- summary
     } else {
-      summary <- summary[summary$Province_CN %in% input$province,]
+      summary <- summary[summary$Province_CN %in% input$province, ]
     }
     # summary1 <- summary[summary$Region %in% "Beijing", ]
     citylist <- summary$City_CN[!duplicated(summary$City_CN)]
@@ -233,25 +266,32 @@ server <- function(input, output, session) {
                       selected = "ALL")
   })
   
-  ##--- Veeva Code and Name
-  
-  veeva_code <- reactive({
-    if ("ALL" %in% input$decile) {
-      summary <- summary()
-    } else {
-      summary <- summary()[summary()$Decile %in% input$decile,]
+  ##--- Decile information
+  decile_list <- reactive({
+    # if ("ALL" %in% input$region) {
+    #   summary <- summary()
+    # } else {
+    #   summary <- summary()[summary()$Region %in% input$region, ]
+    # }
+    
+    summary <- summary()
+    summary <- summary[summary$Category_CN %in% input$category, ]
+    summary <- summary[summary$Sub.category %in% input$subcategory, ]
+    
+    if (main() == "Diabetes") {
+      summary <- summary[summary$Note %in% input$bl, ]
     }
     
     if ("ALL" %in% input$region) {
       summary <- summary
     } else {
-      summary <- summary[summary$Region %in% input$region,]
+      summary <- summary[summary$Region %in% input$region, ]
     }
     
     if ("ALL" %in% input$province) {
       summary <- summary
     } else {
-      summary <- summary[summary$Province_CN %in% input$province,]
+      summary <- summary[summary$Province_CN %in% input$province, ]
     }
     
     if ("ALL" %in% input$city) {
@@ -259,80 +299,82 @@ server <- function(input, output, session) {
     } else {
       summary <- summary[summary$City_CN %in% input$city, ]
     }
-    # summary1 <- summary[summary$Region %in% "Beijing", ]
-    veevacodelist <-
-      summary$Veeva.code[!duplicated(summary$Veeva.code)]
-    veevacodelist <- veevacodelist[order(veevacodelist)]
-    veevacodelist <- c("ALL", veevacodelist)
+    
+    decile_list <- summary()$Decile[!duplicated(summary()$Decile)]
+    decile_list <- decile_list[order(decile_list)]
+    decile_list <- c("ALL", decile_list)
   })
-  
+
   observeEvent(input$city, {
-    updateSelectInput(session, 
-                      "veeva", 
-                      choices =  veeva_code(),
-                      selected = "ALL")
-  })
-  
-  veeva_name <- reactive({
-    if ("ALL" %in% input$decile) {
-      summary <- summary()
-    } else {
-      summary <- summary()[summary()$Decile %in% input$decile,]
-    }
-    
-    if ("ALL" %in% input$region) {
-      summary <- summary
-    } else {
-      summary <- summary[summary$Region %in% input$region,]
-    }
-    
-    if ("ALL" %in% input$province) {
-      summary <- summary
-    } else {
-      summary <- summary[summary$Province_CN %in% input$province,]
-    }
-    
-    if ("ALL" %in% input$city) {
-      summary <- summary
-    } else {
-      summary <- summary[summary$City_CN %in% input$city, ]
-    }
-    
-    if ("ALL" %in% input$veeva) {
-      summary <- summary
-    } else {
-      summary <- summary[summary$Veeva.code %in% input$veeva,]
-    }
-    # summary1 <- summary[summary$Region %in% "Beijing", ]
-    hosplist <- summary$Veeva.name[!duplicated(summary$Veeva.name)]
-    hosplist <- hosplist[order(hosplist)]
-    hosplist <- c("ALL", hosplist)
-  })
-  
-  observeEvent(input$veeva, {
-    updateSelectInput(session, "hospital",
-                      choices =  veeva_name(),
+    updateSelectInput(session,
+                      "decile",
+                      choices = decile_list(),
                       selected = "ALL")
   })
   
   ##--- Note
   note <- reactive({
-    if ("ALL" %in% input$decile) {
-      summary <- summary()
-    } else {
-      summary <- summary()[summary()$Decile %in% input$decile,]
+    # if ("ALL" %in% input$decile) {
+    #   summary <- summary()
+    # } else {
+    #   summary <- summary()[summary()$Decile %in% input$decile,]
+    # }
+    # 
+    # if ("ALL" %in% input$region) {
+    #   summary <- summary
+    # } else {
+    #   summary <- summary[summary$Region %in% input$region,]
+    # }
+    # 
+    # if ("ALL" %in% input$province) {
+    #   summary <- summary
+    # } else {
+    #   summary <- summary[summary$Province_CN %in% input$province,]
+    # }
+    # 
+    # if ("ALL" %in% input$city) {
+    #   summary <- summary
+    # } else {
+    #   summary <- summary[summary$City_CN %in% input$city, ]
+    # }
+    # 
+    # if ("ALL" %in% input$veeva) {
+    #   summary <- summary
+    # } else {
+    #   summary <- summary[summary$Veeva.code %in% input$veeva,]
+    # }
+    # 
+    # if ("ALL" %in% input$hospital) {
+    #   summary <- summary
+    # } else {
+    #   summary <- summary[summary$Veeva.name %in% input$hospital,]
+    # }
+    # summary1 <- summary[summary$Region %in% "Beijing", ]
+    
+    summary <- summary()
+    summary <- summary[summary$Category_CN %in% input$category, ]
+    summary <- summary[summary$Sub.category %in% input$subcategory, ]
+    
+    # if ("ALL" %in% input$region) {
+    #   summary <- summary
+    # } else {
+    #   summary <- summary[summary$Region %in% input$region, ]
+    # }
+    
+    if (main() == "Diabetes") {
+      summary <- summary[summary$Note %in% input$bl, ]
     }
     
     if ("ALL" %in% input$region) {
       summary <- summary
     } else {
-      summary <- summary[summary$Region %in% input$region,]
+      summary <- summary[summary$Region %in% input$region, ]
     }
     
     if ("ALL" %in% input$province) {
       summary <- summary
     } else {
-      summary <- summary[summary$Province_CN %in% input$province,]
+      summary <- summary[summary$Province_CN %in% input$province, ]
     }
     
     if ("ALL" %in% input$city) {
@@ -341,38 +383,163 @@ server <- function(input, output, session) {
       summary <- summary[summary$City_CN %in% input$city, ]
     }
     
-    if ("ALL" %in% input$veeva) {
+    if ("ALL" %in% input$decile) {
       summary <- summary
     } else {
-      summary <- summary[summary$Veeva.code %in% input$veeva,]
+      summary <- summary[summary$Decile %in% input$decile, ]
     }
     
-    if ("ALL" %in% input$hospital) {
-      summary <- summary
-    } else {
-      summary <- summary[summary$Veeva.name %in% input$hospital,]
-    }
-    # summary1 <- summary[summary$Region %in% "Beijing", ]
-    notelist <- summary$Note[!duplicated(summary$Note)]
+    notelist <- summary()$Note[!duplicated(summary()$Note)]
+    notelist <- notelist[order(notelist)]
     notelist <- replace_na(notelist, "NA")
-    # notelist <- notelist[order(notelist)]
-    # notelist <- c("ALL", notelist)
+    notelist <- c("ALL", notelist)
   })
   
-  observeEvent(c(input$hospital, input$category), {
+  observeEvent(input$decile, {
+    updateSelectInput(session,
+                      inputId = "note",
+                      label = "Note",
+                      choices = note(),
+                      selected = note())
+  })
+  
+  ##--- Veeva Code and Name
+  
+  # veeva_code <- reactive({
+  #   if ("ALL" %in% input$decile) {
+  #     summary <- summary()
+  #   } else {
+  #     summary <- summary()[summary()$Decile %in% input$decile,]
+  #   }
+  #   
+  #   if ("ALL" %in% input$region) {
+  #     summary <- summary
+  #   } else {
+  #     summary <- summary[summary$Region %in% input$region,]
+  #   }
+  #   
+  #   if ("ALL" %in% input$province) {
+  #     summary <- summary
+  #   } else {
+  #     summary <- summary[summary$Province_CN %in% input$province,]
+  #   }
+  #   
+  #   if ("ALL" %in% input$city) {
+  #     summary <- summary
+  #   } else {
+  #     summary <- summary[summary$City_CN %in% input$city, ]
+  #   }
+  #   # summary1 <- summary[summary$Region %in% "Beijing", ]
+  #   veevacodelist <-
+  #     summary$Veeva.code[!duplicated(summary$Veeva.code)]
+  #   veevacodelist <- veevacodelist[order(veevacodelist)]
+  #   veevacodelist <- c("ALL", veevacodelist)
+  # })
+  # 
+  # observeEvent(input$city, {
+  #   updateSelectInput(session, 
+  #                     "veeva", 
+  #                     choices =  veeva_code(),
+  #                     selected = "ALL")
+  # })
+  # 
+  # veeva_name <- reactive({
+  #   if ("ALL" %in% input$decile) {
+  #     summary <- summary()
+  #   } else {
+  #     summary <- summary()[summary()$Decile %in% input$decile,]
+  #   }
+  #   
+  #   if ("ALL" %in% input$region) {
+  #     summary <- summary
+  #   } else {
+  #     summary <- summary[summary$Region %in% input$region,]
+  #   }
+  #   
+  #   if ("ALL" %in% input$province) {
+  #     summary <- summary
+  #   } else {
+  #     summary <- summary[summary$Province_CN %in% input$province,]
+  #   }
+  #   
+  #   if ("ALL" %in% input$city) {
+  #     summary <- summary
+  #   } else {
+  #     summary <- summary[summary$City_CN %in% input$city, ]
+  #   }
+  #   
+  #   if ("ALL" %in% input$veeva) {
+  #     summary <- summary
+  #   } else {
+  #     summary <- summary[summary$Veeva.code %in% input$veeva,]
+  #   }
+  #   # summary1 <- summary[summary$Region %in% "Beijing", ]
+  #   hosplist <- summary$Veeva.name[!duplicated(summary$Veeva.name)]
+  #   hosplist <- hosplist[order(hosplist)]
+  #   hosplist <- c("ALL", hosplist)
+  # })
+  # 
+  # observeEvent(input$veeva, {
+  #   updateSelectInput(session, "hospital",
+  #                     choices =  veeva_name(),
+  #                     selected = "ALL")
+  # })
+  
+  ##--- Brand
+  brand <- reactive({
+    summary <- summary()
+    summary <- summary[summary$Category_CN %in% input$category, ]
+    summary <- summary[summary$Sub.category %in% input$subcategory, ]
+    
+    # if ("ALL" %in% input$region) {
+    #   summary <- summary
+    # } else {
+    #   summary <- summary[summary$Region %in% input$region, ]
+    # }
+    
     if (main() == "Diabetes") {
-      updateSelectInput(session,
-                        inputId = "bl",
-                        label = "BI/Lily",
-                        choices = note(),
-                        selected = "BI")
-    } else if (main() == "Out hospital") {
-      updateSelectInput(session,
-                        inputId = "note",
-                        label = "Note",
-                        choices = note(),
-                        selected = note())
+      summary <- summary[summary$Note %in% input$bl, ]
     }
+    
+    if ("ALL" %in% input$region) {
+      summary <- summary
+    } else {
+      summary <- summary[summary$Region %in% input$region, ]
+    }
+    
+    if ("ALL" %in% input$province) {
+      summary <- summary
+    } else {
+      summary <- summary[summary$Province_CN %in% input$province, ]
+    }
+    
+    if ("ALL" %in% input$city) {
+      summary <- summary
+    } else {
+      summary <- summary[summary$City_CN %in% input$city, ]
+    }
+    
+    if ("ALL" %in% input$decile) {
+      summary <- summary
+    } else {
+      summary <- summary[summary$Decile %in% input$decile, ]
+    }
+    
+    if (main() == "Out hospital") {
+      summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
+    }
+    
+    brand_list <- summary()$Brand_CN[!duplicated(summary()$Brand_CN)]
+    brand_list <- brand_list[order(brand_list)]
+    brand_list <- c("ALL", brand_list)
+  })
+  
+  observeEvent(input$note, {
+    updateSelectInput(session,
+                      inputId = "brand",
+                      label = "Brand",
+                      choices = brand(),
+                      selected = "ALL")
   })
   
   ##--- Top
@@ -406,10 +573,67 @@ server <- function(input, output, session) {
   
   result1 <- reactive({
     
-    if ("ALL" %in% input$decile) {
-      summary <- summary()
-    } else {
-      summary <- summary()[summary()$Decile %in% input$decile, ]
+    # if ("ALL" %in% input$decile) {
+    #   summary <- summary()
+    # } else {
+    #   summary <- summary()[summary()$Decile %in% input$decile, ]
+    # }
+    # 
+    # if ("ALL" %in% input$region) {
+    #   summary <- summary
+    # } else {
+    #   summary <- summary[summary$Region %in% input$region, ]
+    # }
+    # 
+    # if ("ALL" %in% input$province) {
+    #   summary <- summary
+    # } else {
+    #   summary <- summary[summary$Province_CN %in% input$province, ]
+    # }
+    # 
+    # if ("ALL" %in% input$city) {
+    #   summary <- summary
+    # } else {
+    #   summary <- summary[summary$City_CN %in% input$city, ]
+    # }
+    # 
+    # if ("ALL" %in% input$veeva) {
+    #   summary <- summary
+    # } else {
+    #   summary <- summary[summary$Veeva.code %in% input$veeva,]
+    # }
+    # 
+    # if ("ALL" %in% input$hospital) {
+    #   summary <- summary
+    # } else {
+    #   summary <- summary[summary$Veeva.name %in% input$hospital,]
+    # }
+    # 
+    # if ("ALL" %in% input$note) {
+    #   summary <- summary
+    # } else {
+    #   summary <- summary[summary$Note %in% input$note,]
+    # }
+    
+    # if ("ALL" %in% input$decile) {
+    #   decile <- decile()
+    # } else {
+    #   summary <- summary[summary$Note %in% input$note,]
+    # }
+    
+    summary <- summary()
+    summary <- summary[summary$Category_CN %in% input$category, ]
+    summary <- summary[summary$Sub.category %in% input$subcategory, ]
+    
+
+    # if ("ALL" %in% input$region) {
+    #   summary <- summary
+    # } else {
+    #   summary <- summary[summary$Region %in% input$region, ]
+    # }
+    
+    if (main() == "Diabetes") {
+      summary <- summary[summary$Note %in% input$bl, ]
     }
     
     if ("ALL" %in% input$region) {
@@ -430,32 +654,26 @@ server <- function(input, output, session) {
       summary <- summary[summary$City_CN %in% input$city, ]
     }
     
-    if ("ALL" %in% input$veeva) {
+    if ("ALL" %in% input$decile) {
       summary <- summary
     } else {
-      summary <- summary[summary$Veeva.code %in% input$veeva,]
+      summary <- summary[summary$Decile %in% input$decile, ]
     }
     
-    if ("ALL" %in% input$hospital) {
+    if (main() == "Out hospital") {
+      summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
+    }
+    
+    if ("ALL" %in% input$brand) {
       summary <- summary
     } else {
-      summary <- summary[summary$Veeva.name %in% input$hospital,]
+      summary <- summary[summary$Brand_CN %in% input$brand, ]
     }
     
-    if ("ALL" %in% input$note) {
-      summary <- summary
-    } else {
-      summary <- summary[summary$Note %in% input$note,]
-    }
+    category <- unique(summary$Category)
+    subcategory <- unique(summary$Sub.category)
     
-    # if ("ALL" %in% input$decile) {
-    #   decile <- decile()
-    # } else {
-    #   summary <- summary[summary$Note %in% input$note,]
-    # }
-    
-    
-    
+    region <- unique(summary$Region)
     province <- unique(summary$Province_CN)
     city <- unique(summary$City_CN)
     decile <- unique(summary$Decile)
@@ -464,10 +682,10 @@ server <- function(input, output, session) {
     # } else {
     #   decile <- input$decile
     # }
-    region <- unique(summary$Region)
-    veeva <- unique(summary$Veeva.code)
-    hosp_name <- unique(summary$Veeva.name)
+    # veeva <- unique(summary$Veeva.code)
+    # hosp_name <- unique(summary$Veeva.name)
     note <- unique(summary$Note)
+    brand <- unique(summary$Brand_CN)
     
     if ("RMB"  %in% input$value) {
       summary <- summary()
@@ -488,11 +706,12 @@ server <- function(input, output, session) {
           province = province,
           city = city,
           decile = decile,
-          veeva = veeva,
-          hosp_name = hosp_name,
+          # veeva = veeva,
+          # hosp_name = hosp_name,
           note = note,
           value = "RMB",
           period = input$period,
+          brand = brand,
           # kpi = c("abs", "gr")
           # window = as.numeric(input$window)
           window = 1

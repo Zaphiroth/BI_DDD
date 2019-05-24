@@ -70,6 +70,18 @@ ui <- dashboardPage(
                 collapsible = FALSE,
                 width = 12,
                 tags$div(
+                  column(2, selectInput("category", label = "Category", "", multiple = TRUE)),
+                  column(2, selectInput("subcategory", label = "Subcategory",  "", multiple = TRUE)),
+                  conditionalPanel(
+                    condition = "output.main2 == 2",
+                    column(2, selectInput("bl", label = "BI/Lilly", choices = c("BI", "Lilly"), multiple = TRUE))
+                  ),
+                  conditionalPanel(
+                    condition = "output.main1 == 1",
+                    column(2, selectInput("region", label = "Region", choices = "", multiple = TRUE))
+                  ),
+                  column(2, selectInput("province", "Province", "", multiple = TRUE)),
+                  column(2, selectInput("city", "City", "", multiple = TRUE)),
                   column(2,
                          selectInput("decile",
                                      label = "Decile",
@@ -77,25 +89,35 @@ ui <- dashboardPage(
                                      # selected = "ALL",
                                      multiple = TRUE)),
                   conditionalPanel(
-                    condition = "output.main1 == 1",
-                    column(2, selectInput("region", "Region", "", multiple = TRUE))
+                    condition = "output.main2 == 1",
+                    column(2, selectInput("note", label = "Note", "", multiple = TRUE))
                   ),
-                  column(2, selectInput("province", "Province", "", multiple = TRUE)),
-                  column(2, selectInput("city", "City", "", multiple = TRUE)),
-                  column(2, selectInput("veeva", "Veeva Code", "", multiple = TRUE)),
-                  column(2, selectInput("hospital", "Hospital", "", multiple = TRUE)),
+                  # column(2, selectInput("veeva", "Veeva Code", "", multiple = TRUE)),
+                  # column(2, selectInput("hospital", "Hospital", "", multiple = TRUE)),
+                  # column(2,
+                  #        selectInput(
+                  #          "top",
+                  #          "Top No.",
+                  #          c(
+                  #            "20" = 20,
+                  #            # "three" = 3,
+                  #            "50" = 50,
+                  #            "100" = 100,
+                  #            "ALL" = 100000
+                  #          ),
+                  #          selected = 20,
+                  #          multiple = FALSE
+                  #        )),
                   column(2,
                          selectInput(
-                           "top",
-                           "Top No.",
-                           c(
-                             "20" = 20,
-                             # "three" = 3,
-                             "50" = 50,
-                             "100" = 100,
-                             "ALL" = 100000
+                           "value",
+                           label = ("Measurement"),
+                           choices = list(
+                             "DOT" = "DOT",
+                             "UNIT" = "UNIT",
+                             "Value In RMB" = "RMB"
                            ),
-                           selected = 20,
+                           selected = "RMB",
                            multiple = FALSE
                          )),
                   column(2,
@@ -113,29 +135,7 @@ ui <- dashboardPage(
                            selected = "qtr",
                            multiple = FALSE
                          )),
-                  column(2,
-                         selectInput(
-                           "value",
-                           label = ("Measure"),
-                           choices = list(
-                             "DOT" = "DOT",
-                             "UNIT" = "UNIT",
-                             "Value In RMB" = "RMB"
-                           ),
-                           selected = "RMB",
-                           multiple = FALSE
-                         )),
-                  column(2, selectInput("category", label = "Category", "", multiple = TRUE)),
-                  column(2, selectInput("subcategory", label = "Subcategory",  "", multiple = TRUE)),
-                  conditionalPanel(
-                    condition = "output.main2 == 1",
-                    column(2, selectInput("note", label = "Note", "", multiple = TRUE))
-                  ),
-                  conditionalPanel(
-                    condition = "output.main2 == 2",
-                    column(2, selectInput("bl", label = "BI/Lilly", "", multiple = TRUE))
-                  ),
-                  # column(2, selectInput("note", label = "Note", "", multiple = TRUE)),
+                  column(2, selectInput("brand", label = "Brand", "", multiple = TRUE)),
                   style = "color: #1F497D"
                 ),
                 style = "background: #DDD9C4"
