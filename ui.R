@@ -54,10 +54,8 @@ ui <- dashboardPage(
     br(),
     tabsetPanel(
       tabPanel(
-        
         strong("Hospitals"), value = 1,
         fluidRow(
-          br(),
           box(
             title = "DDD Hospital Performance",
             status = "primary",
@@ -70,8 +68,8 @@ ui <- dashboardPage(
                 collapsible = FALSE,
                 width = 12,
                 tags$div(
-                  column(2, selectInput("category", label = "Category", "", multiple = TRUE)),
-                  column(10, selectInput("subcategory", label = "Subcategory",  "", multiple = TRUE)),
+                  column(4, selectInput("category", label = "Category", "", multiple = TRUE)),
+                  column(8, selectInput("subcategory", label = "Subcategory",  "", multiple = TRUE)),
                   conditionalPanel(
                     condition = "output.main2 == 2",
                     column(2, selectInput("bl", label = "BI/Lilly", choices = c("BI", "Lilly"), multiple = TRUE))
@@ -82,7 +80,7 @@ ui <- dashboardPage(
                   ),
                   column(2, selectInput("province", "Province", "", multiple = TRUE)),
                   column(2, selectInput("city", "City", "", multiple = TRUE)),
-                  column(2,
+                  column(4,
                          selectInput("decile",
                                      label = "Decile",
                                      c("ALL", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "Others", "#N/A"),
@@ -92,6 +90,7 @@ ui <- dashboardPage(
                     condition = "output.main2 == 1",
                     column(2, selectInput("note", label = "Note", "", multiple = TRUE))
                   ),
+                  column(12, selectInput("brand", label = "Brand", "", multiple = TRUE)),
                   # column(2, selectInput("veeva", "Veeva Code", "", multiple = TRUE)),
                   # column(2, selectInput("hospital", "Hospital", "", multiple = TRUE)),
                   # column(2,
@@ -135,14 +134,16 @@ ui <- dashboardPage(
                            selected = "qtr",
                            multiple = FALSE
                          )),
-                  column(2, selectInput("brand", label = "Brand", "", multiple = TRUE)),
+                  column(8,
+                         "排名原则：排名基于“Measurement”的“Value In RMB”固定不变，表格数值根据“Measurement”选项变化。",
+                         style = "color: #1F497D; padding: 30px;"),
                   style = "color: #1F497D"
                 ),
-                fluidRow(
-                  column(12,
-                         "排名原则：排名基于“Measurement”的“Value In RMB”固定不变，表格数值根据“Measurement”选项变化。",
-                         style = "color: #1F497D; text-align: center; padding: 10px;")
-                ),
+                # fluidRow(
+                #   column(12,
+                #          "排名原则：排名基于“Measurement”的“Value In RMB”固定不变，表格数值根据“Measurement”选项变化。",
+                #          style = "color: #1F497D; text-align: center; padding: 10px;")
+                # ),
                 style = "background: #DDD9C4"
               )
             ),
@@ -168,28 +169,69 @@ ui <- dashboardPage(
       tabPanel(
         strong("Hospital"), value = 1,
         fluidRow(
-          br(),
           box(
             title = "DDD Hospital Performance",
             status = "primary",
             solidHeader = TRUE,
             collapsible = FALSE,
             width = 12,
-            # br(),
             fluidRow(
               box(
                 solidHeader = TRUE,
                 collapsible = FALSE,
                 width = 12,
                 tags$div(
-                  column(2, selectInput("category1", "Category", "")),
-                  column(2, selectInput("region1", "Region", "")),
-                  # column(2, selectInput("province1", "Province", "")),
-                  column(2, selectInput("city1", "City", "")),
-                  column(2, selectInput("decile1", "Decile", "")),
-                  column(2, selectInput("veeva1", "Veeva Name", "")),
-                  br(),
-                  column(2, downloadButton("download", "Download")),
+                  column(2, selectInput("category1", label = "Category", "", multiple = TRUE)),
+                  column(10, selectInput("subcategory1", label = "Subcategory",  "", multiple = TRUE)),
+                  conditionalPanel(
+                    condition = "output.main2 == 2",
+                    column(2, selectInput("bl1", label = "BI/Lilly", choices = c("BI", "Lilly"), multiple = TRUE))
+                  ),
+                  conditionalPanel(
+                    condition = "output.main1 == 1",
+                    column(2, selectInput("region1", label = "Region", choices = "", multiple = TRUE))
+                  ),
+                  column(2, selectInput("province1", "Province", "", multiple = TRUE)),
+                  column(2, selectInput("city1", "City", "", multiple = TRUE)),
+                  column(4,
+                         selectInput("decile1",
+                                     label = "Decile",
+                                     c("ALL", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "Others", "#N/A"),
+                                     # selected = "ALL",
+                                     multiple = TRUE)),
+                  conditionalPanel(
+                    condition = "output.main2 == 1",
+                    column(2, selectInput("note1", label = "Note", "", multiple = TRUE))
+                  ),
+                  fluidRow(),
+                  column(2,
+                         selectInput(
+                           "value1",
+                           label = ("Measurement"),
+                           choices = list(
+                             "DOT" = "DOT",
+                             "UNIT" = "UNIT",
+                             "Value In RMB" = "RMB"
+                           ),
+                           selected = "RMB",
+                           multiple = FALSE
+                         )),
+                  column(2,
+                         selectInput(
+                           "period1",
+                           label = ("Period"),
+                           choices = list(
+                             "MAT" = "mat",
+                             "MTH" = "mth",
+                             "QTR" = "qtr",
+                             "Rolling QTR" = "rqtr",
+                             "YTD" = "ytd"
+                           ),
+                           selected = "qtr",
+                           multiple = FALSE
+                         )),
+                  column(8, selectInput("code_name", label = "Veeva Code and Hospital Name", "", multiple = FALSE)),
+                  # column(4, selectInput("name", label = "Hospital Name", "", multiple = FALSE)),
                   style = "color: #1F497D"
                 ),
                 style = "background: #DDD9C4"
