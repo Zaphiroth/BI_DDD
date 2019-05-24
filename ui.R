@@ -24,16 +24,16 @@ ui <- dashboardPage(
       12, fileInput('summary', 'Upload DDD Data')
     )),
     fluidRow(tags$div(
-      tags$div(column(1, actionButton("goButton", "Go!")),
+      tags$div(column(12, actionButton("goButton", "Go!", width = "200px")),
                style = "display:inline-block;margin-down: 1px;vertical-align:middle"),
-      tags$style(".skin-blue .sidebar a { color: #444; }"),
-      tags$div(column(
-        #offset = 1,
-        1,
-        downloadButton(outputId = "downloadData",
-                       label = "Download")
-      ),
-      style = "display:inline-block;margin-down: 1px;vertical-align:middle")
+      tags$style(".skin-blue .sidebar a { color: #444; }")
+      # tags$div(column(
+      #   #offset = 1,
+      #   1,
+      #   downloadButton(outputId = "downloadData",
+      #                  label = "Download")
+      # ),
+      # style = "display:inline-block;margin-down: 1px;vertical-align:middle")
     ))
     
     # selectInput("window",
@@ -71,7 +71,7 @@ ui <- dashboardPage(
                 width = 12,
                 tags$div(
                   column(2, selectInput("category", label = "Category", "", multiple = TRUE)),
-                  column(2, selectInput("subcategory", label = "Subcategory",  "", multiple = TRUE)),
+                  column(10, selectInput("subcategory", label = "Subcategory",  "", multiple = TRUE)),
                   conditionalPanel(
                     condition = "output.main2 == 2",
                     column(2, selectInput("bl", label = "BI/Lilly", choices = c("BI", "Lilly"), multiple = TRUE))
@@ -138,8 +138,19 @@ ui <- dashboardPage(
                   column(2, selectInput("brand", label = "Brand", "", multiple = TRUE)),
                   style = "color: #1F497D"
                 ),
+                fluidRow(
+                  column(12,
+                         "排名原则：排名基于“Measurement”的“Value In RMB”固定不变，表格数值根据“Measurement”选项变化。",
+                         style = "color: #1F497D; text-align: center; padding: 10px;")
+                ),
                 style = "background: #DDD9C4"
               )
+            ),
+            fluidRow(
+              column(10),
+              column(2,
+                     column(3),
+                     column(9, downloadButton(outputId = "downloadData", label = "Download")))
             ),
             fluidRow(
               box(

@@ -10,21 +10,19 @@ ddd_summary <-
            province,
            city,
            decile,
-           veeva,
-           hosp_name,
+           # veeva,
+           # hosp_name,
            note,
            value,
            period,
+           brand,
            # kpi,
            window) {
     
-    # salesdata = sales_data
-    # cate = "抗帕金森"
-    # subcate = c("levodopa derivative",
-    #             "Mono Amine Oxidase-B Inhibitors",
-    #             "dopamine receptor agonists",
-    #             "Catechol-o-methyltransferase inhibitor",
-    #             "Levodopa+COMT-I",
+    # salesdata = read.csv("D:/WORK/BI/test_data/ddd_Out hospital_csv_format.csv", stringsAsFactors = FALSE)
+    # cate = "院外治疗"
+    # subcate = c("LABA",
+    #             "LAMA",
     #             "Others")
     # region = "Beijing"
     # province = "北京市"
@@ -111,9 +109,10 @@ ddd_summary <-
     #   "北京市平谷区医院" ,
     #   "北京中国人民解放军第三零七医院"
     # )
-    # note = c(0, NA)
+    # note = c("core hospital", NA)
     # value = "RMB"
     # period = "mat"
+    # brand = c("思合华", "平适")
     # # kpi = c("abs", "gr")
     # window = 1
     
@@ -201,16 +200,15 @@ ddd_summary <-
     salesdata2$year <- substr(salesdata2$date, start = 1, stop = 4)
     salesdata2$month <- substr(salesdata2$date, start = 6, stop = 7)
     
-    # salesdata3 <- salesdata2
-    
     salesdata3 <- salesdata2 %>%
-      filter(Region %in% region, 
-             Province_CN %in% province,  
+      filter(Region %in% region,
+             Province_CN %in% province,
              City_CN %in% city,
              Decile %in% decile,
              Note %in% note,
-             Veeva.code %in% veeva,
-             Veeva.name %in% hosp_name) %>%
+             # Veeva.code %in% veeva,
+             # Veeva.name %in% hosp_name,
+             Brand_CN %in% brand) %>%
       group_by(Region, Province_CN, City_CN, Veeva.code, Veeva.name,
                Decile,
                # Note,
@@ -245,17 +243,20 @@ ddd_summary <-
     
     col_cnt <- ncol(salesdata4)
     
-    salesdata4$total_gr <- salesdata4[, col_cnt - 2] / salesdata4[, col_cnt - 3] - 1
-    salesdata4$bi_gr <- salesdata4[, col_cnt] / salesdata4[, col_cnt - 1] - 1
+    total_gr <- salesdata4[, col_cnt - 2] / salesdata4[, col_cnt - 3] - 1
+    bi_gr <- salesdata4[, col_cnt] / salesdata4[, col_cnt - 1] - 1
     
-    salesdata4$total_sh <- 
-      salesdata4[, col_cnt - 2] / sum(salesdata4[, col_cnt - 2], na.rm = TRUE)
-    salesdata4$bi_sh <- 
-      salesdata4[, col_cnt] / sum(salesdata4[, col_cnt], na.rm = TRUE)
+    total_sh <- salesdata4[, col_cnt - 2] / sum(salesdata4[, col_cnt - 2], na.rm = TRUE)
+    bi_sh <- salesdata4[, col_cnt] / sum(salesdata4[, col_cnt], na.rm = TRUE)
     
-    salesdata4$bi_ms <- salesdata4[, col_cnt] / salesdata4[, col_cnt - 2]
+    bi_ms <- salesdata4[, col_cnt] / salesdata4[, col_cnt - 2]
     
     salesdata4 <- salesdata4 %>%
+      mutate(total_gr = total_gr,
+             bi_gr = bi_gr,
+             total_sh = total_sh,
+             bi_sh = bi_sh,
+             bi_ms = bi_ms) %>%
       arrange(desc(total_sh)) %>%
       mutate(gr_idx = (1 + bi_gr) / (1 + total_gr) * 100,
              cont_idx = bi_sh / total_sh * 100,
@@ -278,6 +279,8 @@ ddd_summary <-
                     "增长指数" = "gr_idx",
                     "贡献指数" = "cont_idx") %>%
       arrange(医院排名)
+    salesdata4[is.na(salesdata4)] <- 0
+    salesdata4[salesdata4 == Inf] <- 1
     
     return(salesdata4)
   }

@@ -392,7 +392,7 @@ server <- function(input, output, session) {
     notelist <- summary()$Note[!duplicated(summary()$Note)]
     notelist <- notelist[order(notelist)]
     notelist <- replace_na(notelist, "NA")
-    notelist <- c("ALL", notelist)
+    # notelist <- c("ALL", notelist)
   })
   
   observeEvent(input$decile, {
@@ -687,6 +687,29 @@ server <- function(input, output, session) {
     note <- unique(summary$Note)
     brand <- unique(summary$Brand_CN)
     
+    rank_info <- rbind.fill(
+      ddd_summary(
+        salesdata = summary(),
+        cate = input$category,
+        subcate = input$subcategory,
+        region = region,
+        province = province,
+        city = city,
+        decile = decile,
+        # veeva = veeva,
+        # hosp_name = hosp_name,
+        note = note,
+        value = "RMB",
+        period = input$period,
+        brand = brand,
+        # kpi = c("abs", "gr")
+        # window = as.numeric(input$window)
+        window = 1
+      )
+    )
+    rank_info <- distinct(rank_info)
+    rank_info_m <- rank_info[, c("医院排名", "BI产品贡献排名", "Veeva Code", "Veeva Name")]
+    
     if ("RMB"  %in% input$value) {
       summary <- summary()
       # if ("ALL" %in% input$province) {
@@ -697,27 +720,28 @@ server <- function(input, output, session) {
       #     summary()[which(summary()$AUDIT.DESC %in% c("China", input$region, input$province)),]
       # }
       
-      rmb <- rbind.fill(
-        ddd_summary(
-          salesdata = summary,
-          cate = input$category,
-          subcate = input$subcategory,
-          region = region,
-          province = province,
-          city = city,
-          decile = decile,
-          # veeva = veeva,
-          # hosp_name = hosp_name,
-          note = note,
-          value = "RMB",
-          period = input$period,
-          brand = brand,
-          # kpi = c("abs", "gr")
-          # window = as.numeric(input$window)
-          window = 1
-        )
-      )
-      rmb <- distinct(rmb)
+      # rmb <- rbind.fill(
+      #   ddd_summary(
+      #     salesdata = summary,
+      #     cate = input$category,
+      #     subcate = input$subcategory,
+      #     region = region,
+      #     province = province,
+      #     city = city,
+      #     decile = decile,
+      #     # veeva = veeva,
+      #     # hosp_name = hosp_name,
+      #     note = note,
+      #     value = "RMB",
+      #     period = input$period,
+      #     brand = brand,
+      #     # kpi = c("abs", "gr")
+      #     # window = as.numeric(input$window)
+      #     window = 1
+      #   )
+      # )
+      # rmb <- distinct(rmb)
+      rmb <- rank_info
     } else{
       rmb <- NULL
     }
@@ -743,17 +767,23 @@ server <- function(input, output, session) {
           province = province,
           city = city,
           decile = decile,
-          veeva = veeva,
-          hosp_name = hosp_name,
+          # veeva = veeva,
+          # hosp_name = hosp_name,
           note = note,
           value = "UNIT",
           period = input$period,
+          brand = brand,
           # kpi = c("abs", "gr")
           # window = as.numeric(input$window)
           window = 1
         )
       )
-      unit <- distinct(unit)
+      unit <- distinct(unit) %>% 
+        dplyr::select(-`医院排名`, -`BI产品贡献排名`) %>% 
+        left_join(rank_info_m, by = c("Veeva Code", "Veeva Name")) %>% 
+        dplyr::select("医院排名", "BI产品贡献排名", "Region", "省份", "城市", "Veeva Code", 
+                      "Veeva Name", "医院等级", "医院增长率", "医院贡献率", "BI产品增长率", 
+                      "BI产品贡献率", "BI产品市场份额", "增长指数", "贡献指数")
       
     } else{
       unit <- NULL
@@ -778,17 +808,23 @@ server <- function(input, output, session) {
           province = province,
           city = city,
           decile = decile,
-          veeva = veeva,
-          hosp_name = hosp_name,
+          # veeva = veeva,
+          # hosp_name = hosp_name,
           note = note,
           value = "DOT",
           period = input$period,
+          brand = brand,
           # kpi = c("abs", "gr")
           # window = as.numeric(input$window)
           window = 1
         )
       )
-      dot <- distinct(dot)
+      dot <- distinct(dot) %>% 
+        dplyr::select(-`医院排名`, -`BI产品贡献排名`) %>% 
+        left_join(rank_info_m, by = c("Veeva Code", "Veeva Name")) %>% 
+        dplyr::select("医院排名", "BI产品贡献排名", "Region", "省份", "城市", "Veeva Code", 
+                      "Veeva Name", "医院等级", "医院增长率", "医院贡献率", "BI产品增长率", 
+                      "BI产品贡献率", "BI产品市场份额", "增长指数", "贡献指数")
     } else{
       dot <- NULL
     }
@@ -804,24 +840,23 @@ server <- function(input, output, session) {
     
     isolate({
       outputtable <- result1() %>%
-        ungroup() %>%
-        filter(row_number() <= as.integer(input$top))
+        ungroup()
       outputtable
     })
   })
   
-  pagenumber <- reactive({
-    if (input$top == "20") {
-      pageno = 20
-    } else if (input$top == "50") {
-      pageno = 20
-    } else if (input$top == "100") {
-      pageno = 20
-    } else{
-      pageno = 20
-    }
-    pageno
-  })
+  # pagenumber <- reactive({
+  #   if (input$top == "20") {
+  #     pageno = 20
+  #   } else if (input$top == "50") {
+  #     pageno = 20
+  #   } else if (input$top == "100") {
+  #     pageno = 20
+  #   } else{
+  #     pageno = 20
+  #   }
+  #   pageno
+  # })
   
   output$contents <- renderDataTable({
     input$goButton
@@ -1439,8 +1474,8 @@ server <- function(input, output, session) {
       
       p <- p %>%
         config(
-          displaylogo = FALSE,
-          collaborate = FALSE
+          displaylogo = FALSE
+          # collaborate = FALSE
         ) %>%
         layout(
           annotations = list(
@@ -1531,8 +1566,8 @@ server <- function(input, output, session) {
       p <- p %>%
         
         config(
-          displaylogo = FALSE,
-          collaborate = FALSE
+          displaylogo = FALSE
+          # collaborate = FALSE
         ) %>%
         
         layout(
