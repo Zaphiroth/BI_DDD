@@ -112,9 +112,9 @@ ui <- dashboardPage(
                            "value",
                            label = ("Measurement"),
                            choices = list(
-                             "DOT" = "DOT",
+                             "Value In RMB" = "RMB",
                              "UNIT" = "UNIT",
-                             "Value In RMB" = "RMB"
+                             "DOT" = "DOT"
                            ),
                            selected = "RMB",
                            multiple = FALSE
@@ -125,10 +125,10 @@ ui <- dashboardPage(
                            label = ("Period"),
                            choices = list(
                              "MAT" = "mat",
-                             "MTH" = "mth",
+                             "YTD" = "ytd",
                              "QTR" = "qtr",
-                             "Rolling QTR" = "rqtr",
-                             "YTD" = "ytd"
+                             # "Rolling QTR" = "rqtr",
+                             "MTH" = "mth"
                              # ,"YEARLY" = "yrl"
                            ),
                            selected = "qtr",
@@ -209,9 +209,9 @@ ui <- dashboardPage(
                            "value1",
                            label = ("Measurement"),
                            choices = list(
-                             "DOT" = "DOT",
+                             "Value In RMB" = "RMB",
                              "UNIT" = "UNIT",
-                             "Value In RMB" = "RMB"
+                             "DOT" = "DOT"
                            ),
                            selected = "RMB",
                            multiple = FALSE
@@ -222,10 +222,10 @@ ui <- dashboardPage(
                            label = ("Period"),
                            choices = list(
                              "MAT" = "mat",
-                             "MTH" = "mth",
+                             "YTD" = "ytd",
                              "QTR" = "qtr",
-                             "Rolling QTR" = "rqtr",
-                             "YTD" = "ytd"
+                             # "Rolling QTR" = "rqtr",
+                             "MTH" = "mat"
                            ),
                            selected = "qtr",
                            multiple = FALSE
