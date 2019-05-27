@@ -1498,7 +1498,14 @@ server <- function(input, output, session) {
     t2 <- ot1[!(ot1$产品 %in% bi_brand()), ] %>%
       arrange(-`产出`)
     
-    t <- bind_rows(t1, t2)
+    t <- bind_rows(t1, t2) %>% 
+      mutate_all(function(x) {ifelse(is.na(x),
+                                     0,
+                                     ifelse(is.infinite(x),
+                                            1,
+                                            x))})
+    
+    return(t)
   })
 
   output$contents_hosp <- renderDataTable({
@@ -1509,7 +1516,7 @@ server <- function(input, output, session) {
       ot1 <- ot1()
     }
     
-    rows <- (dim(ot1)[1] %/% 12 + 1) * 12
+    rows <- (dim(ot1)[1] %/% 18 + 1) * 18
     ot <- tibble(`产品` = rep(" ", rows), `产出` = rep(" ", rows), `市场份额` = rep(" ", rows), `增长率` = rep(" ", rows))
     
     for (i in 1:dim(ot1)[1]) {
@@ -1546,7 +1553,7 @@ server <- function(input, output, session) {
           targets = seq(0, 4)
         )),
         autoWidth = TRUE,
-        pageLength = 12,
+        pageLength = 18,
         initComplete = JS(
           "function(settings, json) {",
           "$(this.api().table().header()).css({'background-color': '#fff', 'color': '#1F497D'});",
@@ -1592,194 +1599,243 @@ server <- function(input, output, session) {
     if (is.null(result2()))
       return(NULL)
     
-    # input$search
+    pd <- result2()$plot %>% 
+      filter(Veeva.name == input$name) %>%
+      select(-Veeva.name)
     
-    # isolate({
-      pd <- result2()$share
+    if (dim(pd)[1] == 0)
+      return(NULL)
+    
+    pd_names <- c("Brand_CN", grep("ms", grep(paste0(input$period1, "_", input$value1), names(pd), value = TRUE), value = TRUE))
+    pd1 <- pd[pd_names]
+    
+    if (input$period1 == "mat" | input$period1 == "ytd") {
+      names(pd1) <- c("Brand_CN", 1, 2)
       
-      pd <- pd %>%
-        filter(Veeva.name == input$veeva1) %>%
-        select(-Veeva.name)
+      d1 <- pd1[pd1$Brand_CN %in% bi_brand(), ] %>% 
+        arrange(-`2`)
+      d2 <- pd1[!(pd1$Brand_CN %in% bi_brand()), ] %>% 
+        arrange(-`2`)
       
-      names(pd) <- c("Brand_CN", 0:12)
+    } else if (input$period1 == "qtr") {
+      pd1 <- pd1[c("Brand_CN", tail(names(pd1), 13))]
+      names(pd1) <- c("Brand_CN", 1:13)
       
-      d1 <- pd[pd$Brand_CN %in% bi(), ] %>%
-        arrange(-`12`)
+      d1 <- pd1[pd1$Brand_CN %in% bi_brand(), ] %>% 
+        arrange(-`13`)
+      d2 <- pd1[!(pd1$Brand_CN %in% bi_brand()), ] %>% 
+        arrange(-`13`)
       
-      d2 <- pd[!(pd$Brand_CN %in% bi()), ] %>%
-        arrange(-`12`)
+    } else if (input$period1 == "mth") {
+      names(pd1) <- c("Brand_CN", 1:24)
       
-      pd <- bind_rows(d1, d2)
+      d1 <- pd1[pd1$Brand_CN %in% bi_brand(), ] %>% 
+        arrange(-`24`)
+      d2 <- pd1[!(pd1$Brand_CN %in% bi_brand()), ] %>% 
+        arrange(-`24`)
+    }
+    
+    pd2 <- bind_rows(d1, d2)
+    pd2[is.na(pd2)] <- 0
+    
+    pd_names1 <- tail(pd_names, length(pd2)-1)
+    for (i in 1:(length(pd2)-1)) {
+      x <- pd_names1[i]
+      y <- regexpr(paste0(input$period1, "_", input$value1, "_"), x, useBytes = TRUE)
+      z <- attr(y,"match.length")
+      names(pd2)[i+1] <- substring(gsub("[.]", "", x), y[1]+z)
+    }
+    
+    brand <- pd2$Brand_CN
+    
+    pd3 <- pd2 %>%
+      melt(id.vars = "Brand_CN", variable.name = "Date", value.name = "Share") %>%
+      mutate(Share = Share * 100,
+             Share = round(Share, 2))
+    
+    p <- plot_ly(hoverinfo = "name + x + y")
+    
+    for (i in brand) {
+      p <- p %>%
+        add_trace(x = pd3[pd3$Brand_CN == i, "Date"],
+                  y = pd3[pd3$Brand_CN == i, "Share"],
+                  type = "scatter",
+                  mode = "lines + markers",
+                  marker = list(size = 5),
+                  name = i)
       
-      names(pd) <- c("Brand_CN", date())
-      
-      brand <- pd$Brand_CN
-      
-      pd <- pd %>%
-        melt(id.vars = "Brand_CN", variable.name = "Date", value.name = "Share") %>%
-        mutate(Share = Share * 100)
-      
-      p <- plot_ly(hoverinfo = "name + x + y")
-      
-      for (i in brand) {
-        p <- p %>%
-          add_trace(x = pd[pd$Brand_CN == i, "Date"],
-                    y = pd[pd$Brand_CN == i, "Share"],
-                    type = "scatter",
-                    mode = "lines + markers",
-                    marker = list(size = 5),
-                    name = i)
-        
-        if (!is.na(d1$Brand_CN[1])) {
-          if (i == d1$Brand_CN[1]) {
-            p <- p %>%
-              add_text(x = pd[pd$Brand_CN == i, "Date"],
-                       y = pd[pd$Brand_CN == i, "Share"],
-                       text = paste0(pd[pd$Brand_CN == i, "Share"], "%"),
-                       textfont = list(size = 13),
-                       textposition = "top",
-                       name = i,
-                       showlegend = TRUE)
-          }
+      if (!is.na(d1$Brand_CN[1])) {
+        if (i == d1$Brand_CN[1]) {
+          p <- p %>%
+            add_text(x = pd3[pd3$Brand_CN == i, "Date"],
+                     y = pd3[pd3$Brand_CN == i, "Share"],
+                     text = paste0(pd3[pd3$Brand_CN == i, "Share"], "%"),
+                     textfont = list(size = 13),
+                     textposition = "top",
+                     name = i,
+                     showlegend = TRUE)
         }
       }
-      
-      p <- p %>%
-        config(
-          displaylogo = FALSE
-          # collaborate = FALSE
-        ) %>%
-        layout(
-          annotations = list(
-            text = "市场份额趋势(滚动季度数据)",
-            xref = "paper",
-            x = 0.5,
-            yref = "paper",
-            y = 1,
-            yshift = 30,
-            showarrow = FALSE,
-            font = list(size = 18)
-          ),
-          showlegend = TRUE,
-          xaxis = list(
-            zeroline = FALSE,
-            title = "",
-            showline = TRUE,
-            mirror = "ticks"
-          ),
-          yaxis = list(
-            zeroline = FALSE,
-            title = "Market share (RMB)",
-            ticksuffix = "%",
-            showline = TRUE,
-            mirror = "ticks"
-          )
+    }
+    
+    p <- p %>%
+      config(
+        displaylogo = FALSE
+        # collaborate = FALSE
+      ) %>%
+      layout(
+        annotations = list(
+          text = paste0("市场份额趋势 (", toupper(input$period1), ")"),
+          xref = "paper",
+          x = 0.5,
+          yref = "paper",
+          y = 1,
+          yshift = 30,
+          showarrow = FALSE,
+          font = list(size = 18)
+        ),
+        showlegend = TRUE,
+        xaxis = list(
+          zeroline = FALSE,
+          title = "",
+          showline = TRUE,
+          mirror = "ticks"
+        ),
+        yaxis = list(
+          zeroline = FALSE,
+          title = paste0("Market share (", input$value1, ")"),
+          ticksuffix = "%",
+          showline = TRUE,
+          mirror = "ticks"
         )
-      
-      return(p)
-    # })
+      )
+    
+    return(p)
+  })
+  
+  output$plot1 <- renderPlotly({
+    if (is.null(plot1())) {
+      plotly_empty()
+    } else {
+      plot1()
+    }
   })
   
   plot2 <- reactive({
     if (is.null(result2()))
       return(NULL)
     
-    # input$search
+    pd <- result2()$plot %>% 
+      filter(Veeva.name == input$name) %>%
+      select(-Veeva.name)
     
-    # isolate({
-      pd <- result2()$mean_mth
+    if (dim(pd)[1] == 0)
+      return(NULL)
+    
+    pd_names <- c("Brand_CN", grep("mkt|ms|gth", grep(paste0(input$period1, "_", input$value1), names(pd), value = TRUE), invert = TRUE, value = TRUE))
+    pd1 <- pd[pd_names]
+    
+    if (input$period1 == "mat" | input$period1 == "ytd") {
+      names(pd1) <- c("Brand_CN", 1, 2)
       
-      pd <- pd %>%
-        filter(Veeva.name == input$veeva1) %>%
-        select(-Veeva.name)
+      d1 <- pd1[pd1$Brand_CN %in% bi_brand(), ] %>% 
+        arrange(-`2`)
+      d2 <- pd1[!(pd1$Brand_CN %in% bi_brand()), ] %>% 
+        arrange(-`2`)
       
-      names(pd) <- c("Brand_CN", 0:12)
+    } else if (input$period1 == "qtr") {
+      pd1 <- pd1[c("Brand_CN", tail(names(pd1), 13))]
+      names(pd1) <- c("Brand_CN", 1:13)
       
-      d1 <- pd[pd$Brand_CN %in% bi(), ] %>%
-        arrange(-`12`)
+      d1 <- pd1[pd1$Brand_CN %in% bi_brand(), ] %>% 
+        arrange(-`13`)
+      d2 <- pd1[!(pd1$Brand_CN %in% bi_brand()), ] %>% 
+        arrange(-`13`)
       
-      d2 <- pd[!(pd$Brand_CN %in% bi()), ] %>%
-        arrange(-`12`)
+    } else if (input$period1 == "mth") {
+      names(pd1) <- c("Brand_CN", 1:24)
       
-      pd <- bind_rows(d1, d2)
+      d1 <- pd1[pd1$Brand_CN %in% bi_brand(), ] %>% 
+        arrange(-`24`)
+      d2 <- pd1[!(pd1$Brand_CN %in% bi_brand()), ] %>% 
+        arrange(-`24`)
+    }
+    
+    pd2 <- bind_rows(d1, d2)
+    pd2[is.na(pd2)] <- 0
+    
+    pd_names1 <- tail(pd_names, length(pd2)-1)
+    for (i in 1:(length(pd2)-1)) {
+      x <- pd_names1[i]
+      y <- regexpr(paste0(input$period1, "_", input$value1, "_"), x, useBytes = TRUE)
+      z <- attr(y,"match.length")
+      names(pd2)[i+1] <- substring(gsub("[.]", "", x), y[1]+z)
+    }
+    
+    brand <- pd2$Brand_CN
+    
+    pd3 <- pd2 %>%
+      melt(id.vars = "Brand_CN", variable.name = "Date", value.name = "Sales")
+    
+    p <- plot_ly(hoverinfo = "name + x + y")
+    
+    for (i in brand) {
+      p <- p %>%
+        add_trace(x = pd3[pd3$Brand_CN == i, "Date"],
+                  y = round(pd3[pd3$Brand_CN == i, "Sales"]),
+                  type = "scatter",
+                  mode = "lines + markers",
+                  marker = list(size = 5),
+                  name = i)
       
-      names(pd) <- c("Brand_CN", date())
-      
-      brand <- pd$Brand_CN
-      
-      pd <- pd %>%
-        melt(id.vars = "Brand_CN", variable.name = "Date", value.name = "Sales")
-      
-      p <- plot_ly(hoverinfo = "name + x + y")
-      
-      for (i in brand) {
-        p <- p %>%
-          add_trace(x = pd[pd$Brand_CN == i, "Date"],
-                    y = round(pd[pd$Brand_CN == i, "Sales"]),
-                    type = "scatter",
-                    mode = "lines + markers",
-                    marker = list(size = 5),
-                    name = i)
-        
-        if (!is.na(d1$Brand_CN[1])) {
-          if (i == d1$Brand_CN[1]) {
-            p <- p %>%
-              add_text(x = pd[pd$Brand_CN == i, "Date"],
-                       y = round(pd[pd$Brand_CN == i, "Sales"]),
-                       text = round(pd[pd$Brand_CN == i, "Sales"], 0),
-                       textfont = list(size = 13),
-                       textposition = "top",
-                       name = i,
-                       showlegend = TRUE)
-          }
+      if (!is.na(d1$Brand_CN[1])) {
+        if (i == d1$Brand_CN[1]) {
+          p <- p %>%
+            add_text(x = pd3[pd3$Brand_CN == i, "Date"],
+                     y = round(pd3[pd3$Brand_CN == i, "Sales"]),
+                     text = round(pd3[pd3$Brand_CN == i, "Sales"], 0),
+                     textfont = list(size = 13),
+                     textposition = "top",
+                     name = i,
+                     showlegend = TRUE)
         }
       }
-      
-      p <- p %>%
-        
-        config(
-          displaylogo = FALSE
-          # collaborate = FALSE
-        ) %>%
-        
-        layout(
-          annotations = list(
-            text = "月均单产金额趋势(滚动季度数据)",
-            xref = "paper",
-            x = 0.5,
-            yref = "paper",
-            y = 1,
-            yshift = 30,
-            showarrow = FALSE,
-            font = list(size = 18)
-          ),
-          showlegend = TRUE,
-          xaxis = list(
-            zeroline = FALSE,
-            title = "",
-            showline = TRUE,
-            mirror = "ticks"
-          ),
-          yaxis = list(
-            zeroline = FALSE,
-            title = "Production (RMB)",
-            ticksuffix = "",
-            showline = TRUE,
-            mirror = "ticks"
-          )
-        )
-      
-      return(p)
-    # })
-  })
-  
-  output$plot1 <- renderPlotly(
-    if (is.null(plot1())) {
-      plotly_empty()
-    } else {
-      plot1()
     }
-  )
+    
+    p <- p %>%
+      config(
+        displaylogo = FALSE
+        # collaborate = FALSE
+      ) %>%
+      layout(
+        annotations = list(
+          text = paste0("单产金额趋势 (", toupper(input$period1), ")"),
+          xref = "paper",
+          x = 0.5,
+          yref = "paper",
+          y = 1,
+          yshift = 30,
+          showarrow = FALSE,
+          font = list(size = 18)
+        ),
+        showlegend = TRUE,
+        xaxis = list(
+          zeroline = FALSE,
+          title = "",
+          showline = TRUE,
+          mirror = "ticks"
+        ),
+        yaxis = list(
+          zeroline = FALSE,
+          title = paste0("Production (", input$value1, ")"),
+          ticksuffix = "",
+          showline = TRUE,
+          mirror = "ticks"
+        )
+      )
+    
+    return(p)
+  })
   
   output$plot2 <- renderPlotly(
     if (is.null(plot2())) {
@@ -1788,6 +1844,124 @@ server <- function(input, output, session) {
       plot2()
     }
   )
+  
+  plot3 <- reactive({
+    if (is.null(result2()) | input$period1 == "mat" | input$period1 == "ytd")
+      return(NULL)
+    
+    pd <- result2()$plot %>% 
+      filter(Veeva.name == input$name) %>%
+      select(-Veeva.name)
+    
+    if (dim(pd)[1] == 0)
+      return(NULL)
+    
+    pd_names <- c("Brand_CN", grep("gth", grep(paste0(input$period1, "_", input$value1), names(pd), value = TRUE), value = TRUE))
+    pd1 <- pd[pd_names]
+    
+    if (input$period1 == "qtr") {
+      # pd1 <- pd1[c("Brand_CN", tail(names(pd1), 10))]
+      names(pd1) <- c("Brand_CN", 1:10)
+      
+      d1 <- pd1[pd1$Brand_CN %in% bi_brand(), ] %>% 
+        arrange(-`10`)
+      d2 <- pd1[!(pd1$Brand_CN %in% bi_brand()), ] %>% 
+        arrange(-`10`)
+      
+    } else if (input$period1 == "mth") {
+      names(pd1) <- c("Brand_CN", 1:12)
+      
+      d1 <- pd1[pd1$Brand_CN %in% bi_brand(), ] %>% 
+        arrange(-`12`)
+      d2 <- pd1[!(pd1$Brand_CN %in% bi_brand()), ] %>% 
+        arrange(-`12`)
+    }
+    
+    pd2 <- bind_rows(d1, d2)
+    pd2[is.na(pd2)] <- 0
+    
+    pd_names1 <- tail(pd_names, length(pd2)-1)
+    for (i in 1:(length(pd2)-1)) {
+      x <- pd_names1[i]
+      y <- regexpr(paste0(input$period1, "_", input$value1, "_"), x, useBytes = TRUE)
+      z <- attr(y,"match.length")
+      names(pd2)[i+1] <- substring(gsub("[.]", "", x), y[1]+z)
+    }
+    
+    brand <- pd2$Brand_CN
+    
+    pd3 <- pd2 %>%
+      melt(id.vars = "Brand_CN", variable.name = "Date", value.name = "Growth") %>%
+      mutate(Growth = Growth * 100,
+             Growth = round(Growth, 2))
+    
+    p <- plot_ly(hoverinfo = "name + x + y")
+    
+    for (i in brand) {
+      p <- p %>%
+        add_trace(x = pd3[pd3$Brand_CN == i, "Date"],
+                  y = pd3[pd3$Brand_CN == i, "Growth"],
+                  type = "scatter",
+                  mode = "lines + markers",
+                  marker = list(size = 5),
+                  name = i)
+      
+      if (!is.na(d1$Brand_CN[1])) {
+        if (i == d1$Brand_CN[1]) {
+          p <- p %>%
+            add_text(x = pd3[pd3$Brand_CN == i, "Date"],
+                     y = pd3[pd3$Brand_CN == i, "Growth"],
+                     text = paste0(pd3[pd3$Brand_CN == i, "Growth"], "%"),
+                     textfont = list(size = 13),
+                     textposition = "top",
+                     name = i,
+                     showlegend = TRUE)
+        }
+      }
+    }
+    
+    p <- p %>%
+      config(
+        displaylogo = FALSE
+        # collaborate = FALSE
+      ) %>%
+      layout(
+        annotations = list(
+          text = paste0("增长率趋势 (", toupper(input$period1), ")"),
+          xref = "paper",
+          x = 0.5,
+          yref = "paper",
+          y = 1,
+          yshift = 30,
+          showarrow = FALSE,
+          font = list(size = 18)
+        ),
+        showlegend = TRUE,
+        xaxis = list(
+          zeroline = FALSE,
+          title = "",
+          showline = TRUE,
+          mirror = "ticks"
+        ),
+        yaxis = list(
+          zeroline = FALSE,
+          title = paste0("Growth Rate (", input$value1, ")"),
+          ticksuffix = "%",
+          showline = TRUE,
+          mirror = "ticks"
+        )
+      )
+    
+    return(p)
+  })
+  
+  output$plot3 <- renderPlotly({
+    if (is.null(plot3())) {
+      plotly_empty()
+    } else {
+      plot3()
+    }
+  })
 
   ##-- download the data
   

@@ -57,7 +57,7 @@ ddd_hospital <- function(salesdata) {
     group_by(Veeva.name, Decile) %>%
     summarise_all(sum) %>%
     ungroup()
-  names(data3) <- c("Veeva.name", "Decile", paste0(names(data3)[3:length(data3)], "_mkt"))
+  names(data3) <- c("Veeva.name", "Decile", paste0("mkt_", names(data3)[3:length(data3)]))
   
   # data1 <- salesdata[c(1:fmr, grep("qtr", names(salesdata)))]
   # data1 <- data1[c(1:fmr, grep("RMB", names(data1)))]
@@ -83,7 +83,7 @@ ddd_hospital <- function(salesdata) {
     left_join(data3, by = c("Veeva.name", "Decile"))
   
   for (i in data_names[5:length(data_names)]) {
-    data4[paste0(i, "_ms")] <- data4[i] / data4[paste0(i, "_mkt")]
+    data4[paste0("ms_", i)] <- data4[i] / data4[paste0("mkt_", i)]
   }
   
   # data3 <- data2 %>%
@@ -105,19 +105,14 @@ ddd_hospital <- function(salesdata) {
                     tail(grep("mth_DOT", names(salesdata), value = TRUE), 12))
   
   for (i in growth_names) {
-    data4[paste0(i, "_gth")] <- data4[i] / data4[which(names(data4) == i) - 12] - 1
+    data4[paste0("gth_", i)] <- data4[i] / data4[which(names(data4) == i) - 12] - 1
   }
   
   date <- substr(tail(data_names, 1), 9, 15)
   table_names <- c("Veeva.name", "Decile", "Brand_CN", "MANU_CN",
                    grep("mkt", grep(date, names(data4), value = TRUE), value = TRUE, invert = TRUE))
   
-  data5 <- data4[table_names] %>% 
-    mutate_all(function(x) {ifelse(is.na(x),
-                                   0,
-                                   ifelse(is.infinite(x),
-                                          1,
-                                          x))})
+  data5 <- data4[table_names]
   
   # head <- data1[c("Category_CN",
   #                 "Region",
@@ -255,8 +250,7 @@ ddd_hospital <- function(salesdata) {
   out <- list(rank = data8,
               table = data5,
               plot = data4,
-              bi_brand = bi_brand,
-              colname = data_names)
+              bi_brand = bi_brand)
   
   return(out)
 }

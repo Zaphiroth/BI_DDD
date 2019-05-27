@@ -225,7 +225,7 @@ ui <- dashboardPage(
                              "YTD" = "ytd",
                              "QTR" = "qtr",
                              # "Rolling QTR" = "rqtr",
-                             "MTH" = "mat"
+                             "MTH" = "mth"
                            ),
                            selected = "qtr",
                            multiple = FALSE
@@ -271,7 +271,7 @@ ui <- dashboardPage(
                   # )
                 ),
                 column(
-                  5,
+                  4,
                   # box(
                   #   solidHeader = TRUE,
                   #   collapsible = FALSE,
@@ -282,18 +282,16 @@ ui <- dashboardPage(
                   # )
                 ),
                 column(
-                  5,
-                  # box(
-                  #   solidHeader = TRUE,
-                  #   collapsible = FALSE,
-                  #   width = 12,
-                    fluidRow(
-                      column(12, plotlyOutput("plot1", width = "100%", height = "260px"))
-                    ),
-                    fluidRow(
-                      column(12, plotlyOutput("plot2", width = "100%", height = "260px"))
-                    )
-                  # )
+                  6,
+                  fluidRow(
+                    column(12, plotlyOutput("plot1", width = "100%", height = "260px"))
+                  ),
+                  fluidRow(
+                    column(12, plotlyOutput("plot2", width = "100%", height = "260px"))
+                  ),
+                  fluidRow(
+                    column(12, plotlyOutput("plot3", width = "100%", height = "260px"))
+                  )
                 )
               )
             )
