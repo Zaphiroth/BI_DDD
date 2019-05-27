@@ -110,9 +110,14 @@ ddd_hospital <- function(salesdata) {
   
   date <- substr(tail(data_names, 1), 9, 15)
   table_names <- c("Veeva.name", "Decile", "Brand_CN", "MANU_CN",
-                   grep("mkt|ms", grep(date, names(data4), value = TRUE), value = TRUE, invert = TRUE))
+                   grep("mkt", grep(date, names(data4), value = TRUE), value = TRUE, invert = TRUE))
   
-  data5 <- data4[table_names]
+  data5 <- data4[table_names] %>% 
+    mutate_all(function(x) {ifelse(is.na(x),
+                                   0,
+                                   ifelse(is.infinite(x),
+                                          1,
+                                          x))})
   
   # head <- data1[c("Category_CN",
   #                 "Region",
@@ -251,7 +256,7 @@ ddd_hospital <- function(salesdata) {
               table = data5,
               plot = data4,
               bi_brand = bi_brand,
-              names = data_names)
+              colname = data_names)
   
   return(out)
 }

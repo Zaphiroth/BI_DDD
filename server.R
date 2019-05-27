@@ -1225,19 +1225,27 @@ server <- function(input, output, session) {
     }
     
     c_n <- summary[, c("Veeva.code", "Veeva.name")]
-    c_n <- distinct(c_n) %>%
-      unite("c_n", Veeva.code, Veeva.name, sep = "----")
-    c_n$c_n
+    c_n <- distinct(c_n)
   })
   
-  observeEvent(c(input$category1, input$subcategory1, input$bl1, 
-                 input$region1, input$province1, input$city1, 
-                 input$decile1, input$note1), {
+  observeEvent(c(input$category1, input$subcategory1, input$bl1,
+                 input$region1, input$province1, input$city1,
+                 input$decile1, input$note1, input$code), ignoreInit = TRUE, {
     updateSelectInput(session,
-                      inputId = "code_name",
-                      label = "Veeva Code and Hospital Name",
-                      choices = c_n(),
-                      selected = c_n()[1])
+                      inputId = "name",
+                      label = "Hospital Name",
+                      choices = c_n()$`Veeva.name`,
+                      selected = c_n()[c_n()$`Veeva.code` == input$code, "Veeva.name", drop = TRUE])
+  })
+
+  observeEvent(c(input$category1, input$subcategory1, input$bl1,
+                 input$region1, input$province1, input$city1,
+                 input$decile1, input$note1, input$name), ignoreInit = TRUE, {
+    updateSelectInput(session,
+                      inputId = "code",
+                      label = "Veeva Code",
+                      choices = c_n()$`Veeva.code`,
+                      selected = c_n()[c_n()$`Veeva.name` == input$name, "Veeva.code", drop = TRUE])
   })
   
   ##--- result2
@@ -1245,9 +1253,7 @@ server <- function(input, output, session) {
     if (is.null(summary()))
       return(NULL)
     
-    result2 <- ddd_hospital(summary())
-    
-    return(result2)
+    ddd_hospital(summary())
   })
   
   ##--- rank
@@ -1255,232 +1261,211 @@ server <- function(input, output, session) {
     if (is.null(result2()))
       return(NULL)
     
-    # input$search
+    r <- result2()$rank
+    r <- r %>%
+      filter(Veeva.name == input$name)
     
-    # isolate({
-      r <- result2()$rank
-      
-      r <- r %>%
-        filter(Veeva.name == input$veeva1)
-      
-      return(r)
-    # })
+    if (dim(r)[1] == 0)
+      return(NULL)
+    
+    return(r)
   })
   
   output$rank1 <- renderDataTable({
     
-    # input$search
-    
-    # isolate({
-      if (is.null(rank()))
-        return(NULL)
-      
+    if (is.null(rank())) {
+      r1 <- tibble(`医院排名` = "-", `BI 排名` = "-")
+    } else {
       r1 <- rank()
       r1 <- r1[c(2, 3)]
-      
-      r <- DT::datatable(
-        r1,
-        rownames = FALSE,
-        # extensions = c('FixedColumns', 'Buttons'),
-        options = list(
-          autoWidth = TRUE,
-          # dom = '<"bottom">Bfrtpl',
-          # buttons = I('colvis'),
-          scrollX = FALSE,
-          paging = FALSE,
-          searching = FALSE,
-          ordering = FALSE,
-          bInfo = FALSE,
-          columnDefs = list(list(
-            className = 'dt-center',
-            targets = seq(0, 1)
-          )),
-          autoWidth = TRUE,
-          pageLength = 1,
-          initComplete = JS(
-            "function(settings, json) {",
-            "$(this.api().table().header()).css({'background-color': '#fff', 'color': '#1F497D'});",
-            "}"
-          )
+    }
+    
+    r <- DT::datatable(
+      r1,
+      rownames = FALSE,
+      # extensions = c('FixedColumns', 'Buttons'),
+      options = list(
+        autoWidth = TRUE,
+        # dom = '<"bottom">Bfrtpl',
+        # buttons = I('colvis'),
+        scrollX = FALSE,
+        paging = FALSE,
+        searching = FALSE,
+        ordering = FALSE,
+        bInfo = FALSE,
+        columnDefs = list(list(
+          className = 'dt-center',
+          targets = seq(0, 1)
+        )),
+        autoWidth = TRUE,
+        pageLength = 1,
+        initComplete = JS(
+          "function(settings, json) {",
+          "$(this.api().table().header()).css({'background-color': '#fff', 'color': '#1F497D'});",
+          "}"
         )
-      ) %>%
-        formatStyle(
-          c(
-            "医院排名",
-            "BI 排名"
-          ),
-          `font-size` = '46px',
-          fontWeight = 'bold',
-          color = '#1F497D'
-        )
-      
-      return(r)
-    # })
+      )
+    ) %>%
+      formatStyle(
+        c(
+          "医院排名",
+          "BI 排名"
+        ),
+        `font-size` = '45px',
+        fontWeight = 'bold',
+        color = '#1F497D'
+      )
+    
+    return(r)
   })
   
   output$rank2 <- renderDataTable({
     
-    # input$search
-    
-    # isolate({
-      if (is.null(rank()))
-        return(NULL)
-      
+    if (is.null(rank())) {
+      r1 <- tibble(`月平均单产(滚动季度数据)` = "-")
+    } else {
       r1 <- rank()
       r1 <- r1[4]
-      
-      r <- DT::datatable(
-        r1,
-        rownames = FALSE,
-        # extensions = c('FixedColumns', 'Buttons'),
-        options = list(
-          autoWidth = TRUE,
-          # dom = '<"bottom">Bfrtpl',
-          # buttons = I('colvis'),
-          scrollX = FALSE,
-          paging = FALSE,
-          searching = FALSE,
-          ordering = FALSE,
-          bInfo = FALSE,
-          columnDefs = list(list(
-            className = 'dt-center',
-            targets = c(0)
-          )),
-          autoWidth = TRUE,
-          pageLength = 1,
-          initComplete = JS(
-            "function(settings, json) {",
-            "$(this.api().table().header()).css({'background-color': '#fff', 'color': '#1F497D'});",
-            "}"
-          )
+    }
+    
+    r <- DT::datatable(
+      r1,
+      rownames = FALSE,
+      # extensions = c('FixedColumns', 'Buttons'),
+      options = list(
+        autoWidth = TRUE,
+        # dom = '<"bottom">Bfrtpl',
+        # buttons = I('colvis'),
+        scrollX = FALSE,
+        paging = FALSE,
+        searching = FALSE,
+        ordering = FALSE,
+        bInfo = FALSE,
+        columnDefs = list(list(
+          className = 'dt-center',
+          targets = c(0)
+        )),
+        autoWidth = TRUE,
+        pageLength = 1,
+        initComplete = JS(
+          "function(settings, json) {",
+          "$(this.api().table().header()).css({'background-color': '#fff', 'color': '#1F497D'});",
+          "}"
         )
+      )
+    ) %>%
+      formatStyle(
+        c(
+          "月平均单产(滚动季度数据)"
+        ),
+        `font-size` = '45px',
+        fontWeight = 'bold',
+        color = '#1F497D'
       ) %>%
-        formatStyle(
-          c(
-            "月平均单产(滚动季度数据)"
-          ),
-          `font-size` = '46px',
-          fontWeight = 'bold',
-          color = '#1F497D'
-        ) %>%
-        formatRound(c("月平均单产(滚动季度数据)"), 0)
-      
-      return(r)
-    # })
+      formatRound(c("月平均单产(滚动季度数据)"), 0)
+    
+    return(r)
   })
   
   output$rank3 <- renderDataTable({
     
-    # input$search
-    
-    # isolate({
-      if (is.null(rank()))
-        return(NULL)
-      
+    if (is.null(rank())) {
+      r1 <- tibble(`品类增长率` = "-")
+    } else {
       r1 <- rank()
       r1 <- r1[5]
-      
-      r <- DT::datatable(
-        r1,
-        rownames = FALSE,
-        # extensions = c('FixedColumns', 'Buttons'),
-        options = list(
-          autoWidth = TRUE,
-          # dom = '<"bottom">Bfrtpl',
-          # buttons = I('colvis'),
-          scrollX = FALSE,
-          paging = FALSE,
-          searching = FALSE,
-          ordering = FALSE,
-          bInfo = FALSE,
-          columnDefs = list(list(
-            className = 'dt-center',
-            targets = c(0)
-          )),
-          autoWidth = TRUE,
-          pageLength = 1,
-          initComplete = JS(
-            "function(settings, json) {",
-            "$(this.api().table().header()).css({'background-color': '#fff', 'color': '#1F497D'});",
-            "}"
-          )
+    }
+    
+    r <- DT::datatable(
+      r1,
+      rownames = FALSE,
+      # extensions = c('FixedColumns', 'Buttons'),
+      options = list(
+        autoWidth = TRUE,
+        # dom = '<"bottom">Bfrtpl',
+        # buttons = I('colvis'),
+        scrollX = FALSE,
+        paging = FALSE,
+        searching = FALSE,
+        ordering = FALSE,
+        bInfo = FALSE,
+        columnDefs = list(list(
+          className = 'dt-center',
+          targets = c(0)
+        )),
+        autoWidth = TRUE,
+        pageLength = 1,
+        initComplete = JS(
+          "function(settings, json) {",
+          "$(this.api().table().header()).css({'background-color': '#fff', 'color': '#1F497D'});",
+          "}"
         )
-      ) %>%
-        formatStyle(
-          c(
-            "品类增长率"
-            ),
-          `font-size` = '46px',
-          color = '#1F497D',
-          # color = styleInterval(0, c('red', 'green')),
-          # fontWeight = styleInterval(0, c('bold', 'normal')),
-          fontWeight = 'bold') %>%
-        formatPercentage(c("品类增长率"), 0)
-      
-      return(r)
-    # })
+      )
+    ) %>%
+      formatStyle(
+        c(
+          "品类增长率"
+        ),
+        `font-size` = '45px',
+        color = '#1F497D',
+        # color = styleInterval(0, c('red', 'green')),
+        # fontWeight = styleInterval(0, c('bold', 'normal')),
+        fontWeight = 'bold') %>%
+      formatPercentage(c("品类增长率"), 0)
+    
+    return(r)
   })
   
   output$rank4 <- renderDataTable({
     
-    # input$search
-    
-    # isolate({
-      if (is.null(rank()))
-        return(NULL)
-      
+    if (is.null(rank())) {
+      r1 <- tibble(`全国医院等级` = "-")
+    } else {
       r1 <- rank()
       r1 <- r1[6]
-      
-      r <- DT::datatable(
-        r1,
-        rownames = FALSE,
-        # extensions = c('FixedColumns', 'Buttons'),
-        options = list(
-          autoWidth = TRUE,
-          # dom = '<"bottom">Bfrtpl',
-          # buttons = I('colvis'),
-          scrollX = FALSE,
-          paging = FALSE,
-          searching = FALSE,
-          ordering = FALSE,
-          bInfo = FALSE,
-          columnDefs = list(list(
-            className = 'dt-center',
-            targets = c(0)
-          )),
-          autoWidth = TRUE,
-          pageLength = 1,
-          initComplete = JS(
-            "function(settings, json) {",
-            "$(this.api().table().header()).css({'background-color': '#fff', 'color': '#1F497D'});",
-            "}"
-          )
+    }
+    
+    r <- DT::datatable(
+      r1,
+      rownames = FALSE,
+      # extensions = c('FixedColumns', 'Buttons'),
+      options = list(
+        autoWidth = TRUE,
+        # dom = '<"bottom">Bfrtpl',
+        # buttons = I('colvis'),
+        scrollX = FALSE,
+        paging = FALSE,
+        searching = FALSE,
+        ordering = FALSE,
+        bInfo = FALSE,
+        columnDefs = list(list(
+          className = 'dt-center',
+          targets = c(0)
+        )),
+        autoWidth = TRUE,
+        pageLength = 1,
+        initComplete = JS(
+          "function(settings, json) {",
+          "$(this.api().table().header()).css({'background-color': '#fff', 'color': '#1F497D'});",
+          "}"
         )
-      ) %>%
-        
-        formatStyle(
-          c(
-            "全国医院等级"
-          ),
-          `font-size` = '49px',
-          fontWeight = 'bold',
-          color = '#1F497D'
-        )
+      )
+    ) %>%
       
-      return(r)
-    # })
+      formatStyle(
+        c(
+          "全国医院等级"
+        ),
+        `font-size` = '51px',
+        fontWeight = 'bold',
+        color = '#1F497D'
+      )
+    
+    return(r)
   })
   
   ##--- table contents
-  date <- reactive({
-    if (is.null(result2()))
-      return(NULL)
-    
-    result2()$date
-  })
-  
-  bi <- reactive({
+  bi_brand <- reactive({
     if (is.null(result2()))
       return(NULL)
     
@@ -1491,126 +1476,115 @@ server <- function(input, output, session) {
     if (is.null(result2()))
       return(NULL)
     
-    # input$search
+    ot1 <- result2()$table
+    ot1 <- ot1 %>%
+      filter(`Veeva.name` == input$name)
     
-    # isolate({
-      ot1 <- result2()$table
-      ot1 <- as.data.frame(ot1)
-      
-      ot1 <- ot1 %>%
-        filter(`Veeva Name` == input$veeva1) %>%
-        select("产品",
-               "增长率",
-               "市场份额",
-               "月均产出(滚动季度数据)")
-      
-      t1 <- ot1[ot1$产品 %in% bi(), ] %>%
-        arrange(-`月均产出(滚动季度数据)`)
-      
-      t2 <- ot1[!(ot1$产品 %in% bi()), ] %>%
-        arrange(-`月均产出(滚动季度数据)`)
-      
-      t <- bind_rows(t1, t2)
-    # })
+    if (dim(ot1)[1] == 0)
+      return(NULL)
+    
+    ot1_names <- c("Brand_CN", grep(paste0(input$period1, "_", input$value1), names(ot1), value = TRUE))
+    ot1 <- ot1[ot1_names]
+    
+    if (length(ot1) == 3) {
+      ot1["growth"] <- " "
+    }
+    
+    colnames(ot1) <- c("产品", "产出", "市场份额", "增长率")
+    
+    t1 <- ot1[ot1$产品 %in% bi_brand(), ] %>%
+      arrange(-`产出`)
+    
+    t2 <- ot1[!(ot1$产品 %in% bi_brand()), ] %>%
+      arrange(-`产出`)
+    
+    t <- bind_rows(t1, t2)
   })
 
   output$contents_hosp <- renderDataTable({
     
-    # input$search
-    
-    # isolate({
-      if (is.null(ot1()))
-        return(NULL)
-      
+    if (is.null(ot1())) {
+      ot1 <- tibble(`产品` = " ", `产出` = " ", `市场份额` = " ", `增长率` = " ")
+    } else {
       ot1 <- ot1()
-      
-      l <- (dim(ot1)[1] %/% 10 + 1) * 10
-      
-      ot <- as.data.frame(array(dim = c(l, 4)))
-      colnames(ot) <- colnames(ot1)
-      
-      for (i in 1:dim(ot1)[1]) {
-        ot[i, ] <- ot1[i, ]
-      }
-      
-      ot[is.na(ot)] <- " "
-      ot <- ot %>%
-        mutate(序号 = 1:l) %>%
-        dplyr::select(
+    }
+    
+    rows <- (dim(ot1)[1] %/% 12 + 1) * 12
+    ot <- tibble(`产品` = rep(" ", rows), `产出` = rep(" ", rows), `市场份额` = rep(" ", rows), `增长率` = rep(" ", rows))
+    
+    for (i in 1:dim(ot1)[1]) {
+      ot[i, ] <- ot1[i, ]
+    }
+    
+    ot <- ot %>%
+      mutate(序号 = 1:rows) %>%
+      dplyr::select(
+        "序号",
+        "产品",
+        "增长率",
+        "市场份额",
+        "产出"
+      )
+    
+    dat <- DT::datatable(
+      ot,
+      rownames = FALSE,
+      # extensions = c('FixedColumns', 'Buttons'),
+      options = list(
+        autoWidth = TRUE,
+        # dom = '<"bottom">Bfrtpl',
+        # buttons = I('colvis'),
+        # scrollX = FALSE,
+        # scrollY = FALSE,
+        ordering = FALSE,
+        paging = TRUE,
+        bLengthChange = FALSE,
+        searching = FALSE,
+        bInfo = FALSE,
+        columnDefs = list(list(
+          className = 'dt-center',
+          targets = seq(0, 4)
+        )),
+        autoWidth = TRUE,
+        pageLength = 12,
+        initComplete = JS(
+          "function(settings, json) {",
+          "$(this.api().table().header()).css({'background-color': '#fff', 'color': '#1F497D'});",
+          "}"
+        )
+      )
+    ) %>%
+      formatStyle(
+        c(
           "序号",
-          "产品",
+          "产品"
+        ),
+        fontWeight = 'bold',
+        `font-size` = '15px',
+        color = '#000'
+      ) %>%
+      formatStyle(
+        c(
           "增长率",
           "市场份额",
-          "月均产出(滚动季度数据)"
-        )
-      
-      dat <- DT::datatable(
-        ot,
-        rownames = FALSE,
-        # extensions = c('FixedColumns', 'Buttons'),
-        options = list(
-          autoWidth = TRUE,
-          # dom = '<"bottom">Bfrtpl',
-          # buttons = I('colvis'),
-          # scrollX = FALSE,
-          # scrollY = FALSE,
-          ordering = FALSE,
-          paging = TRUE,
-          searching = FALSE,
-          bInfo = FALSE,
-          columnDefs = list(list(
-            className = 'dt-center',
-            targets = seq(0, 4)
-          )),
-          autoWidth = TRUE,
-          initComplete = JS(
-            "function(settings, json) {",
-            "$(this.api().table().header()).css({'background-color': '#fff', 'color': '#1F497D'});",
-            "}"
-          )
-        )
+          "产出"
+        ),
+        fontWeight = 'bold',
+        `font-size` = '15px',
+        color = '#1F497D'
       ) %>%
-        formatStyle(
-          c(
-            "序号",
-            "产品"
-          ),
-          fontWeight = 'bold',
-          `font-size` = '15px',
-          color = '#000'
-        ) %>%
-        formatStyle(
-          c(
-            # "Category",
-            # "Region",
-            # "省份",
-            # "城市",
-            # "医院等级",
-            # "Veeva Code",
-            # "Veeva Name",
-            # "序号",
-            # "产品",
-            "增长率",
-            "市场份额",
-            "月均产出(滚动季度数据)"
-          ),
-          fontWeight = 'bold',
-          `font-size` = '15px',
-          color = '#1F497D'
-        ) %>%
-        formatStyle(c("增长率"),
-                    color = styleInterval(0, c('red', 'green')),
-                    # fontWeight = styleInterval(0, c('bold', 'normal')),
-                    fontWeight = 'bold') %>%
-        formatStyle("序号",
-                    target = "row",
-                    backgroundColor = styleEqual(1:l, rep(c('#DCE6F0', 'white'), l/2))) %>%
-        formatPercentage(c("增长率"), 0) %>%
-        formatPercentage(c("市场份额"), 1) %>%
-        formatRound(c("月均产出(滚动季度数据)"), 0)
-      
-      return(dat)
-    # })
+      formatStyle(c("增长率"),
+                  color = styleInterval(0, c('red', 'green')),
+                  # fontWeight = styleInterval(0, c('bold', 'normal')),
+                  fontWeight = 'bold') %>%
+      formatStyle("序号",
+                  target = "row",
+                  backgroundColor = styleEqual(1:rows, rep(c('#DCE6F0', 'white'), rows/2))) %>%
+      formatPercentage(c("增长率"), 0) %>%
+      formatPercentage(c("市场份额"), 1) %>%
+      formatRound(c("产出"), 0)
+    
+    return(dat)
   })
   
   ##--- plot contents

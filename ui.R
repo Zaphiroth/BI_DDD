@@ -230,8 +230,9 @@ ui <- dashboardPage(
                            selected = "qtr",
                            multiple = FALSE
                          )),
-                  column(8, selectInput("code_name", label = "Veeva Code and Hospital Name", "", multiple = FALSE)),
-                  # column(4, selectInput("name", label = "Hospital Name", "", multiple = FALSE)),
+                  # column(8, selectInput("code_name", label = "Veeva Code and Hospital Name", "", multiple = FALSE)),
+                  column(2, selectInput("code", label = "Veeva Code", "", multiple = FALSE)),
+                  column(4, selectInput("name", label = "Hospital Name", "", multiple = FALSE)),
                   style = "color: #1F497D"
                 ),
                 style = "background: #DDD9C4"
