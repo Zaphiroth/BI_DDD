@@ -1250,10 +1250,10 @@ server <- function(input, output, session) {
   
   ##--- result2
   result2 <- reactive({
-    if (is.null(summary()))
+    if (is.null(summary()) | is.null(input$subcategory1))
       return(NULL)
     
-    ddd_hospital(summary())
+    ddd_hospital(summary(), main(), input$category1, input$subcategory1)
   })
   
   ##--- rank
@@ -1406,11 +1406,12 @@ server <- function(input, output, session) {
         c(
           "品类增长率"
         ),
-        `font-size` = '45px',
+        `font-size` = '50px',
         color = '#1F497D',
+        fontWeight = 'bold'
         # color = styleInterval(0, c('red', 'green')),
-        # fontWeight = styleInterval(0, c('bold', 'normal')),
-        fontWeight = 'bold') %>%
+        # fontWeight = styleInterval(0, c('bold', 'normal'))
+      ) %>%
       formatPercentage(c("品类增长率"), 0)
     
     return(r)
@@ -1456,7 +1457,7 @@ server <- function(input, output, session) {
         c(
           "全国医院等级"
         ),
-        `font-size` = '51px',
+        `font-size` = '60px',
         fontWeight = 'bold',
         color = '#1F497D'
       )
@@ -1651,7 +1652,8 @@ server <- function(input, output, session) {
     pd3 <- pd2 %>%
       melt(id.vars = "Brand_CN", variable.name = "Date", value.name = "Share") %>%
       mutate(Share = Share * 100,
-             Share = round(Share, 2))
+             Share = round(Share, 2)) %>% 
+      distinct()
     
     p <- plot_ly(hoverinfo = "name + x + y")
     
@@ -1663,7 +1665,24 @@ server <- function(input, output, session) {
                   mode = "lines + markers",
                   marker = list(size = 5),
                   name = i)
-      
+    }
+    
+    if (!is.na(d1$Brand_CN[1])) {
+      for (i in brand) {
+        if (i == d1$Brand_CN[1]) {
+          p <- p %>%
+            add_text(x = pd3[pd3$Brand_CN == i, "Date"],
+                     y = pd3[pd3$Brand_CN == i, "Share"],
+                     text = paste0(pd3[pd3$Brand_CN == i, "Share"], "%"),
+                     textfont = list(size = 13),
+                     textposition = "top",
+                     name = i,
+                     showlegend = TRUE)
+        }
+      }
+    }
+    
+    for (i in brand) {
       if (!is.na(d1$Brand_CN[1])) {
         if (i == d1$Brand_CN[1]) {
           p <- p %>%
@@ -1775,7 +1794,8 @@ server <- function(input, output, session) {
     brand <- pd2$Brand_CN
     
     pd3 <- pd2 %>%
-      melt(id.vars = "Brand_CN", variable.name = "Date", value.name = "Sales")
+      melt(id.vars = "Brand_CN", variable.name = "Date", value.name = "Sales") %>% 
+      distinct()
     
     p <- plot_ly(hoverinfo = "name + x + y")
     
@@ -1787,8 +1807,10 @@ server <- function(input, output, session) {
                   mode = "lines + markers",
                   marker = list(size = 5),
                   name = i)
-      
-      if (!is.na(d1$Brand_CN[1])) {
+    }
+    
+    if (!is.na(d1$Brand_CN[1])) {
+      for (i in brand) {
         if (i == d1$Brand_CN[1]) {
           p <- p %>%
             add_text(x = pd3[pd3$Brand_CN == i, "Date"],
@@ -1893,7 +1915,8 @@ server <- function(input, output, session) {
     pd3 <- pd2 %>%
       melt(id.vars = "Brand_CN", variable.name = "Date", value.name = "Growth") %>%
       mutate(Growth = Growth * 100,
-             Growth = round(Growth, 2))
+             Growth = round(Growth, 2)) %>% 
+      distinct()
     
     p <- plot_ly(hoverinfo = "name + x + y")
     
@@ -1905,8 +1928,10 @@ server <- function(input, output, session) {
                   mode = "lines + markers",
                   marker = list(size = 5),
                   name = i)
-      
-      if (!is.na(d1$Brand_CN[1])) {
+    }
+    
+    if (!is.na(d1$Brand_CN[1])) {
+      for (i in brand) {
         if (i == d1$Brand_CN[1]) {
           p <- p %>%
             add_text(x = pd3[pd3$Brand_CN == i, "Date"],

@@ -1,5 +1,5 @@
 
-ddd_hospital <- function(salesdata) {
+ddd_hospital <- function(salesdata, main, category, subcategory) {
   
   fmr <-
     min(c(which(grepl(
@@ -165,9 +165,26 @@ ddd_hospital <- function(salesdata) {
            recent = round(recent)) %>%
     select(-past)
   
-  data7 <- data2[c("Veeva.name", "Decile", "MANU_CN", paste0("qtr_RMB_", date))] %>%
-    filter(MANU_CN == "德国勃林格殷格翰国际公司") %>%
-    select(-MANU_CN)
+  if (main == "Out hospital") {
+    data7 <- data2[c("Brand_CN", "Veeva.name", "Decile", paste0("qtr_RMB_", date))] %>%
+      filter(Brand_CN == "思合华" | Brand_CN == "思力华") %>%
+      select(-Brand_CN)
+    
+  } else if (main == "HTN" & category == "ARB") {
+    data7 <- salesdata[c("Category_CN", "Sub.category", names(data2))] %>% 
+      group_by(Category_CN, Sub.category, Veeva.name, Decile, Brand_CN, MANU_CN) %>%
+      summarise_all(sum) %>%
+      ungroup() %>% 
+      filter(Category_CN == "ARB", Sub.category %in% subcategory) %>%
+      filter(MANU_CN == "德国勃林格殷格翰国际公司") %>%
+      select("Veeva.name", "Decile", paste0("qtr_RMB_", date))
+    
+  } else {
+    data7 <- data2[c("Veeva.name", "Decile", "MANU_CN", paste0("qtr_RMB_", date))] %>%
+      filter(MANU_CN == "德国勃林格殷格翰国际公司") %>%
+      select(-MANU_CN)
+  }
+  
   names(data7) <- c("Veeva.name", "Decile", "recent")
   data7 <- data7 %>%
     group_by(Veeva.name, Decile) %>%
