@@ -1610,7 +1610,7 @@ server <- function(input, output, session) {
     if (is.null(result2()) | is.null(ot1()))
       return(NULL)
     
-    pd_names <- c("Brand_CN", grep("ms", grep(paste0(input$period1, "_", input$value1), names(pd), value = TRUE), value = TRUE))
+    pd_names <- c("Brand_CN", grep("ms", grep(paste0(input$period1, "_", input$value1), names(result2()$plot), value = TRUE), value = TRUE))
     pd <- result2()$plot %>% 
       filter(Veeva.name == input$name) %>%
       select(pd_names)
@@ -1727,7 +1727,7 @@ server <- function(input, output, session) {
     if (is.null(result2()))
       return(NULL)
     
-    pd_names <- c("Brand_CN", grep("mkt|ms|gth", grep(paste0(input$period1, "_", input$value1), names(pd), value = TRUE), invert = TRUE, value = TRUE))
+    pd_names <- c("Brand_CN", grep("mkt|ms|gth", grep(paste0(input$period1, "_", input$value1), names(result2()$plot), value = TRUE), invert = TRUE, value = TRUE))
     pd <- result2()$plot %>% 
       filter(Veeva.name == input$name) %>%
       select(pd_names)
@@ -1842,7 +1842,7 @@ server <- function(input, output, session) {
     if (is.null(result2()) | input$period1 == "mat" | input$period1 == "ytd")
       return(NULL)
     
-    pd_names <- c("Brand_CN", grep("gth", grep(paste0(input$period1, "_", input$value1), names(pd), value = TRUE), value = TRUE))
+    pd_names <- c("Brand_CN", grep("gth", grep(paste0(input$period1, "_", input$value1), names(result2()$plot), value = TRUE), value = TRUE))
     pd <- result2()$plot %>% 
       filter(Veeva.name == input$name) %>%
       select(pd_names)
