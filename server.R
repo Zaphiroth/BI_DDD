@@ -1258,7 +1258,7 @@ server <- function(input, output, session) {
   
   ##--- rank
   rank <- reactive({
-    if (is.null(result2()))
+    if (is.null(result2()) | is.null(input$name))
       return(NULL)
     
     r <- result2()$rank
@@ -1267,6 +1267,8 @@ server <- function(input, output, session) {
     
     if (dim(r)[1] == 0)
       return(NULL)
+    
+    r[is.na(r)] <- "-"
     
     return(r)
   })
@@ -1474,7 +1476,7 @@ server <- function(input, output, session) {
   })
   
   ot1 <- reactive({
-    if (is.null(result2()))
+    if (is.null(result2()) | is.null(input$name))
       return(NULL)
     
     ot1 <- result2()$table
@@ -1493,10 +1495,12 @@ server <- function(input, output, session) {
     
     colnames(ot1) <- c("产品", "产出", "市场份额", "增长率")
     
-    t1 <- ot1[ot1$产品 %in% bi_brand(), ] %>%
+    t1 <- ot1 %>%
+      filter(`产品` %in% bi_brand()) %>% 
       arrange(-`产出`)
     
-    t2 <- ot1[!(ot1$产品 %in% bi_brand()), ] %>%
+    t2 <- ot1 %>%
+      filter(!(`产品` %in% bi_brand())) %>% 
       arrange(-`产出`)
     
     t <- bind_rows(t1, t2) %>% 
@@ -1606,17 +1610,18 @@ server <- function(input, output, session) {
     if (is.null(result2()) | is.null(ot1()))
       return(NULL)
     
+    pd_names <- c("Brand_CN", grep("ms", grep(paste0(input$period1, "_", input$value1), names(pd), value = TRUE), value = TRUE))
     pd <- result2()$plot %>% 
       filter(Veeva.name == input$name) %>%
-      select(-Veeva.name)
+      select(pd_names)
     
     if (dim(pd)[1] == 0)
       return(NULL)
     
-    pd_names <- c("Brand_CN", grep("ms", grep(paste0(input$period1, "_", input$value1), names(pd), value = TRUE), value = TRUE))
     pd_order <- ot1()["产品"]
-    pd1 <- pd[pd_names] %>% 
-      right_join(pd_order, by = c("Brand_CN" = "产品"))
+    pd1 <- pd_order %>% 
+      rename("Brand_CN" = "产品") %>% 
+      left_join(pd, by = c("Brand_CN"))
     
     if (input$period1 == "mat" | input$period1 == "ytd") {
       names(pd1) <- c("Brand_CN", 1, 2)
@@ -1664,34 +1669,15 @@ server <- function(input, output, session) {
                   name = i)
     }
     
-    if (!is.na(d1$Brand_CN[1])) {
-      for (i in brand) {
-        if (i == d1$Brand_CN[1]) {
-          p <- p %>%
-            add_text(x = pd3[pd3$Brand_CN == i, "Date"],
-                     y = pd3[pd3$Brand_CN == i, "Share"],
-                     text = paste0(pd3[pd3$Brand_CN == i, "Share"], "%"),
-                     textfont = list(size = 13),
-                     textposition = "top",
-                     name = i,
-                     showlegend = TRUE)
-        }
-      }
-    }
-    
-    for (i in brand) {
-      if (!is.na(d1$Brand_CN[1])) {
-        if (i == d1$Brand_CN[1]) {
-          p <- p %>%
-            add_text(x = pd3[pd3$Brand_CN == i, "Date"],
-                     y = pd3[pd3$Brand_CN == i, "Share"],
-                     text = paste0(pd3[pd3$Brand_CN == i, "Share"], "%"),
-                     textfont = list(size = 13),
-                     textposition = "top",
-                     name = i,
-                     showlegend = TRUE)
-        }
-      }
+    if (brand[1] %in% bi_brand()) {
+      p <- p %>%
+        add_text(x = pd3[pd3$Brand_CN == brand[1], "Date"],
+                 y = pd3[pd3$Brand_CN == brand[1], "Share"],
+                 text = paste0(pd3[pd3$Brand_CN == brand[1], "Share"], "%"),
+                 textfont = list(size = 13),
+                 textposition = "top",
+                 name = brand[1],
+                 showlegend = TRUE)
     }
     
     p <- p %>%
@@ -1741,17 +1727,18 @@ server <- function(input, output, session) {
     if (is.null(result2()))
       return(NULL)
     
+    pd_names <- c("Brand_CN", grep("mkt|ms|gth", grep(paste0(input$period1, "_", input$value1), names(pd), value = TRUE), invert = TRUE, value = TRUE))
     pd <- result2()$plot %>% 
       filter(Veeva.name == input$name) %>%
-      select(-Veeva.name)
+      select(pd_names)
     
     if (dim(pd)[1] == 0)
       return(NULL)
     
-    pd_names <- c("Brand_CN", grep("mkt|ms|gth", grep(paste0(input$period1, "_", input$value1), names(pd), value = TRUE), invert = TRUE, value = TRUE))
     pd_order <- ot1()["产品"]
-    pd1 <- pd[pd_names] %>% 
-      right_join(pd_order, by = c("Brand_CN" = "产品"))
+    pd1 <- pd_order %>% 
+      rename("Brand_CN" = "产品") %>% 
+      left_join(pd, by = c("Brand_CN"))
     
     if (input$period1 == "mat" | input$period1 == "ytd") {
       names(pd1) <- c("Brand_CN", 1, 2)
@@ -1797,19 +1784,15 @@ server <- function(input, output, session) {
                   name = i)
     }
     
-    if (!is.na(d1$Brand_CN[1])) {
-      for (i in brand) {
-        if (i == d1$Brand_CN[1]) {
-          p <- p %>%
-            add_text(x = pd3[pd3$Brand_CN == i, "Date"],
-                     y = round(pd3[pd3$Brand_CN == i, "Sales"]),
-                     text = round(pd3[pd3$Brand_CN == i, "Sales"], 0),
-                     textfont = list(size = 13),
-                     textposition = "top",
-                     name = i,
-                     showlegend = TRUE)
-        }
-      }
+    if (brand[1] %in% bi_brand()) {
+      p <- p %>%
+        add_text(x = pd3[pd3$Brand_CN == brand[1], "Date"],
+                 y = round(pd3[pd3$Brand_CN == brand[1], "Sales"]),
+                 text = round(pd3[pd3$Brand_CN == brand[1], "Sales"], 0),
+                 textfont = list(size = 13),
+                 textposition = "top",
+                 name = brand[1],
+                 showlegend = TRUE)
     }
     
     p <- p %>%
@@ -1859,17 +1842,18 @@ server <- function(input, output, session) {
     if (is.null(result2()) | input$period1 == "mat" | input$period1 == "ytd")
       return(NULL)
     
+    pd_names <- c("Brand_CN", grep("gth", grep(paste0(input$period1, "_", input$value1), names(pd), value = TRUE), value = TRUE))
     pd <- result2()$plot %>% 
       filter(Veeva.name == input$name) %>%
-      select(-Veeva.name)
+      select(pd_names)
     
     if (dim(pd)[1] == 0)
       return(NULL)
     
-    pd_names <- c("Brand_CN", grep("gth", grep(paste0(input$period1, "_", input$value1), names(pd), value = TRUE), value = TRUE))
     pd_order <- ot1()["产品"]
-    pd1 <- pd[pd_names] %>% 
-      right_join(pd_order, by = c("Brand_CN" = "产品"))
+    pd1 <- pd_order %>% 
+      rename("Brand_CN" = "产品") %>% 
+      left_join(pd, by = c("Brand_CN"))
     
     if (input$period1 == "qtr") {
       names(pd1) <- c("Brand_CN", 1:10)
@@ -1913,19 +1897,15 @@ server <- function(input, output, session) {
                   name = i)
     }
     
-    if (!is.na(d1$Brand_CN[1])) {
-      for (i in brand) {
-        if (i == d1$Brand_CN[1]) {
-          p <- p %>%
-            add_text(x = pd3[pd3$Brand_CN == i, "Date"],
-                     y = pd3[pd3$Brand_CN == i, "Growth"],
-                     text = paste0(pd3[pd3$Brand_CN == i, "Growth"], "%"),
-                     textfont = list(size = 13),
-                     textposition = "top",
-                     name = i,
-                     showlegend = TRUE)
-        }
-      }
+    if (brand[1] %in% bi_brand()) {
+      p <- p %>%
+        add_text(x = pd3[pd3$Brand_CN == brand[1], "Date"],
+                 y = pd3[pd3$Brand_CN == brand[1], "Growth"],
+                 text = paste0(pd3[pd3$Brand_CN == brand[1], "Growth"], "%"),
+                 textfont = list(size = 13),
+                 textposition = "top",
+                 name = brand[1],
+                 showlegend = TRUE)
     }
     
     p <- p %>%
