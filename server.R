@@ -1406,7 +1406,7 @@ server <- function(input, output, session) {
         c(
           "品类增长率"
         ),
-        `font-size` = '50px',
+        `font-size` = '45px',
         color = '#1F497D',
         fontWeight = 'bold'
         # color = styleInterval(0, c('red', 'green')),
@@ -1457,7 +1457,7 @@ server <- function(input, output, session) {
         c(
           "全国医院等级"
         ),
-        `font-size` = '60px',
+        `font-size` = '54px',
         fontWeight = 'bold',
         color = '#1F497D'
       )
@@ -1517,7 +1517,13 @@ server <- function(input, output, session) {
       ot1 <- ot1()
     }
     
-    rows <- (dim(ot1)[1] %/% 18 + 1) * 18
+    if (input$period1 == "mat" | input$period1 == "ytd") {
+      pageLength <- 12
+    } else {
+      pageLength <- 20
+    }
+    
+    rows <- (dim(ot1)[1] %/% pageLength + 1) * pageLength
     ot <- tibble(`产品` = rep(" ", rows), `产出` = rep(" ", rows), `市场份额` = rep(" ", rows), `增长率` = rep(" ", rows))
     
     for (i in 1:dim(ot1)[1]) {
@@ -1554,7 +1560,7 @@ server <- function(input, output, session) {
           targets = seq(0, 4)
         )),
         autoWidth = TRUE,
-        pageLength = 18,
+        pageLength = pageLength,
         initComplete = JS(
           "function(settings, json) {",
           "$(this.api().table().header()).css({'background-color': '#fff', 'color': '#1F497D'});",
@@ -1597,7 +1603,7 @@ server <- function(input, output, session) {
   
   ##--- plot contents
   plot1 <- reactive({
-    if (is.null(result2()))
+    if (is.null(result2()) | is.null(ot1()))
       return(NULL)
     
     pd <- result2()$plot %>% 
@@ -1608,36 +1614,27 @@ server <- function(input, output, session) {
       return(NULL)
     
     pd_names <- c("Brand_CN", grep("ms", grep(paste0(input$period1, "_", input$value1), names(pd), value = TRUE), value = TRUE))
-    pd1 <- pd[pd_names]
+    pd_order <- ot1()["产品"]
+    pd1 <- pd[pd_names] %>% 
+      right_join(pd_order, by = c("Brand_CN" = "产品"))
     
     if (input$period1 == "mat" | input$period1 == "ytd") {
       names(pd1) <- c("Brand_CN", 1, 2)
-      
-      d1 <- pd1[pd1$Brand_CN %in% bi_brand(), ] %>% 
-        arrange(-`2`)
-      d2 <- pd1[!(pd1$Brand_CN %in% bi_brand()), ] %>% 
-        arrange(-`2`)
-      
+
     } else if (input$period1 == "qtr") {
       pd1 <- pd1[c("Brand_CN", tail(names(pd1), 13))]
       names(pd1) <- c("Brand_CN", 1:13)
-      
-      d1 <- pd1[pd1$Brand_CN %in% bi_brand(), ] %>% 
-        arrange(-`13`)
-      d2 <- pd1[!(pd1$Brand_CN %in% bi_brand()), ] %>% 
-        arrange(-`13`)
-      
+
     } else if (input$period1 == "mth") {
       names(pd1) <- c("Brand_CN", 1:24)
-      
-      d1 <- pd1[pd1$Brand_CN %in% bi_brand(), ] %>% 
-        arrange(-`24`)
-      d2 <- pd1[!(pd1$Brand_CN %in% bi_brand()), ] %>% 
-        arrange(-`24`)
     }
     
-    pd2 <- bind_rows(d1, d2)
-    pd2[is.na(pd2)] <- 0
+    pd2 <- pd1 %>% 
+      mutate_all(function(x) {ifelse(is.na(x),
+                                     0,
+                                     ifelse(is.infinite(x),
+                                            1,
+                                            x))})
     
     pd_names1 <- tail(pd_names, length(pd2)-1)
     for (i in 1:(length(pd2)-1)) {
@@ -1752,36 +1749,27 @@ server <- function(input, output, session) {
       return(NULL)
     
     pd_names <- c("Brand_CN", grep("mkt|ms|gth", grep(paste0(input$period1, "_", input$value1), names(pd), value = TRUE), invert = TRUE, value = TRUE))
-    pd1 <- pd[pd_names]
+    pd_order <- ot1()["产品"]
+    pd1 <- pd[pd_names] %>% 
+      right_join(pd_order, by = c("Brand_CN" = "产品"))
     
     if (input$period1 == "mat" | input$period1 == "ytd") {
       names(pd1) <- c("Brand_CN", 1, 2)
-      
-      d1 <- pd1[pd1$Brand_CN %in% bi_brand(), ] %>% 
-        arrange(-`2`)
-      d2 <- pd1[!(pd1$Brand_CN %in% bi_brand()), ] %>% 
-        arrange(-`2`)
       
     } else if (input$period1 == "qtr") {
       pd1 <- pd1[c("Brand_CN", tail(names(pd1), 13))]
       names(pd1) <- c("Brand_CN", 1:13)
       
-      d1 <- pd1[pd1$Brand_CN %in% bi_brand(), ] %>% 
-        arrange(-`13`)
-      d2 <- pd1[!(pd1$Brand_CN %in% bi_brand()), ] %>% 
-        arrange(-`13`)
-      
     } else if (input$period1 == "mth") {
       names(pd1) <- c("Brand_CN", 1:24)
-      
-      d1 <- pd1[pd1$Brand_CN %in% bi_brand(), ] %>% 
-        arrange(-`24`)
-      d2 <- pd1[!(pd1$Brand_CN %in% bi_brand()), ] %>% 
-        arrange(-`24`)
     }
     
-    pd2 <- bind_rows(d1, d2)
-    pd2[is.na(pd2)] <- 0
+    pd2 <- pd1 %>% 
+      mutate_all(function(x) {ifelse(is.na(x),
+                                     0,
+                                     ifelse(is.infinite(x),
+                                            1,
+                                            x))})
     
     pd_names1 <- tail(pd_names, length(pd2)-1)
     for (i in 1:(length(pd2)-1)) {
@@ -1879,28 +1867,23 @@ server <- function(input, output, session) {
       return(NULL)
     
     pd_names <- c("Brand_CN", grep("gth", grep(paste0(input$period1, "_", input$value1), names(pd), value = TRUE), value = TRUE))
-    pd1 <- pd[pd_names]
+    pd_order <- ot1()["产品"]
+    pd1 <- pd[pd_names] %>% 
+      right_join(pd_order, by = c("Brand_CN" = "产品"))
     
     if (input$period1 == "qtr") {
-      # pd1 <- pd1[c("Brand_CN", tail(names(pd1), 10))]
       names(pd1) <- c("Brand_CN", 1:10)
-      
-      d1 <- pd1[pd1$Brand_CN %in% bi_brand(), ] %>% 
-        arrange(-`10`)
-      d2 <- pd1[!(pd1$Brand_CN %in% bi_brand()), ] %>% 
-        arrange(-`10`)
       
     } else if (input$period1 == "mth") {
       names(pd1) <- c("Brand_CN", 1:12)
-      
-      d1 <- pd1[pd1$Brand_CN %in% bi_brand(), ] %>% 
-        arrange(-`12`)
-      d2 <- pd1[!(pd1$Brand_CN %in% bi_brand()), ] %>% 
-        arrange(-`12`)
     }
     
-    pd2 <- bind_rows(d1, d2)
-    pd2[is.na(pd2)] <- 0
+    pd2 <- pd1 %>% 
+      mutate_all(function(x) {ifelse(is.na(x),
+                                     0,
+                                     ifelse(is.infinite(x),
+                                            1,
+                                            x))})
     
     pd_names1 <- tail(pd_names, length(pd2)-1)
     for (i in 1:(length(pd2)-1)) {

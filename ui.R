@@ -159,7 +159,7 @@ ui <- dashboardPage(
                 collapsible = FALSE,
                 width = 12,
                 fluidRow(column(
-                  12, div(DT::dataTableOutput("contents"), style = "font-size:80%")
+                  12, tags$div(DT::dataTableOutput("contents"), style = "font-size:80%")
                 ))
               )
             )
@@ -252,45 +252,56 @@ ui <- dashboardPage(
                 width = 12,
                 column(
                   2,
-                  # box(
-                  #   solidHeader = TRUE,
-                  #   collapsible = FALSE,
-                  #   width = 12,
-                    fluidRow(
-                      column(12, div(DT::dataTableOutput("rank1"), style = "font-size:100%"))
+                  fluidRow(
+                    column(12, tags$div(DT::dataTableOutput("rank1"), style = "font-size:100%")),
+                    # conditionalPanel(
+                    #   condition = "input.period1 == 'mat' | input.period1 == 'ytd'",
+                    #   column(12, tags$div(style="margin-bottom:25px;"))
+                    # ),
+                    conditionalPanel(
+                      condition = "input.period1 == 'qtr' | input.period1 == 'mth'",
+                      column(12, tags$div(style="margin-bottom:100px;"))
                     ),
-                    fluidRow(
-                      column(12, div(DT::dataTableOutput("rank2"), style = "font-size:100%"))
+                    column(12, tags$div(DT::dataTableOutput("rank2"), style = "font-size:100%")),
+                    # conditionalPanel(
+                    #   condition = "input.period1 == 'mat' | input.period1 == 'ytd'",
+                    #   column(12, tags$div(style="margin-bottom:25px;"))
+                    # ),
+                    conditionalPanel(
+                      condition = "input.period1 == 'qtr' | input.period1 == 'mth'",
+                      column(12, tags$div(style="margin-bottom:100px;"))
                     ),
-                    fluidRow(
-                      column(12, div(DT::dataTableOutput("rank3"), style = "font-size:100%"))
+                    column(12, tags$div(DT::dataTableOutput("rank3"), style = "font-size:100%")),
+                    # conditionalPanel(
+                    #   condition = "input.period1 == 'mat' | input.period1 == 'ytd'",
+                    #   column(12, tags$div(style="margin-bottom:25px;"))
+                    # ),
+                    conditionalPanel(
+                      condition = "input.period1 == 'qtr' | input.period1 == 'mth'",
+                      column(12, tags$div(style="margin-bottom:100px;"))
                     ),
-                    fluidRow(
-                      column(12, div(DT::dataTableOutput("rank4"), style = "font-size:100%"))
-                    )
-                  # )
+                    column(12, tags$div(DT::dataTableOutput("rank4"), style = "font-size:100%"))
+                  )
                 ),
                 column(
                   4,
-                  # box(
-                  #   solidHeader = TRUE,
-                  #   collapsible = FALSE,
-                  #   width = 12,
-                    fluidRow(
-                      column(12, div(DT::dataTableOutput("contents_hosp"), style = "font-size:100%"))
-                    )
-                  # )
+                  fluidRow(
+                    column(12, tags$div(DT::dataTableOutput("contents_hosp"), style = "font-size:100%"))
+                  )
                 ),
                 column(
                   6,
                   fluidRow(
-                    column(12, plotlyOutput("plot1", width = "100%", height = "260px"))
+                    column(12, plotlyOutput("plot1", width = "100%", height = "270px"))
                   ),
                   fluidRow(
-                    column(12, plotlyOutput("plot2", width = "100%", height = "260px"))
+                    column(12, plotlyOutput("plot2", width = "100%", height = "270px"))
                   ),
-                  fluidRow(
-                    column(12, plotlyOutput("plot3", width = "100%", height = "260px"))
+                  conditionalPanel(
+                    condition = "input.period1 == 'qtr' | input.period1 == 'mth'",
+                    fluidRow(
+                      column(12, plotlyOutput("plot3", width = "100%", height = "270px"))
+                    )
                   )
                 )
               )
