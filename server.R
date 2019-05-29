@@ -534,7 +534,7 @@ server <- function(input, output, session) {
     
     brand_list <- summary()$Brand_CN[!duplicated(summary()$Brand_CN)]
     brand_list <- brand_list[order(brand_list)]
-    brand_list <- c("ALL", brand_list)
+    # brand_list <- c("ALL", brand_list)
   })
   
   observeEvent(c(input$category, input$subcategory, input$bl, 
@@ -544,7 +544,7 @@ server <- function(input, output, session) {
                       inputId = "brand",
                       label = "Brand",
                       choices = brand(),
-                      selected = "ALL")
+                      selected = brand())
   })
   
   ##--- Top
@@ -1008,7 +1008,7 @@ server <- function(input, output, session) {
   })
   
   ##--- region
-  region <- reactive({
+  region1 <- reactive({
     
     summary <- summary()
     summary <- summary[summary$Category_CN %in% input$category1, ]
@@ -1026,7 +1026,7 @@ server <- function(input, output, session) {
   observeEvent(c(input$category1, input$subcategory1, input$bl1), {
     updateSelectInput(session,
                       "region1",
-                      choices = region(),
+                      choices = region1(),
                       selected = "ALL")
   })
   ##--- province
@@ -1235,7 +1235,7 @@ server <- function(input, output, session) {
                       inputId = "name",
                       label = "Hospital Name",
                       choices = c_n()$`Veeva.name`,
-                      selected = c_n()[c_n()$`Veeva.code` == input$code, "Veeva.name", drop = TRUE])
+                      selected = c_n()[c_n()$`Veeva.code` == input$code, "Veeva.name"])
   })
 
   observeEvent(c(input$category1, input$subcategory1, input$bl1,
@@ -1245,7 +1245,7 @@ server <- function(input, output, session) {
                       inputId = "code",
                       label = "Veeva Code",
                       choices = c_n()$`Veeva.code`,
-                      selected = c_n()[c_n()$`Veeva.name` == input$name, "Veeva.code", drop = TRUE])
+                      selected = c_n()[c_n()$`Veeva.name` == input$name, "Veeva.code"])
   })
   
   ##--- result2
@@ -1486,6 +1486,12 @@ server <- function(input, output, session) {
     if (dim(ot1)[1] == 0)
       return(NULL)
     
+    rank_data <- ot1[c("Brand_CN", grep("ms|gth", grep(paste0(input$period1, "_RMB"), names(ot1), value = TRUE), invert = TRUE, value = TRUE))]
+    names(rank_data) <- c("Brand_CN", "ranking")
+    rank_data <- rank_data %>% 
+      arrange(-`ranking`) %>% 
+      select(`Brand_CN`)
+    
     ot1_names <- c("Brand_CN", grep(paste0(input$period1, "_", input$value1), names(ot1), value = TRUE))
     ot1 <- ot1[ot1_names]
     
@@ -1493,22 +1499,15 @@ server <- function(input, output, session) {
       ot1["growth"] <- " "
     }
     
-    colnames(ot1) <- c("产品", "产出", "市场份额", "增长率")
-    
-    t1 <- ot1 %>%
-      filter(`产品` %in% bi_brand()) %>% 
-      arrange(-`产出`)
-    
-    t2 <- ot1 %>%
-      filter(!(`产品` %in% bi_brand())) %>% 
-      arrange(-`产出`)
-    
-    t <- bind_rows(t1, t2) %>% 
+    t <- rank_data %>% 
+      left_join(ot1, by = c("Brand_CN")) %>% 
       mutate_all(function(x) {ifelse(is.na(x),
                                      0,
                                      ifelse(is.infinite(x),
                                             1,
                                             x))})
+    
+    colnames(t) <- c("产品", "产出", "市场份额", "增长率")
     
     return(t)
   })
@@ -1535,9 +1534,9 @@ server <- function(input, output, session) {
     }
     
     ot <- ot %>%
-      mutate(序号 = 1:rows) %>%
+      mutate(`排名` = 1:rows) %>%
       dplyr::select(
-        "序号",
+        "排名",
         "产品",
         "增长率",
         "市场份额",
@@ -1574,7 +1573,7 @@ server <- function(input, output, session) {
     ) %>%
       formatStyle(
         c(
-          "序号",
+          "排名",
           "产品"
         ),
         fontWeight = 'bold',
@@ -1595,7 +1594,7 @@ server <- function(input, output, session) {
                   color = styleInterval(0, c('red', 'green')),
                   # fontWeight = styleInterval(0, c('bold', 'normal')),
                   fontWeight = 'bold') %>%
-      formatStyle("序号",
+      formatStyle("排名",
                   target = "row",
                   backgroundColor = styleEqual(1:rows, rep(c('#DCE6F0', 'white'), rows/2))) %>%
       formatPercentage(c("增长率"), 0) %>%
@@ -1605,9 +1604,22 @@ server <- function(input, output, session) {
     return(dat)
   })
   
+  ##--- brand
+  brand1 <- reactive({
+    ot1()$`产品`
+  })
+  
+  observeEvent(ot1(), {
+    updateSelectInput(session,
+                      inputId = "brand1",
+                      label = "Brand",
+                      choices = brand1(),
+                      selected = brand1())
+  })
+  
   ##--- plot contents
   plot1 <- reactive({
-    if (is.null(result2()) | is.null(ot1()))
+    if (is.null(result2()) | is.null(ot1()) | is.null(input$brand1))
       return(NULL)
     
     pd_names <- c("Brand_CN", grep("ms", grep(paste0(input$period1, "_", input$value1), names(result2()$plot), value = TRUE), value = TRUE))
@@ -1649,7 +1661,7 @@ server <- function(input, output, session) {
       names(pd2)[i+1] <- substring(gsub("[.]", "", x), y[1]+z)
     }
     
-    brand <- pd2$Brand_CN
+    brand <- input$brand1
     
     pd3 <- pd2 %>%
       melt(id.vars = "Brand_CN", variable.name = "Date", value.name = "Share") %>%
@@ -1669,14 +1681,15 @@ server <- function(input, output, session) {
                   name = i)
     }
     
-    if (brand[1] %in% bi_brand()) {
+    if (!is.na(brand[brand %in% bi_brand()][1])) {
+      b <- brand[brand %in% bi_brand()][1]
       p <- p %>%
-        add_text(x = pd3[pd3$Brand_CN == brand[1], "Date"],
-                 y = pd3[pd3$Brand_CN == brand[1], "Share"],
-                 text = paste0(pd3[pd3$Brand_CN == brand[1], "Share"], "%"),
+        add_text(x = pd3[pd3$Brand_CN == b, "Date"],
+                 y = pd3[pd3$Brand_CN == b, "Share"],
+                 text = paste0(pd3[pd3$Brand_CN == b, "Share"], "%"),
                  textfont = list(size = 13),
                  textposition = "top",
-                 name = brand[1],
+                 name = b,
                  showlegend = TRUE)
     }
     
@@ -1724,7 +1737,7 @@ server <- function(input, output, session) {
   })
   
   plot2 <- reactive({
-    if (is.null(result2()))
+    if (is.null(result2()) | is.null(ot1()) | is.null(input$brand1))
       return(NULL)
     
     pd_names <- c("Brand_CN", grep("mkt|ms|gth", grep(paste0(input$period1, "_", input$value1), names(result2()$plot), value = TRUE), invert = TRUE, value = TRUE))
@@ -1766,7 +1779,7 @@ server <- function(input, output, session) {
       names(pd2)[i+1] <- substring(gsub("[.]", "", x), y[1]+z)
     }
     
-    brand <- pd2$Brand_CN
+    brand <- input$brand1
     
     pd3 <- pd2 %>%
       melt(id.vars = "Brand_CN", variable.name = "Date", value.name = "Sales") %>% 
@@ -1784,14 +1797,15 @@ server <- function(input, output, session) {
                   name = i)
     }
     
-    if (brand[1] %in% bi_brand()) {
+    if (!is.na(brand[brand %in% bi_brand()][1])) {
+      b <- brand[brand %in% bi_brand()][1]
       p <- p %>%
-        add_text(x = pd3[pd3$Brand_CN == brand[1], "Date"],
-                 y = round(pd3[pd3$Brand_CN == brand[1], "Sales"]),
-                 text = round(pd3[pd3$Brand_CN == brand[1], "Sales"], 0),
+        add_text(x = pd3[pd3$Brand_CN == b, "Date"],
+                 y = round(pd3[pd3$Brand_CN == b, "Sales"]),
+                 text = round(pd3[pd3$Brand_CN == b, "Sales"], 0),
                  textfont = list(size = 13),
                  textposition = "top",
-                 name = brand[1],
+                 name = b,
                  showlegend = TRUE)
     }
     
@@ -1839,7 +1853,8 @@ server <- function(input, output, session) {
   )
   
   plot3 <- reactive({
-    if (is.null(result2()) | input$period1 == "mat" | input$period1 == "ytd")
+    if (is.null(result2()) | is.null(ot1()) | is.null(input$brand1) |
+        input$period1 == "mat" | input$period1 == "ytd")
       return(NULL)
     
     pd_names <- c("Brand_CN", grep("gth", grep(paste0(input$period1, "_", input$value1), names(result2()$plot), value = TRUE), value = TRUE))
@@ -1877,7 +1892,7 @@ server <- function(input, output, session) {
       names(pd2)[i+1] <- substring(gsub("[.]", "", x), y[1]+z)
     }
     
-    brand <- pd2$Brand_CN
+    brand <- input$brand1
     
     pd3 <- pd2 %>%
       melt(id.vars = "Brand_CN", variable.name = "Date", value.name = "Growth") %>%
@@ -1897,14 +1912,15 @@ server <- function(input, output, session) {
                   name = i)
     }
     
-    if (brand[1] %in% bi_brand()) {
+    if (!is.na(brand[brand %in% bi_brand()][1])) {
+      b <- brand[brand %in% bi_brand()][1]
       p <- p %>%
-        add_text(x = pd3[pd3$Brand_CN == brand[1], "Date"],
-                 y = pd3[pd3$Brand_CN == brand[1], "Growth"],
-                 text = paste0(pd3[pd3$Brand_CN == brand[1], "Growth"], "%"),
+        add_text(x = pd3[pd3$Brand_CN == b, "Date"],
+                 y = pd3[pd3$Brand_CN == b, "Growth"],
+                 text = paste0(pd3[pd3$Brand_CN == b, "Growth"], "%"),
                  textfont = list(size = 13),
                  textposition = "top",
-                 name = brand[1],
+                 name = b,
                  showlegend = TRUE)
     }
     

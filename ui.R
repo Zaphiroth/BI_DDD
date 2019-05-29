@@ -233,6 +233,7 @@ ui <- dashboardPage(
                   # column(8, selectInput("code_name", label = "Veeva Code and Hospital Name", "", multiple = FALSE)),
                   column(2, selectInput("code", label = "Veeva Code", "", multiple = FALSE)),
                   column(4, selectInput("name", label = "Hospital Name", "", multiple = FALSE)),
+                  column(12, selectInput("brand1", label = "Brand", "", multiple = TRUE)),
                   style = "color: #1F497D"
                 ),
                 style = "background: #DDD9C4"
@@ -254,28 +255,15 @@ ui <- dashboardPage(
                   2,
                   fluidRow(
                     column(12, tags$div(DT::dataTableOutput("rank1"), style = "font-size:100%")),
-                    # conditionalPanel(
-                    #   condition = "input.period1 == 'mat' | input.period1 == 'ytd'",
-                    #   column(12, tags$div(style="margin-bottom:25px;"))
-                    # ),
                     conditionalPanel(
                       condition = "input.period1 == 'qtr' | input.period1 == 'mth'",
                       column(12, tags$div(style="margin-bottom:100px;"))
                     ),
-                    column(12, tags$div(DT::dataTableOutput("rank2"), style = "font-size:100%")),
-                    # conditionalPanel(
-                    #   condition = "input.period1 == 'mat' | input.period1 == 'ytd'",
-                    #   column(12, tags$div(style="margin-bottom:25px;"))
-                    # ),
-                    conditionalPanel(
+                    column(12, tags$div(DT::dataTableOutput("rank2"), style = "font-size:100%")),                    conditionalPanel(
                       condition = "input.period1 == 'qtr' | input.period1 == 'mth'",
                       column(12, tags$div(style="margin-bottom:100px;"))
                     ),
                     column(12, tags$div(DT::dataTableOutput("rank3"), style = "font-size:100%")),
-                    # conditionalPanel(
-                    #   condition = "input.period1 == 'mat' | input.period1 == 'ytd'",
-                    #   column(12, tags$div(style="margin-bottom:25px;"))
-                    # ),
                     conditionalPanel(
                       condition = "input.period1 == 'qtr' | input.period1 == 'mth'",
                       column(12, tags$div(style="margin-bottom:100px;"))
