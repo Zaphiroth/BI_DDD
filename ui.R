@@ -25,6 +25,12 @@ ui <- dashboardPage(
     )),
     fluidRow(tags$div(
       tags$div(column(12, actionButton("goButton", "Go!", width = "200px")),
+               column(12, selectInput("category", label = "Category", "", multiple = TRUE, width = "230px")),
+               column(12, selectInput("subcategory", label = "Subcategory",  "", multiple = TRUE, width = "230px")),
+               conditionalPanel(
+                 condition = "output.main2 == 2",
+                 column(12, selectInput("bl", label = "BI/Lilly", choices = c("BI", "Lilly"), multiple = TRUE, width = "230px"))
+               ),
                style = "display:inline-block;margin-down: 1px;vertical-align:middle"),
       tags$style(".skin-blue .sidebar a { color: #444; }")
       # tags$div(column(
@@ -54,7 +60,7 @@ ui <- dashboardPage(
     br(),
     tabsetPanel(
       tabPanel(
-        strong("Hospitals"), value = 1,
+        strong("Hospital Summary"), value = 1,
         fluidRow(
           box(
             title = "DDD Hospital Performance",
@@ -68,12 +74,12 @@ ui <- dashboardPage(
                 collapsible = FALSE,
                 width = 12,
                 tags$div(
-                  column(4, selectInput("category", label = "Category", "", multiple = TRUE)),
-                  column(8, selectInput("subcategory", label = "Subcategory",  "", multiple = TRUE)),
-                  conditionalPanel(
-                    condition = "output.main2 == 2",
-                    column(2, selectInput("bl", label = "BI/Lilly", choices = c("BI", "Lilly"), multiple = TRUE))
-                  ),
+                  # column(4, selectInput("category", label = "Category", "", multiple = TRUE)),
+                  # column(8, selectInput("subcategory", label = "Subcategory",  "", multiple = TRUE)),
+                  # conditionalPanel(
+                  #   condition = "output.main2 == 2",
+                  #   column(2, selectInput("bl", label = "BI/Lilly", choices = c("BI", "Lilly"), multiple = TRUE))
+                  # ),
                   conditionalPanel(
                     condition = "output.main1 == 1",
                     column(2, selectInput("region", label = "Region", choices = "", multiple = TRUE))
@@ -135,7 +141,7 @@ ui <- dashboardPage(
                            multiple = FALSE
                          )),
                   column(8,
-                         "排名原则：排名基于“Measurement”的“Value In RMB”固定不变，表格数值根据“Measurement”选项变化。",
+                         "排名原则：医院排名/产品贡献排名基于Value固定不变，不随所选Measurment更改。",
                          style = "color: #1F497D; padding: 30px;"),
                   style = "color: #1F497D"
                 ),
@@ -167,7 +173,7 @@ ui <- dashboardPage(
         )
       ),
       tabPanel(
-        strong("Hospital"), value = 1,
+        strong("Detailed Hospital Analysis"), value = 1,
         fluidRow(
           box(
             title = "DDD Hospital Performance",
@@ -233,7 +239,7 @@ ui <- dashboardPage(
                   # column(8, selectInput("code_name", label = "Veeva Code and Hospital Name", "", multiple = FALSE)),
                   column(2, selectInput("code", label = "Veeva Code", "", multiple = FALSE)),
                   column(4, selectInput("name", label = "Hospital Name", "", multiple = FALSE)),
-                  column(12, selectInput("brand1", label = "Brand", "", multiple = TRUE)),
+                  # column(12, selectInput("brand1", label = "Brand", "", multiple = TRUE)),
                   style = "color: #1F497D"
                 ),
                 style = "background: #DDD9C4"

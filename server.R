@@ -67,14 +67,14 @@ server <- function(input, output, session) {
   
   ##--- Category and Sub Category
   categorytype <- reactive({
-    summary()$Category_CN[!duplicated(summary()$Category_CN)]
+    summary()$Category[!duplicated(summary()$Category)]
   })
   
   subcategorytype <- reactive({
     # if (is.null(input$category))
     #   return(NULL)
     subname <-
-      summary()$Sub.category[which(summary()$Category_CN %in% input$category)]
+      summary()$Sub.category[which(summary()$Category %in% input$category)]
     subname[!duplicated(subname)]
   })
   
@@ -153,7 +153,7 @@ server <- function(input, output, session) {
     # summary <- summary()[summary()$Decile %in% input$decile,]
     
     summary <- summary()
-    summary <- summary[summary$Category_CN %in% input$category, ]
+    summary <- summary[summary$Category %in% input$category, ]
     summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
     if (main() == "Diabetes") {
@@ -181,7 +181,7 @@ server <- function(input, output, session) {
     # }
     
     summary <- summary()
-    summary <- summary[summary$Category_CN %in% input$category, ]
+    summary <- summary[summary$Category %in% input$category, ]
     summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
     if (main() == "Diabetes") {
@@ -235,7 +235,7 @@ server <- function(input, output, session) {
     # }
     
     summary <- summary()
-    summary <- summary[summary$Category_CN %in% input$category, ]
+    summary <- summary[summary$Category %in% input$category, ]
     summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
     if (main() == "Diabetes") {
@@ -276,7 +276,7 @@ server <- function(input, output, session) {
     # }
     
     summary <- summary()
-    summary <- summary[summary$Category_CN %in% input$category, ]
+    summary <- summary[summary$Category %in% input$category, ]
     summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
     if (main() == "Diabetes") {
@@ -354,7 +354,7 @@ server <- function(input, output, session) {
     # summary1 <- summary[summary$Region %in% "Beijing", ]
     
     summary <- summary()
-    summary <- summary[summary$Category_CN %in% input$category, ]
+    summary <- summary[summary$Category %in% input$category, ]
     summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
     # if ("ALL" %in% input$region) {
@@ -491,7 +491,7 @@ server <- function(input, output, session) {
   ##--- Brand
   brand <- reactive({
     summary <- summary()
-    summary <- summary[summary$Category_CN %in% input$category, ]
+    summary <- summary[summary$Category %in% input$category, ]
     summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
     # if ("ALL" %in% input$region) {
@@ -627,7 +627,7 @@ server <- function(input, output, session) {
     # }
     
     summary <- summary()
-    summary <- summary[summary$Category_CN %in% input$category, ]
+    summary <- summary[summary$Category %in% input$category, ]
     summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
 
@@ -713,7 +713,7 @@ server <- function(input, output, session) {
       )
     )
     rank_info <- distinct(rank_info)
-    rank_info_m <- rank_info[, c("医院排名", "BI产品贡献排名", "Veeva Code", "Veeva Name")]
+    rank_info_m <- rank_info[, c("医院排名", "产品贡献排名", "Veeva Code", "Veeva Name")]
     
     if ("RMB"  %in% input$value) {
       summary <- summary()
@@ -784,11 +784,11 @@ server <- function(input, output, session) {
         )
       )
       unit <- distinct(unit) %>% 
-        dplyr::select(-`医院排名`, -`BI产品贡献排名`) %>% 
+        dplyr::select(-`医院排名`, -`产品贡献排名`) %>% 
         left_join(rank_info_m, by = c("Veeva Code", "Veeva Name")) %>% 
-        dplyr::select("医院排名", "BI产品贡献排名", "Region", "省份", "城市", "Veeva Code", 
-                      "Veeva Name", "医院等级", "医院增长率", "医院贡献率", "BI产品增长率", 
-                      "BI产品贡献率", "BI产品市场份额", "增长指数", "贡献指数")
+        dplyr::select("医院排名", "产品贡献排名", "Region", "省份", "城市", "Veeva Code", 
+                      "Veeva Name", "医院等级", "医院增长率", "医院贡献率", "产品增长率", 
+                      "产品贡献率", "产品市场份额", "增长指数", "贡献指数")
       
     } else{
       unit <- NULL
@@ -825,11 +825,11 @@ server <- function(input, output, session) {
         )
       )
       dot <- distinct(dot) %>% 
-        dplyr::select(-`医院排名`, -`BI产品贡献排名`) %>% 
+        dplyr::select(-`医院排名`, -`产品贡献排名`) %>% 
         left_join(rank_info_m, by = c("Veeva Code", "Veeva Name")) %>% 
-        dplyr::select("医院排名", "BI产品贡献排名", "Region", "省份", "城市", "Veeva Code", 
-                      "Veeva Name", "医院等级", "医院增长率", "医院贡献率", "BI产品增长率", 
-                      "BI产品贡献率", "BI产品市场份额", "增长指数", "贡献指数")
+        dplyr::select("医院排名", "产品贡献排名", "Region", "省份", "城市", "Veeva Code", 
+                      "Veeva Name", "医院等级", "医院增长率", "医院贡献率", "产品增长率", 
+                      "产品贡献率", "产品市场份额", "增长指数", "贡献指数")
     } else{
       dot <- NULL
     }
@@ -897,7 +897,7 @@ server <- function(input, output, session) {
         formatStyle(
           c(
             "医院排名",
-            "BI产品贡献排名",
+            "产品贡献排名",
             "Region",
             "省份",
             "城市",
@@ -906,9 +906,9 @@ server <- function(input, output, session) {
             "医院等级",
             "医院增长率",
             "医院贡献率",
-            "BI产品增长率",
-            "BI产品贡献率",
-            "BI产品市场份额",
+            "产品增长率",
+            "产品贡献率",
+            "产品市场份额",
             "增长指数",
             "贡献指数"
           ),
@@ -917,11 +917,11 @@ server <- function(input, output, session) {
         formatStyle(c("增长指数", "贡献指数"),
                     color = styleInterval(100, c('red', 'green')),
                     fontWeight = styleInterval(100, c('bold', 'normal'))) %>%
-        formatStyle(c("医院增长率", "BI产品增长率"),
+        formatStyle(c("医院增长率", "产品增长率"),
                     color = styleInterval(0, c('red', 'green')),
                     fontWeight = styleInterval(0, c('bold', 'normal'))) %>%
-        formatPercentage(c("医院增长率", "医院贡献率", "BI产品增长率",
-                           "BI产品贡献率", "BI产品市场份额"), 2) %>%
+        formatPercentage(c("医院增长率", "医院贡献率", "产品增长率",
+                           "产品贡献率", "产品市场份额"), 2) %>%
         formatRound(c("增长指数", "贡献指数"), 0)
       return(dat)
     })
@@ -931,7 +931,7 @@ server <- function(input, output, session) {
   ##-- hospital
   ##--- category
   categorytype1 <- reactive({
-    summary()$Category_CN[!duplicated(summary()$Category_CN)]
+    summary()$Category[!duplicated(summary()$Category)]
   })
   
   observeEvent(input$summary, {
@@ -958,7 +958,7 @@ server <- function(input, output, session) {
   subcategorytype1 <- reactive({
     # if (is.null(input$category1))
     #   return(NULL)
-    subname <- summary()$Sub.category[which(summary()$Category_CN %in% input$category1)]
+    subname <- summary()$Sub.category[which(summary()$Category %in% input$category1)]
     subname[!duplicated(subname)]
   })
   
@@ -1011,7 +1011,7 @@ server <- function(input, output, session) {
   region1 <- reactive({
     
     summary <- summary()
-    summary <- summary[summary$Category_CN %in% input$category1, ]
+    summary <- summary[summary$Category %in% input$category1, ]
     summary <- summary[summary$Sub.category %in% input$subcategory1, ]
     
     if (main() == "Diabetes") {
@@ -1033,7 +1033,7 @@ server <- function(input, output, session) {
   province1 <- reactive({
     
     summary <- summary()
-    summary <- summary[summary$Category_CN %in% input$category1, ]
+    summary <- summary[summary$Category %in% input$category1, ]
     summary <- summary[summary$Sub.category %in% input$subcategory1, ]
     
     if (main() == "Diabetes") {
@@ -1062,7 +1062,7 @@ server <- function(input, output, session) {
   city1 <- reactive({
     
     summary <- summary()
-    summary <- summary[summary$Category_CN %in% input$category1, ]
+    summary <- summary[summary$Category %in% input$category1, ]
     summary <- summary[summary$Sub.category %in% input$subcategory1, ]
     
     if (main() == "Diabetes") {
@@ -1097,7 +1097,7 @@ server <- function(input, output, session) {
   decile1 <- reactive({
     
     summary <- summary()
-    summary <- summary[summary$Category_CN %in% input$category1, ]
+    summary <- summary[summary$Category %in% input$category1, ]
     summary <- summary[summary$Sub.category %in% input$subcategory1, ]
     
     if (main() == "Diabetes") {
@@ -1139,7 +1139,7 @@ server <- function(input, output, session) {
   note1 <- reactive({
     
     summary <- summary()
-    summary <- summary[summary$Category_CN %in% input$category1, ]
+    summary <- summary[summary$Category %in% input$category1, ]
     summary <- summary[summary$Sub.category %in% input$subcategory1, ]
     
     if (main() == "Diabetes") {
@@ -1189,7 +1189,7 @@ server <- function(input, output, session) {
   c_n <- reactive({
     
     summary <- summary()
-    summary <- summary[summary$Category_CN %in% input$category1, ]
+    summary <- summary[summary$Category %in% input$category1, ]
     summary <- summary[summary$Sub.category %in% input$subcategory1, ]
     
     if (main() == "Diabetes") {
@@ -1495,9 +1495,9 @@ server <- function(input, output, session) {
     ot1_names <- c("Brand_CN", grep(paste0(input$period1, "_", input$value1), names(ot1), value = TRUE))
     ot1 <- ot1[ot1_names]
     
-    if (length(ot1) == 3) {
-      ot1["growth"] <- " "
-    }
+    # if (length(ot1) == 3) {
+    #   ot1["growth"] <- " "
+    # }
     
     t <- rank_data %>% 
       left_join(ot1, by = c("Brand_CN")) %>% 
@@ -1597,29 +1597,31 @@ server <- function(input, output, session) {
       formatStyle("排名",
                   target = "row",
                   backgroundColor = styleEqual(1:rows, rep(c('#DCE6F0', 'white'), rows/2))) %>%
-      formatPercentage(c("增长率"), 0) %>%
-      formatPercentage(c("市场份额"), 1) %>%
+      formatPercentage(c("增长率"), 2) %>%
+      formatPercentage(c("市场份额"), 2) %>%
       formatRound(c("产出"), 0)
     
     return(dat)
   })
   
   ##--- brand
-  brand1 <- reactive({
-    ot1()$`产品`
-  })
-  
-  observeEvent(ot1(), {
-    updateSelectInput(session,
-                      inputId = "brand1",
-                      label = "Brand",
-                      choices = brand1(),
-                      selected = brand1())
-  })
+  # brand1 <- reactive({
+  #   ot1()$`产品`
+  # })
+  # 
+  # observeEvent(ot1(), {
+  #   updateSelectInput(session,
+  #                     inputId = "brand1",
+  #                     label = "Brand",
+  #                     choices = brand1(),
+  #                     selected = brand1())
+  # })
   
   ##--- plot contents
   plot1 <- reactive({
-    if (is.null(result2()) | is.null(ot1()) | is.null(input$brand1))
+    if (is.null(result2()) | is.null(ot1())
+        # | is.null(input$brand1)
+        )
       return(NULL)
     
     pd_names <- c("Brand_CN", grep("ms", grep(paste0(input$period1, "_", input$value1), names(result2()$plot), value = TRUE), value = TRUE))
@@ -1661,7 +1663,8 @@ server <- function(input, output, session) {
       names(pd2)[i+1] <- substring(gsub("[.]", "", x), y[1]+z)
     }
     
-    brand <- input$brand1
+    # brand <- input$brand1
+    brand <- unique(pd2$Brand_CN)
     
     pd3 <- pd2 %>%
       melt(id.vars = "Brand_CN", variable.name = "Date", value.name = "Share") %>%
@@ -1737,7 +1740,9 @@ server <- function(input, output, session) {
   })
   
   plot2 <- reactive({
-    if (is.null(result2()) | is.null(ot1()) | is.null(input$brand1))
+    if (is.null(result2()) | is.null(ot1())
+        # | is.null(input$brand1)
+        )
       return(NULL)
     
     pd_names <- c("Brand_CN", grep("mkt|ms|gth", grep(paste0(input$period1, "_", input$value1), names(result2()$plot), value = TRUE), invert = TRUE, value = TRUE))
@@ -1779,7 +1784,8 @@ server <- function(input, output, session) {
       names(pd2)[i+1] <- substring(gsub("[.]", "", x), y[1]+z)
     }
     
-    brand <- input$brand1
+    # brand <- input$brand1
+    brand <- unique(pd2$Brand_CN)
     
     pd3 <- pd2 %>%
       melt(id.vars = "Brand_CN", variable.name = "Date", value.name = "Sales") %>% 
@@ -1853,7 +1859,8 @@ server <- function(input, output, session) {
   )
   
   plot3 <- reactive({
-    if (is.null(result2()) | is.null(ot1()) | is.null(input$brand1) |
+    if (is.null(result2()) | is.null(ot1()) |
+        # is.null(input$brand1) |
         input$period1 == "mat" | input$period1 == "ytd")
       return(NULL)
     
@@ -1892,7 +1899,8 @@ server <- function(input, output, session) {
       names(pd2)[i+1] <- substring(gsub("[.]", "", x), y[1]+z)
     }
     
-    brand <- input$brand1
+    # brand <- input$brand1
+    brand <- pd2$Brand_CN
     
     pd3 <- pd2 %>%
       melt(id.vars = "Brand_CN", variable.name = "Date", value.name = "Growth") %>%

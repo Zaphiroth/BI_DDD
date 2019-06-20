@@ -20,7 +20,7 @@ ddd_summary <-
            window) {
     
     # salesdata = read.csv("D:/WORK/BI/test_data/ddd_Out hospital_csv_format.csv", stringsAsFactors = FALSE)
-    # cate = "院外治疗"
+    # cate = "Out hospital"
     # subcate = c("LABA",
     #             "LAMA",
     #             "Others")
@@ -113,7 +113,7 @@ ddd_summary <-
     # value = "RMB"
     # period = "mat"
     # brand = c("思合华", "平适")
-    # # kpi = c("abs", "gr")
+    # kpi = c("abs", "gr")
     # window = 1
     
     
@@ -122,7 +122,7 @@ ddd_summary <-
     oriwindow <- window
     window <- min(5, window + 1)
     
-    salesdata1 <- salesdata[which(salesdata$Category_CN  %in% cate), ]
+    salesdata1 <- salesdata[which(salesdata$Category  %in% cate), ]
     salesdata2 <-
       salesdata1[which(salesdata1$Sub.category  %in% subcate), ]
     
@@ -264,7 +264,7 @@ ddd_summary <-
       arrange(desc(bi_sh)) %>%
       mutate(bi_rank = row_number()) %>%
       dplyr::select("医院排名" = "hosp_rank", 
-                    "BI产品贡献排名" = "bi_rank",
+                    "产品贡献排名" = "bi_rank",
                     "Region", 
                     "省份" = "Province_CN", 
                     "城市" = "City_CN", 
@@ -273,9 +273,9 @@ ddd_summary <-
                     "医院等级" = "Decile",
                     "医院增长率" = "total_gr", 
                     "医院贡献率" = "total_sh", 
-                    "BI产品增长率" = "bi_gr",
-                    "BI产品贡献率" = "bi_sh",
-                    "BI产品市场份额" = "bi_ms",
+                    "产品增长率" = "bi_gr",
+                    "产品贡献率" = "bi_sh",
+                    "产品市场份额" = "bi_ms",
                     "增长指数" = "gr_idx",
                     "贡献指数" = "cont_idx") %>%
       arrange(医院排名)

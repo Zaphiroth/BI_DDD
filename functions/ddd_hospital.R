@@ -103,14 +103,32 @@ ddd_hospital <- function(salesdata, main, category, subcategory) {
   #   data4[date[i]] <- round(x, 3)
   # }
   
-  growth_names <- c(tail(grep("qtr_RMB", names(salesdata), value = TRUE), 10),
+  growth_names <- c(tail(grep("mat_RMB", names(salesdata), value = TRUE), 1),
+                    tail(grep("ytd_RMB", names(salesdata), value = TRUE), 1),
+                    tail(grep("qtr_RMB", names(salesdata), value = TRUE), 10),
                     tail(grep("mth_RMB", names(salesdata), value = TRUE), 12),
+                    tail(grep("mat_UNIT", names(salesdata), value = TRUE), 1),
+                    tail(grep("ytd_UNIT", names(salesdata), value = TRUE), 1),
                     tail(grep("qtr_UNIT", names(salesdata), value = TRUE), 10),
                     tail(grep("mth_UNIT", names(salesdata), value = TRUE), 12),
+                    tail(grep("mat_DOT", names(salesdata), value = TRUE), 1),
+                    tail(grep("ytd_DOT", names(salesdata), value = TRUE), 1),
                     tail(grep("qtr_DOT", names(salesdata), value = TRUE), 10),
                     tail(grep("mth_DOT", names(salesdata), value = TRUE), 12))
   
-  for (i in growth_names) {
+  for (i in grep("mat_", growth_names, value = TRUE)) {
+    data4[paste0("gth_", i)] <- data4[i] / data4[which(names(data4) == i) - 1] - 1
+  }
+  
+  for (i in grep("ytd_", growth_names, value = TRUE)) {
+    data4[paste0("gth_", i)] <- data4[i] / data4[which(names(data4) == i) - 1] - 1
+  }
+  
+  for (i in grep("qtr_", growth_names, value = TRUE)) {
+    data4[paste0("gth_", i)] <- data4[i] / data4[which(names(data4) == i) - 12] - 1
+  }
+  
+  for (i in grep("mth_", growth_names, value = TRUE)) {
     data4[paste0("gth_", i)] <- data4[i] / data4[which(names(data4) == i) - 12] - 1
   }
   
