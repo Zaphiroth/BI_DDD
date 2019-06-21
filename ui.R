@@ -24,7 +24,8 @@ ui <- dashboardPage(
       12, fileInput('summary', 'Upload DDD Data')
     )),
     fluidRow(tags$div(
-      tags$div(column(12, actionButton("goButton", "Go!", width = "200px")),
+      tags$div(
+        # column(12, actionButton("goButton", "Go!", width = "200px")),
                column(12, selectInput("category", label = "Category", "", multiple = TRUE, width = "230px")),
                column(12, selectInput("subcategory", label = "Subcategory",  "", multiple = TRUE, width = "230px")),
                conditionalPanel(
@@ -187,8 +188,6 @@ ui <- dashboardPage(
                 collapsible = FALSE,
                 width = 12,
                 tags$div(
-                  column(2, selectInput("category1", label = "Category", "", multiple = TRUE)),
-                  column(10, selectInput("subcategory1", label = "Subcategory",  "", multiple = TRUE)),
                   conditionalPanel(
                     condition = "output.main2 == 2",
                     column(2, selectInput("bl1", label = "BI/Lilly", choices = c("BI", "Lilly"), multiple = TRUE))
@@ -236,7 +235,6 @@ ui <- dashboardPage(
                            selected = "qtr",
                            multiple = FALSE
                          )),
-                  # column(8, selectInput("code_name", label = "Veeva Code and Hospital Name", "", multiple = FALSE)),
                   column(2, selectInput("code", label = "Veeva Code", "", multiple = FALSE)),
                   column(4, selectInput("name", label = "Hospital Name", "", multiple = FALSE)),
                   # column(12, selectInput("brand1", label = "Brand", "", multiple = TRUE)),
@@ -244,13 +242,6 @@ ui <- dashboardPage(
                 ),
                 style = "background: #DDD9C4"
               )
-              # box(
-              #   solidHeader = TRUE,
-              #   collapsible = FALSE,
-              #   width = 2,
-              #   br(),
-              #   column(2, actionButton("search", "Search", width = "200px"))
-              # )
             ),
             fluidRow(
               box(

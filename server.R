@@ -637,6 +637,9 @@ server <- function(input, output, session) {
     #   summary <- summary[summary$Region %in% input$region, ]
     # }
     
+    if (is.null(input$brand))
+      return(NULL)
+    
     if (main() == "Diabetes") {
       summary <- summary[summary$Note %in% input$bl, ]
     }
@@ -838,16 +841,75 @@ server <- function(input, output, session) {
   
   
   ot <- reactive({
-    if (input$goButton == 0)
+    # if (input$goButton == 0)
+    #   return(NULL)
+    
+    # input$goButton
+    
+    # isolate({
+    if (is.null(result1()))
       return(NULL)
     
-    input$goButton
+    ot <- result1() %>%
+      ungroup() %>% 
+      as.data.frame()
     
-    isolate({
-      outputtable <- result1() %>%
-        ungroup()
-      outputtable
-    })
+    dat <- DT::datatable(
+      ot,
+      rownames = FALSE,
+      extensions = c('FixedColumns', 'Buttons'),
+      options = list(
+        autoWidth = TRUE,
+        dom = '<"bottom">Bfrtpl',
+        buttons = I('colvis'),
+        # scrollX = TRUE,
+        paging = TRUE,
+        columnDefs = list(list(
+          className = 'dt-center',
+          targets = seq(0, 14)
+        )),
+        autoWidth = TRUE,
+        pageLength = 20,
+        initComplete = JS(
+          "function(settings, json) {",
+          "$(this.api().table().header()).css({'background-color': '#1F497D', 'color': '#fff'});",
+          "}"
+        )
+      )
+    ) %>%
+      
+      formatStyle(
+        c(
+          "医院排名",
+          "产品贡献排名",
+          "Region",
+          "省份",
+          "城市",
+          "Veeva Code",
+          "Veeva Name",
+          "医院等级",
+          "医院增长率",
+          "医院贡献率",
+          "产品增长率",
+          "产品贡献率",
+          "产品市场份额",
+          "增长指数",
+          "贡献指数"
+        ),
+        fontWeight = 'bold'
+      ) %>%
+      formatStyle(c("增长指数", "贡献指数"),
+                  color = styleInterval(100, c('red', 'green')),
+                  fontWeight = styleInterval(100, c('bold', 'normal'))) %>%
+      formatStyle(c("医院增长率", "产品增长率"),
+                  color = styleInterval(0, c('red', 'green')),
+                  fontWeight = styleInterval(0, c('bold', 'normal'))) %>%
+      formatPercentage(c("医院增长率", "医院贡献率", "产品增长率",
+                         "产品贡献率", "产品市场份额"), 2) %>%
+      formatRound(c("增长指数", "贡献指数"), 0)
+    
+    return(dat)
+    # })
   })
   
   # pagenumber <- reactive({
@@ -864,67 +926,70 @@ server <- function(input, output, session) {
   # })
   
   output$contents <- renderDataTable({
-    input$goButton
-    isolate({
-      if (is.null(ot()))
-        return(NULL)
-      ot <- ot()
-      ot <- as.data.frame(ot)
-      dat <- DT::datatable(
-        ot,
-        rownames = FALSE,
-        extensions = c('FixedColumns', 'Buttons'),
-        options = list(
-          autoWidth = TRUE,
-          dom = '<"bottom">Bfrtpl',
-          buttons = I('colvis'),
-          # scrollX = TRUE,
-          paging = TRUE,
-          columnDefs = list(list(
-            className = 'dt-center',
-            targets = seq(0, 14)
-          )),
-          autoWidth = TRUE,
-          pageLength = 20,
-          initComplete = JS(
-            "function(settings, json) {",
-            "$(this.api().table().header()).css({'background-color': '#1F497D', 'color': '#fff'});",
-            "}"
-          )
-        )
-      ) %>%
-       
-        formatStyle(
-          c(
-            "医院排名",
-            "产品贡献排名",
-            "Region",
-            "省份",
-            "城市",
-            "Veeva Code",
-            "Veeva Name",
-            "医院等级",
-            "医院增长率",
-            "医院贡献率",
-            "产品增长率",
-            "产品贡献率",
-            "产品市场份额",
-            "增长指数",
-            "贡献指数"
-          ),
-          fontWeight = 'bold'
-        ) %>%
-        formatStyle(c("增长指数", "贡献指数"),
-                    color = styleInterval(100, c('red', 'green')),
-                    fontWeight = styleInterval(100, c('bold', 'normal'))) %>%
-        formatStyle(c("医院增长率", "产品增长率"),
-                    color = styleInterval(0, c('red', 'green')),
-                    fontWeight = styleInterval(0, c('bold', 'normal'))) %>%
-        formatPercentage(c("医院增长率", "医院贡献率", "产品增长率",
-                           "产品贡献率", "产品市场份额"), 2) %>%
-        formatRound(c("增长指数", "贡献指数"), 0)
-      return(dat)
-    })
+    # input$goButton
+    # isolate({
+    if (is.null(ot())){
+      return(NULL)
+    } else {
+      ot()
+    }
+    # ot <- ot()
+    # ot <- as.data.frame(ot)
+    # dat <- DT::datatable(
+    #   ot,
+    #   rownames = FALSE,
+    #   extensions = c('FixedColumns', 'Buttons'),
+    #   options = list(
+    #     autoWidth = TRUE,
+    #     dom = '<"bottom">Bfrtpl',
+    #     buttons = I('colvis'),
+    #     # scrollX = TRUE,
+    #     paging = TRUE,
+    #     columnDefs = list(list(
+    #       className = 'dt-center',
+    #       targets = seq(0, 14)
+    #     )),
+    #     autoWidth = TRUE,
+    #     pageLength = 20,
+    #     initComplete = JS(
+    #       "function(settings, json) {",
+    #       "$(this.api().table().header()).css({'background-color': '#1F497D', 'color': '#fff'});",
+    #       "}"
+    #     )
+    #   )
+    # ) %>%
+    #   
+    #   formatStyle(
+    #     c(
+    #       "医院排名",
+    #       "产品贡献排名",
+    #       "Region",
+    #       "省份",
+    #       "城市",
+    #       "Veeva Code",
+    #       "Veeva Name",
+    #       "医院等级",
+    #       "医院增长率",
+    #       "医院贡献率",
+    #       "产品增长率",
+    #       "产品贡献率",
+    #       "产品市场份额",
+    #       "增长指数",
+    #       "贡献指数"
+    #     ),
+    #     fontWeight = 'bold'
+    #   ) %>%
+    #   formatStyle(c("增长指数", "贡献指数"),
+    #               color = styleInterval(100, c('red', 'green')),
+    #               fontWeight = styleInterval(100, c('bold', 'normal'))) %>%
+    #   formatStyle(c("医院增长率", "产品增长率"),
+    #               color = styleInterval(0, c('red', 'green')),
+    #               fontWeight = styleInterval(0, c('bold', 'normal'))) %>%
+    #   formatPercentage(c("医院增长率", "医院贡献率", "产品增长率",
+    #                      "产品贡献率", "产品市场份额"), 2) %>%
+    #   formatRound(c("增长指数", "贡献指数"), 0)
+    # return(dat)
+    # })
     
   })
   
@@ -937,7 +1002,7 @@ server <- function(input, output, session) {
   observeEvent(input$summary, {
     if (main() == "HTN") {
       updateSelectizeInput(session,
-                           "category1",
+                           "category",
                            choices = categorytype1(),
                            selected = "ARB",
                            options = list(
@@ -945,7 +1010,7 @@ server <- function(input, output, session) {
                            ))
     } else {
       updateSelectizeInput(session,
-                           "category1",
+                           "category",
                            choices =  categorytype1(),
                            selected = categorytype1()[1],
                            options = list(
@@ -956,24 +1021,22 @@ server <- function(input, output, session) {
   
   ##--- Subcategory
   subcategorytype1 <- reactive({
-    # if (is.null(input$category1))
-    #   return(NULL)
-    subname <- summary()$Sub.category[which(summary()$Category %in% input$category1)]
+    subname <- summary()$Sub.category[which(summary()$Category %in% input$category)]
     subname[!duplicated(subname)]
   })
   
-  observeEvent(input$category1, {
-    if ("HTN" %in% main() & "ARB" %in% input$category1) {
+  observeEvent(input$category, {
+    if ("HTN" %in% main() & "ARB" %in% input$category) {
       updateSelectizeInput(session,
-                           "subcategory1",
+                           "subcategory",
                            choices = subcategorytype1(),
                            selected = "Mono",
                            options = list(
                              maxItems = 1
                            ))
-    } else if ("HTN" %in% main() & !("ARB" %in% input$category1)) {
+    } else if ("HTN" %in% main() & !("ARB" %in% input$category)) {
       updateSelectizeInput(session,
-                           "subcategory1",
+                           "subcategory",
                            choices = subcategorytype1(),
                            selected = subcategorytype1(),
                            options = list(
@@ -981,7 +1044,7 @@ server <- function(input, output, session) {
                            ))
     } else {
       updateSelectizeInput(session,
-                           "subcategory1",
+                           "subcategory",
                            choices = subcategorytype1(),
                            selected = subcategorytype1(),
                            options = list(
@@ -991,7 +1054,7 @@ server <- function(input, output, session) {
   })
   
   ##--- BI/Lilly
-  observeEvent(c(input$category1, input$subcategory1), {
+  observeEvent(c(input$category, input$subcategory), {
     updateSelectInput(session,
                       inputId = "bl1",
                       label = "BI/Lilly",
@@ -999,7 +1062,7 @@ server <- function(input, output, session) {
                       selected = "BI")
   })
   
-  observeEvent(input$subcategory1, {
+  observeEvent(input$subcategory, {
     updateSelectInput(session,
                       inputId = "bl1",
                       label = "BI/Lilly",
@@ -1011,8 +1074,8 @@ server <- function(input, output, session) {
   region1 <- reactive({
     
     summary <- summary()
-    summary <- summary[summary$Category %in% input$category1, ]
-    summary <- summary[summary$Sub.category %in% input$subcategory1, ]
+    summary <- summary[summary$Category %in% input$category, ]
+    summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
     if (main() == "Diabetes") {
       summary <- summary[summary$Note %in% input$bl1, ]
@@ -1023,7 +1086,7 @@ server <- function(input, output, session) {
     reglist <- c("ALL", reglist)
   })
   
-  observeEvent(c(input$category1, input$subcategory1, input$bl1), {
+  observeEvent(c(input$category, input$subcategory, input$bl1), {
     updateSelectInput(session,
                       "region1",
                       choices = region1(),
@@ -1033,8 +1096,8 @@ server <- function(input, output, session) {
   province1 <- reactive({
     
     summary <- summary()
-    summary <- summary[summary$Category %in% input$category1, ]
-    summary <- summary[summary$Sub.category %in% input$subcategory1, ]
+    summary <- summary[summary$Category %in% input$category, ]
+    summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
     if (main() == "Diabetes") {
       summary <- summary[summary$Note %in% input$bl1, ]
@@ -1051,7 +1114,7 @@ server <- function(input, output, session) {
     provlist <- c("ALL", provlist)
   })
   
-  observeEvent(c(input$category1, input$subcategory1, input$bl1, input$region1), {
+  observeEvent(c(input$category, input$subcategory, input$bl1, input$region1), {
     updateSelectInput(session,
                       "province1",
                       choices =  province1(),
@@ -1062,8 +1125,8 @@ server <- function(input, output, session) {
   city1 <- reactive({
     
     summary <- summary()
-    summary <- summary[summary$Category %in% input$category1, ]
-    summary <- summary[summary$Sub.category %in% input$subcategory1, ]
+    summary <- summary[summary$Category %in% input$category, ]
+    summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
     if (main() == "Diabetes") {
       summary <- summary[summary$Note %in% input$bl1, ]
@@ -1085,7 +1148,7 @@ server <- function(input, output, session) {
     citylist <- c("ALL", citylist)
   })
   
-  observeEvent(c(input$category1, input$subcategory1, input$bl1, 
+  observeEvent(c(input$category, input$subcategory, input$bl1, 
                  input$region1, input$province1), {
     updateSelectInput(session,
                       "city1",
@@ -1097,8 +1160,8 @@ server <- function(input, output, session) {
   decile1 <- reactive({
     
     summary <- summary()
-    summary <- summary[summary$Category %in% input$category1, ]
-    summary <- summary[summary$Sub.category %in% input$subcategory1, ]
+    summary <- summary[summary$Category %in% input$category, ]
+    summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
     if (main() == "Diabetes") {
       summary <- summary[summary$Note %in% input$bl1, ]
@@ -1127,7 +1190,7 @@ server <- function(input, output, session) {
     decile_list <- c("ALL", decile_list)
   })
   
-  observeEvent(c(input$category1, input$subcategory1, input$bl1, 
+  observeEvent(c(input$category, input$subcategory, input$bl1, 
                  input$region1, input$province1, input$city1), {
     updateSelectInput(session,
                       "decile1",
@@ -1139,8 +1202,8 @@ server <- function(input, output, session) {
   note1 <- reactive({
     
     summary <- summary()
-    summary <- summary[summary$Category %in% input$category1, ]
-    summary <- summary[summary$Sub.category %in% input$subcategory1, ]
+    summary <- summary[summary$Category %in% input$category, ]
+    summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
     if (main() == "Diabetes") {
       summary <- summary[summary$Note %in% input$bl1, ]
@@ -1175,7 +1238,7 @@ server <- function(input, output, session) {
     notelist <- replace_na(notelist, "NA")
   })
   
-  observeEvent(c(input$category1, input$subcategory1, input$bl1, 
+  observeEvent(c(input$category, input$subcategory, input$bl1, 
                  input$region1, input$province1, input$city1, 
                  input$decile1), {
     updateSelectInput(session,
@@ -1189,8 +1252,8 @@ server <- function(input, output, session) {
   c_n <- reactive({
     
     summary <- summary()
-    summary <- summary[summary$Category %in% input$category1, ]
-    summary <- summary[summary$Sub.category %in% input$subcategory1, ]
+    summary <- summary[summary$Category %in% input$category, ]
+    summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
     if (main() == "Diabetes") {
       summary <- summary[summary$Note %in% input$bl1, ]
@@ -1228,7 +1291,7 @@ server <- function(input, output, session) {
     c_n <- distinct(c_n)
   })
   
-  observeEvent(c(input$category1, input$subcategory1, input$bl1,
+  observeEvent(c(input$category, input$subcategory, input$bl1,
                  input$region1, input$province1, input$city1,
                  input$decile1, input$note1, input$code), ignoreInit = TRUE, {
     updateSelectInput(session,
@@ -1238,7 +1301,7 @@ server <- function(input, output, session) {
                       selected = c_n()[c_n()$`Veeva.code` == input$code, "Veeva.name"])
   })
 
-  observeEvent(c(input$category1, input$subcategory1, input$bl1,
+  observeEvent(c(input$category, input$subcategory, input$bl1,
                  input$region1, input$province1, input$city1,
                  input$decile1, input$note1, input$name), ignoreInit = TRUE, {
     updateSelectInput(session,
@@ -1250,10 +1313,10 @@ server <- function(input, output, session) {
   
   ##--- result2
   result2 <- reactive({
-    if (is.null(summary()) | is.null(input$subcategory1))
+    if (is.null(summary()) | is.null(input$subcategory) | is.null(input$period1))
       return(NULL)
     
-    ddd_hospital(summary(), main(), input$category1, input$subcategory1)
+    ddd_hospital(summary(), main(), input$category, input$subcategory, input$period1)
   })
   
   ##--- rank
@@ -2016,18 +2079,18 @@ server <- function(input, output, session) {
   }
   
   otdown <- reactive({
-    if (input$goButton == 0)
+    # if (input$goButton == 0)
+    #   return(NULL)
+    # 
+    # input$goButton
+    # 
+    # isolate({
+    if (is.null(ot()))
       return(NULL)
-    
-    input$goButton
-    
-    isolate({
-      if (is.null(ot()))
-        return(NULL)
-      ot <- ot()
-      ot <- as.data.frame(ot)
-      ot
-    })
+    ot <- ot()
+    ot <- as.data.frame(ot)
+    ot
+    # })
   })
   
   output$downloadData <- downloadHandler(

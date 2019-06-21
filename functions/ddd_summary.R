@@ -243,18 +243,42 @@ ddd_summary <-
     
     col_cnt <- ncol(salesdata4)
     
-    total_gr <- salesdata4[, col_cnt - 2] / salesdata4[, col_cnt - 3] - 1
+    salesdata5 <- salesdata2 %>%
+      filter(Region %in% region,
+             Province_CN %in% province,
+             City_CN %in% city,
+             Decile %in% decile,
+             Note %in% note) %>%
+      group_by(Region, Province_CN, City_CN, Veeva.code, Veeva.name,
+               Decile,
+               date) %>%
+      summarise(prod.sum = sum(value, na.rm = TRUE),
+                bi_prod.sum = sum(value * ifelse(Manufactory == "B.INGELHEIM", 1, 0),
+                                  na.rm = TRUE)) %>%
+      group_by(Veeva.code) %>%
+      filter(row_number() / n() == 1) %>%
+      filter(date == t1 | date == t2) %>% 
+      setDT() %>% 
+      dcast(Region + Province_CN + City_CN + Veeva.code + Veeva.name +
+              Decile  ~ date,
+            value.var = c("prod.sum", "bi_prod.sum")) %>% 
+      setDF()
+    
+    total_gr <- salesdata5[, col_cnt - 2] / salesdata5[, col_cnt - 3] - 1
     bi_gr <- salesdata4[, col_cnt] / salesdata4[, col_cnt - 1] - 1
     
-    total_sh <- salesdata4[, col_cnt - 2] / sum(salesdata4[, col_cnt - 2], na.rm = TRUE)
+    total_sh <- salesdata5[, col_cnt - 2] / sum(salesdata5[, col_cnt - 2], na.rm = TRUE)
     bi_sh <- salesdata4[, col_cnt] / sum(salesdata4[, col_cnt], na.rm = TRUE)
     
     bi_ms <- salesdata4[, col_cnt] / salesdata4[, col_cnt - 2]
     
-    salesdata4 <- salesdata4 %>%
+    salesdata6 <- salesdata5[c("Veeva.name", "Decile")] %>% 
       mutate(total_gr = total_gr,
-             bi_gr = bi_gr,
-             total_sh = total_sh,
+             total_sh = total_sh)
+    
+    salesdata4 <- salesdata4 %>%
+      left_join(salesdata6, by = c("Veeva.name", "Decile")) %>% 
+      mutate(bi_gr = bi_gr,
              bi_sh = bi_sh,
              bi_ms = bi_ms) %>%
       arrange(desc(total_sh)) %>%
