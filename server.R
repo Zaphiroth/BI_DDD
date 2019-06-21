@@ -926,71 +926,12 @@ server <- function(input, output, session) {
   # })
   
   output$contents <- renderDataTable({
-    # input$goButton
-    # isolate({
+    
     if (is.null(ot())){
       return(NULL)
     } else {
       ot()
     }
-    # ot <- ot()
-    # ot <- as.data.frame(ot)
-    # dat <- DT::datatable(
-    #   ot,
-    #   rownames = FALSE,
-    #   extensions = c('FixedColumns', 'Buttons'),
-    #   options = list(
-    #     autoWidth = TRUE,
-    #     dom = '<"bottom">Bfrtpl',
-    #     buttons = I('colvis'),
-    #     # scrollX = TRUE,
-    #     paging = TRUE,
-    #     columnDefs = list(list(
-    #       className = 'dt-center',
-    #       targets = seq(0, 14)
-    #     )),
-    #     autoWidth = TRUE,
-    #     pageLength = 20,
-    #     initComplete = JS(
-    #       "function(settings, json) {",
-    #       "$(this.api().table().header()).css({'background-color': '#1F497D', 'color': '#fff'});",
-    #       "}"
-    #     )
-    #   )
-    # ) %>%
-    #   
-    #   formatStyle(
-    #     c(
-    #       "医院排名",
-    #       "产品贡献排名",
-    #       "Region",
-    #       "省份",
-    #       "城市",
-    #       "Veeva Code",
-    #       "Veeva Name",
-    #       "医院等级",
-    #       "医院增长率",
-    #       "医院贡献率",
-    #       "产品增长率",
-    #       "产品贡献率",
-    #       "产品市场份额",
-    #       "增长指数",
-    #       "贡献指数"
-    #     ),
-    #     fontWeight = 'bold'
-    #   ) %>%
-    #   formatStyle(c("增长指数", "贡献指数"),
-    #               color = styleInterval(100, c('red', 'green')),
-    #               fontWeight = styleInterval(100, c('bold', 'normal'))) %>%
-    #   formatStyle(c("医院增长率", "产品增长率"),
-    #               color = styleInterval(0, c('red', 'green')),
-    #               fontWeight = styleInterval(0, c('bold', 'normal'))) %>%
-    #   formatPercentage(c("医院增长率", "医院贡献率", "产品增长率",
-    #                      "产品贡献率", "产品市场份额"), 2) %>%
-    #   formatRound(c("增长指数", "贡献指数"), 0)
-    # return(dat)
-    # })
-    
   })
   
   ##-- hospital
