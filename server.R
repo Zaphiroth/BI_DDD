@@ -578,54 +578,6 @@ server <- function(input, output, session) {
   
   result1 <- reactive({
     
-    # if ("ALL" %in% input$decile) {
-    #   summary <- summary()
-    # } else {
-    #   summary <- summary()[summary()$Decile %in% input$decile, ]
-    # }
-    # 
-    # if ("ALL" %in% input$region) {
-    #   summary <- summary
-    # } else {
-    #   summary <- summary[summary$Region %in% input$region, ]
-    # }
-    # 
-    # if ("ALL" %in% input$province) {
-    #   summary <- summary
-    # } else {
-    #   summary <- summary[summary$Province_CN %in% input$province, ]
-    # }
-    # 
-    # if ("ALL" %in% input$city) {
-    #   summary <- summary
-    # } else {
-    #   summary <- summary[summary$City_CN %in% input$city, ]
-    # }
-    # 
-    # if ("ALL" %in% input$veeva) {
-    #   summary <- summary
-    # } else {
-    #   summary <- summary[summary$Veeva.code %in% input$veeva,]
-    # }
-    # 
-    # if ("ALL" %in% input$hospital) {
-    #   summary <- summary
-    # } else {
-    #   summary <- summary[summary$Veeva.name %in% input$hospital,]
-    # }
-    # 
-    # if ("ALL" %in% input$note) {
-    #   summary <- summary
-    # } else {
-    #   summary <- summary[summary$Note %in% input$note,]
-    # }
-    
-    # if ("ALL" %in% input$decile) {
-    #   decile <- decile()
-    # } else {
-    #   summary <- summary[summary$Note %in% input$note,]
-    # }
-    
     summary <- summary()
     summary <- summary[summary$Category %in% input$category, ]
     summary <- summary[summary$Sub.category %in% input$subcategory, ]
@@ -637,7 +589,7 @@ server <- function(input, output, session) {
     #   summary <- summary[summary$Region %in% input$region, ]
     # }
     
-    if (is.null(input$brand))
+    if (is.null(input$brand) | is.null(summary()))
       return(NULL)
     
     if (main() == "Diabetes") {
@@ -695,148 +647,165 @@ server <- function(input, output, session) {
     note <- unique(summary$Note)
     brand <- unique(summary$Brand_CN)
     
-    rank_info <- rbind.fill(
-      ddd_summary(
-        salesdata = summary(),
-        cate = input$category,
-        subcate = input$subcategory,
-        region = region,
-        province = province,
-        city = city,
-        decile = decile,
-        # veeva = veeva,
-        # hosp_name = hosp_name,
-        note = note,
-        value = "RMB",
-        period = input$period,
-        brand = brand,
-        # kpi = c("abs", "gr")
-        # window = as.numeric(input$window)
-        window = 1
-      )
-    )
-    rank_info <- distinct(rank_info)
-    rank_info_m <- rank_info[, c("医院排名", "产品贡献排名", "Veeva Code", "Veeva Name")]
+    result1 <- ddd_summary(salesdata = summary(),
+                           cate = input$category,
+                           subcate = input$subcategory,
+                           region = region,
+                           province = province,
+                           city = city,
+                           decile = decile,
+                           # veeva = veeva,
+                           # hosp_name = hosp_name,
+                           note = note,
+                           value = "RMB",
+                           period = input$period,
+                           brand = brand)
     
-    if ("RMB"  %in% input$value) {
-      summary <- summary()
-      # if ("ALL" %in% input$province) {
-      #   summary <-
-      #     summary()[which(summary()$AUDIT.DESC %in% c("China", input$region,  province())),]
-      # } else {
-      #   summary <-
-      #     summary()[which(summary()$AUDIT.DESC %in% c("China", input$region, input$province)),]
-      # }
-      
-      # rmb <- rbind.fill(
-      #   ddd_summary(
-      #     salesdata = summary,
-      #     cate = input$category,
-      #     subcate = input$subcategory,
-      #     region = region,
-      #     province = province,
-      #     city = city,
-      #     decile = decile,
-      #     # veeva = veeva,
-      #     # hosp_name = hosp_name,
-      #     note = note,
-      #     value = "RMB",
-      #     period = input$period,
-      #     brand = brand,
-      #     # kpi = c("abs", "gr")
-      #     # window = as.numeric(input$window)
-      #     window = 1
-      #   )
-      # )
-      # rmb <- distinct(rmb)
-      rmb <- rank_info
-    } else{
-      rmb <- NULL
-    }
+    # rank_info <- rbind.fill(
+    #   ddd_summary(
+    #     salesdata = summary(),
+    #     cate = input$category,
+    #     subcate = input$subcategory,
+    #     region = region,
+    #     province = province,
+    #     city = city,
+    #     decile = decile,
+    #     # veeva = veeva,
+    #     # hosp_name = hosp_name,
+    #     note = note,
+    #     value = "RMB",
+    #     period = input$period,
+    #     brand = brand,
+    #     # kpi = c("abs", "gr")
+    #     # window = as.numeric(input$window)
+    #     window = 1
+    #   )
+    # )
+    # rank_info <- distinct(rank_info)
+    
+    # rank_info_m <- rank_info[, c("医院排名", "产品贡献排名", "Veeva Code", "Veeva Name")]
+    
+    # if ("RMB"  %in% input$value) {
+    #   summary <- summary()
+    #   if ("ALL" %in% input$province) {
+    #     summary <-
+    #       summary()[which(summary()$AUDIT.DESC %in% c("China", input$region,  province())),]
+    #   } else {
+    #     summary <-
+    #       summary()[which(summary()$AUDIT.DESC %in% c("China", input$region, input$province)),]
+    #   }
+    #   
+    #   rmb <- rbind.fill(
+    #     ddd_summary(
+    #       salesdata = summary,
+    #       cate = input$category,
+    #       subcate = input$subcategory,
+    #       region = region,
+    #       province = province,
+    #       city = city,
+    #       decile = decile,
+    #       # veeva = veeva,
+    #       # hosp_name = hosp_name,
+    #       note = note,
+    #       value = "RMB",
+    #       period = input$period,
+    #       brand = brand,
+    #       # kpi = c("abs", "gr")
+    #       # window = as.numeric(input$window)
+    #       window = 1
+    #     )
+    #   )
+    #   rmb <- distinct(rmb)
+    #   rmb <- rank_info
+    # } else{
+    #   rmb <- NULL
+    # }
     
     
-    if ("UNIT" %in% input$value) {
-      summary <- summary()
-      # if ("ALL" %in% input$province) {
-      #   summary <-
-      #     summary()[which(summary()$AUDIT.DESC %in% c("China", input$region,  province())),]
-      #
-      # } else{
-      #   summary <-
-      #     summary()[which(summary()$AUDIT.DESC %in% c("China", input$region, input$province)),]
-      # }
-      
-      unit <- rbind.fill(
-        ddd_summary(
-          salesdata = summary,
-          cate = input$category,
-          subcate = input$subcategory,
-          region = region,
-          province = province,
-          city = city,
-          decile = decile,
-          # veeva = veeva,
-          # hosp_name = hosp_name,
-          note = note,
-          value = "UNIT",
-          period = input$period,
-          brand = brand,
-          # kpi = c("abs", "gr")
-          # window = as.numeric(input$window)
-          window = 1
-        )
-      )
-      unit <- distinct(unit) %>% 
-        dplyr::select(-`医院排名`, -`产品贡献排名`) %>% 
-        left_join(rank_info_m, by = c("Veeva Code", "Veeva Name")) %>% 
-        dplyr::select("医院排名", "产品贡献排名", "Region", "省份", "城市", "Veeva Code", 
-                      "Veeva Name", "医院等级", "医院增长率", "医院贡献率", "产品增长率", 
-                      "产品贡献率", "产品市场份额", "增长指数", "贡献指数")
-      
-    } else{
-      unit <- NULL
-    }
+    # if ("UNIT" %in% input$value) {
+    #   summary <- summary()
+    #   # if ("ALL" %in% input$province) {
+    #   #   summary <-
+    #   #     summary()[which(summary()$AUDIT.DESC %in% c("China", input$region,  province())),]
+    #   #
+    #   # } else{
+    #   #   summary <-
+    #   #     summary()[which(summary()$AUDIT.DESC %in% c("China", input$region, input$province)),]
+    #   # }
+    #   
+    #   unit <- rbind.fill(
+    #     ddd_summary(
+    #       salesdata = summary,
+    #       cate = input$category,
+    #       subcate = input$subcategory,
+    #       region = region,
+    #       province = province,
+    #       city = city,
+    #       decile = decile,
+    #       # veeva = veeva,
+    #       # hosp_name = hosp_name,
+    #       note = note,
+    #       value = "UNIT",
+    #       period = input$period,
+    #       brand = brand,
+    #       # kpi = c("abs", "gr")
+    #       # window = as.numeric(input$window)
+    #       window = 1
+    #     )
+    #   )
+    #   unit <- distinct(unit) %>% 
+    #     dplyr::select(-`医院排名`, -`产品贡献排名`) %>% 
+    #     left_join(rank_info_m, by = c("Veeva Code", "Veeva Name")) %>% 
+    #     dplyr::select("医院排名", "产品贡献排名", "Region", "省份", "城市", "Veeva Code", 
+    #                   "Veeva Name", "医院等级", "医院增长率", "医院贡献率", "产品增长率", 
+    #                   "产品贡献率", "产品市场份额", "增长指数", "贡献指数")
+    #   
+    # } else{
+    #   unit <- NULL
+    # }
     
-    if ("DOT"  %in% input$value) {
-      summary <- summary()
-      # if ("ALL" %in% input$province) {
-      #   summary <-
-      #     summary()[which(summary()$AUDIT.DESC %in% c("China", input$region,  province())),]
-      # } else{
-      #   summary <-
-      #     summary()[which(summary()$AUDIT.DESC %in% c("China", input$region, input$province)),]
-      # }
-      
-      dot <- rbind.fill(
-        ddd_summary(
-          salesdata = summary,
-          cate = input$category,
-          subcate = input$subcategory,
-          region = region,
-          province = province,
-          city = city,
-          decile = decile,
-          # veeva = veeva,
-          # hosp_name = hosp_name,
-          note = note,
-          value = "DOT",
-          period = input$period,
-          brand = brand,
-          # kpi = c("abs", "gr")
-          # window = as.numeric(input$window)
-          window = 1
-        )
-      )
-      dot <- distinct(dot) %>% 
-        dplyr::select(-`医院排名`, -`产品贡献排名`) %>% 
-        left_join(rank_info_m, by = c("Veeva Code", "Veeva Name")) %>% 
-        dplyr::select("医院排名", "产品贡献排名", "Region", "省份", "城市", "Veeva Code", 
-                      "Veeva Name", "医院等级", "医院增长率", "医院贡献率", "产品增长率", 
-                      "产品贡献率", "产品市场份额", "增长指数", "贡献指数")
-    } else{
-      dot <- NULL
-    }
-    result1 <- rbind(rmb, unit, dot)
+    # if ("DOT"  %in% input$value) {
+    #   summary <- summary()
+    #   # if ("ALL" %in% input$province) {
+    #   #   summary <-
+    #   #     summary()[which(summary()$AUDIT.DESC %in% c("China", input$region,  province())),]
+    #   # } else{
+    #   #   summary <-
+    #   #     summary()[which(summary()$AUDIT.DESC %in% c("China", input$region, input$province)),]
+    #   # }
+    #   
+    #   dot <- rbind.fill(
+    #     ddd_summary(
+    #       salesdata = summary,
+    #       cate = input$category,
+    #       subcate = input$subcategory,
+    #       region = region,
+    #       province = province,
+    #       city = city,
+    #       decile = decile,
+    #       # veeva = veeva,
+    #       # hosp_name = hosp_name,
+    #       note = note,
+    #       value = "DOT",
+    #       period = input$period,
+    #       brand = brand,
+    #       # kpi = c("abs", "gr")
+    #       # window = as.numeric(input$window)
+    #       window = 1
+    #     )
+    #   )
+    #   dot <- distinct(dot) %>% 
+    #     dplyr::select(-`医院排名`, -`产品贡献排名`) %>% 
+    #     left_join(rank_info_m, by = c("Veeva Code", "Veeva Name")) %>% 
+    #     dplyr::select("医院排名", "产品贡献排名", "Region", "省份", "城市", "Veeva Code", 
+    #                   "Veeva Name", "医院等级", "医院增长率", "医院贡献率", "产品增长率", 
+    #                   "产品贡献率", "产品市场份额", "增长指数", "贡献指数")
+    # } else{
+    #   dot <- NULL
+    # }
+    # result1 <- rbind(rmb, unit, dot)
+    
+    return(result1)
   })
   
   
@@ -890,9 +859,9 @@ server <- function(input, output, session) {
           "医院等级",
           "医院增长率",
           "医院贡献率",
-          "产品增长率",
-          "产品贡献率",
-          "产品市场份额",
+          "所选产品增长率",
+          "所选产品贡献率",
+          "所选产品市场份额",
           "增长指数",
           "贡献指数"
         ),
@@ -901,11 +870,11 @@ server <- function(input, output, session) {
       formatStyle(c("增长指数", "贡献指数"),
                   color = styleInterval(100, c('red', 'green')),
                   fontWeight = styleInterval(100, c('bold', 'normal'))) %>%
-      formatStyle(c("医院增长率", "产品增长率"),
+      formatStyle(c("医院增长率", "所选产品增长率"),
                   color = styleInterval(0, c('red', 'green')),
                   fontWeight = styleInterval(0, c('bold', 'normal'))) %>%
-      formatPercentage(c("医院增长率", "医院贡献率", "产品增长率",
-                         "产品贡献率", "产品市场份额"), 2) %>%
+      formatPercentage(c("医院增长率", "医院贡献率", "所选产品增长率",
+                         "所选产品贡献率", "所选产品市场份额"), 2) %>%
       formatRound(c("增长指数", "贡献指数"), 0)
     
     return(dat)
@@ -1697,7 +1666,7 @@ server <- function(input, output, session) {
                  textfont = list(size = 13),
                  textposition = "top",
                  name = b,
-                 showlegend = TRUE)
+                 showlegend = FALSE)
     }
     
     p <- p %>%
@@ -1707,14 +1676,15 @@ server <- function(input, output, session) {
       ) %>%
       layout(
         annotations = list(
-          text = paste0("市场份额趋势 (", toupper(input$period1), ")"),
+          text = paste0("<b>市场份额趋势 (", toupper(input$period1), ")</b>"),
           xref = "paper",
           x = 0.5,
           yref = "paper",
           y = 1,
           yshift = 30,
           showarrow = FALSE,
-          font = list(size = 18)
+          font = list(size = 15,
+                      color = '#1F497D')
         ),
         showlegend = TRUE,
         xaxis = list(
@@ -1749,7 +1719,8 @@ server <- function(input, output, session) {
         )
       return(NULL)
     
-    pd_names <- c("Brand_CN", grep("mkt|ms|gth", grep(paste0(input$period1, "_", input$value1), names(result2()$plot), value = TRUE), invert = TRUE, value = TRUE))
+    pd_names <- c("Brand_CN", grep("mkt|ms|gth", grep(paste0(input$period1, "_", input$value1), 
+                                                      names(result2()$plot), value = TRUE), invert = TRUE, value = TRUE))
     pd <- result2()$plot %>% 
       filter(Veeva.name == input$name) %>%
       select(pd_names)
@@ -1795,16 +1766,17 @@ server <- function(input, output, session) {
       melt(id.vars = "Brand_CN", variable.name = "Date", value.name = "Sales") %>% 
       distinct()
     
-    p <- plot_ly(hoverinfo = "name + x + y")
+    p <- plot_ly(hoverinfo = "name+text")
     
     for (i in brand) {
       p <- p %>%
         add_trace(x = pd3[pd3$Brand_CN == i, "Date"],
-                  y = round(pd3[pd3$Brand_CN == i, "Sales"]),
+                  y = round(pd3[pd3$Brand_CN == i, "Sales"], 0),
                   type = "scatter",
                   mode = "lines + markers",
                   marker = list(size = 5),
-                  name = i)
+                  name = i,
+                  text = paste0("(", pd3[pd3$Brand_CN == i, "Date"], ", ", format(round(pd3[pd3$Brand_CN == i, "Sales"], 0), big.mark = ","), ")"))
     }
     
     if (!is.na(brand[brand %in% bi_brand()][1])) {
@@ -1812,11 +1784,11 @@ server <- function(input, output, session) {
       p <- p %>%
         add_text(x = pd3[pd3$Brand_CN == b, "Date"],
                  y = round(pd3[pd3$Brand_CN == b, "Sales"]),
-                 text = round(pd3[pd3$Brand_CN == b, "Sales"], 0),
+                 text = format(round(pd3[pd3$Brand_CN == b, "Sales"], 0), big.mark = ","),
                  textfont = list(size = 13),
                  textposition = "top",
                  name = b,
-                 showlegend = TRUE)
+                 showlegend = FALSE)
     }
     
     p <- p %>%
@@ -1826,14 +1798,15 @@ server <- function(input, output, session) {
       ) %>%
       layout(
         annotations = list(
-          text = paste0("单产金额趋势 (", toupper(input$period1), ")"),
+          text = paste0("<b>单产金额趋势 (", toupper(input$period1), ")</b>"),
           xref = "paper",
           x = 0.5,
           yref = "paper",
           y = 1,
           yshift = 30,
           showarrow = FALSE,
-          font = list(size = 18)
+          font = list(size = 15,
+                      color = '#1F497D')
         ),
         showlegend = TRUE,
         xaxis = list(
@@ -1933,7 +1906,7 @@ server <- function(input, output, session) {
                  textfont = list(size = 13),
                  textposition = "top",
                  name = b,
-                 showlegend = TRUE)
+                 showlegend = FALSE)
     }
     
     p <- p %>%
@@ -1943,14 +1916,15 @@ server <- function(input, output, session) {
       ) %>%
       layout(
         annotations = list(
-          text = paste0("增长率趋势 (", toupper(input$period1), ")"),
+          text = paste0("<b>增长率趋势 (", toupper(input$period1), ")</b>"),
           xref = "paper",
           x = 0.5,
           yref = "paper",
           y = 1,
           yshift = 30,
           showarrow = FALSE,
-          font = list(size = 18)
+          font = list(size = 15,
+                      color = '#1F497D')
         ),
         showlegend = TRUE,
         xaxis = list(

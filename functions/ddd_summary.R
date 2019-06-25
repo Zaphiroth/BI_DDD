@@ -15,12 +15,13 @@ ddd_summary <-
            note,
            value,
            period,
-           brand,
-           # kpi,
-           window) {
+           brand) {
     
     # salesdata = read.csv("D:/WORK/BI/test_data/ddd_Out hospital_csv_format.csv", stringsAsFactors = FALSE)
     # cate = "Out hospital"
+    # subcate = unique(salesdata$Sub.category)
+    # brand = unique(salesdata$Brand_CN)
+    # brand = c("思合华", "平适", "森福罗")
     # subcate = c("LABA",
     #             "LAMA",
     #             "Others")
@@ -119,12 +120,12 @@ ddd_summary <-
     
     
     
-    oriwindow <- window
-    window <- min(5, window + 1)
+    # oriwindow <- window
+    # window <- min(5, window + 1)
+    window <- 2
     
     salesdata1 <- salesdata[which(salesdata$Category  %in% cate), ]
-    salesdata2 <-
-      salesdata1[which(salesdata1$Sub.category  %in% subcate), ]
+    salesdata2 <- salesdata1[which(salesdata1$Sub.category  %in% subcate), ]
     
     fmr <-
       min(c(which(grepl(
@@ -136,156 +137,153 @@ ddd_summary <-
       )))) - 1
     
     
-    salesdata2 <-
-      salesdata2[c(1:fmr, grep(value, colnames(salesdata2)))]
+    salesdata3 <- salesdata2[c(1:fmr, grep(value, colnames(salesdata2)))]
+    salesdata3 <- salesdata3[c(1:fmr, grep(period, colnames(salesdata3)))]
     
-    if (period == "rqtr") {
-      salesdata2 <-
-        salesdata2[c(1:fmr, grep("qtr", colnames(salesdata2)))]
+    # if (period == "rqtr") {
+    #   salesdata2 <-
+    #     salesdata2[c(1:fmr, grep("qtr", colnames(salesdata2)))]
+    # 
+    # } else{
+    #   salesdata2 <-
+    #     salesdata2[c(1:fmr, grep(period, colnames(salesdata2)))]
+    # 
+    # }
+    
+    if (period == "mat" | period == "ytd") {
+      # salesdata2 <-
+      #   salesdata2[c(1:fmr, (length(salesdata2) - window + 1):length(salesdata2))]
+      salesdata4 <- salesdata3[c(1:fmr, length(salesdata3)-1, length(salesdata3))]
       
-    } else{
-      salesdata2 <-
-        salesdata2[c(1:fmr, grep(period, colnames(salesdata2)))]
-      
+    } else if (period == "qtr" | period == "mth") {
+      # salesdata2 <-
+      #   salesdata2[c(1:fmr, (length(salesdata2) - window * 12 + 1):length(salesdata2))]
+      salesdata4 <- salesdata3[c(1:fmr, length(salesdata3)-12, length(salesdata3))]
     }
     
-    if (period == "mat" | period == "ytd" | period == "yrl") {
-      salesdata2 <-
-        salesdata2[c(1:fmr, (length(salesdata2) - window + 1):length(salesdata2))]
-      
-    } else{
-      salesdata2 <-
-        salesdata2[c(1:fmr, (length(salesdata2) - window * 12 + 1):length(salesdata2))]
-    }
+    names(salesdata4)<- c(names(salesdata4)[1:fmr], "pp", "cc")
     
-    if (period == "qtr") {
-      nnn <-
-        seq(length(salesdata2[grepl("qtr", colnames(salesdata2))]), 1, by = -3)
-      
-      remove.col <-
-        colnames(salesdata2[grepl("qtr", colnames(salesdata2))])[-nnn]
-      
-      salesdata2 <-
-        salesdata2[, !(colnames(salesdata2) %in% remove.col)]
-    }
+    # if (period == "qtr" | period == "mth") {
+    #   nnn <-
+    #     seq(length(salesdata2[grepl("qtr", colnames(salesdata2))]), 1, by = -3)
+    #   
+    #   remove.col <-
+    #     colnames(salesdata2[grepl("qtr", colnames(salesdata2))])[-nnn]
+    #   
+    #   salesdata2 <-
+    #     salesdata2[, !(colnames(salesdata2) %in% remove.col)]
+    # }
     
     
-    if (period == "rqtr") {
-      id.transpose <-
-        colnames(salesdata2)[!grepl(paste("qtr", "_", value, "_", sep = ""), colnames(salesdata2))]
-      
-    } else{
-      id.transpose <-
-        colnames(salesdata2)[!grepl(paste(period, "_", value, "_", sep = ""),
-                                    colnames(salesdata2))]
-      
-    }
+    # if (period == "rqtr") {
+    #   id.transpose <-
+    #     colnames(salesdata2)[!grepl(paste("qtr", "_", value, "_", sep = ""), colnames(salesdata2))]
+    #   
+    # } else{
+    #   id.transpose <-
+    #     colnames(salesdata2)[!grepl(paste(period, "_", value, "_", sep = ""),
+    #                                 colnames(salesdata2))]
+    #   
+    # }
     
-    salesdata2 <- melt(salesdata2, id = id.transpose)
+    # salesdata2 <- melt(salesdata2, id = id.transpose)
     
-    if (period == "rqtr") {
-      salesdata2$date <-
-        gsub(paste("qtr", "_", value, "_", sep = ""),
-             '',
-             salesdata2$variable)
-      
-    } else{
-      salesdata2$date <-
-        gsub(paste(period, "_", value, "_", sep = ""),
-             '',
-             salesdata2$variable)
-      
-    }
+    # if (period == "rqtr") {
+    #   salesdata2$date <-
+    #     gsub(paste("qtr", "_", value, "_", sep = ""),
+    #          '',
+    #          salesdata2$variable)
+    #   
+    # } else{
+    #   salesdata2$date <-
+    #     gsub(paste(period, "_", value, "_", sep = ""),
+    #          '',
+    #          salesdata2$variable)
+    #   
+    # }
     
-    salesdata2$year <- substr(salesdata2$date, start = 1, stop = 4)
-    salesdata2$month <- substr(salesdata2$date, start = 6, stop = 7)
+    # salesdata2$date <-
+    #   gsub(paste(period, "_", value, "_", sep = ""),
+    #        '',
+    #        salesdata2$variable)
     
-    salesdata3 <- salesdata2 %>%
+    # salesdata2$year <- substr(salesdata2$date, start = 1, stop = 4)
+    # salesdata2$month <- substr(salesdata2$date, start = 6, stop = 7)
+    
+    ## all
+    salesdata5 <- salesdata4 %>% 
+      filter(Region %in% region,
+             Province_CN %in% province,
+             City_CN %in% city,
+             Decile %in% decile,
+             Note %in% note) %>% 
+      group_by(Region, Province_CN, City_CN, Veeva.code, Veeva.name, Decile) %>% 
+      summarise(pp = sum(pp, na.rm = TRUE),
+                cc = sum(cc, na.rm = TRUE)
+                # bi_pp = sum(pp * ifelse(Manufactory == "B.INGELHEIM", 1, 0), na.rm = TRUE),
+                # bi_cp = sum(cc * ifelse(Manufactory == "B.INGELHEIM", 1, 0), na.rm = TRUE)
+                ) %>% 
+      ungroup() %>% 
+      setDF()
+    
+    ## selected
+    salesdata6 <- salesdata4 %>%
       filter(Region %in% region,
              Province_CN %in% province,
              City_CN %in% city,
              Decile %in% decile,
              Note %in% note,
-             # Veeva.code %in% veeva,
-             # Veeva.name %in% hosp_name,
              Brand_CN %in% brand) %>%
-      group_by(Region, Province_CN, City_CN, Veeva.code, Veeva.name,
-               Decile,
-               # Note,
-               # Category_CN, Sub.category, 
-               date) %>%
-      summarise(prod.sum = sum(value, na.rm = TRUE),
-                bi_prod.sum = sum(value * ifelse(Manufactory == "B.INGELHEIM", 1, 0),
-                                  na.rm = TRUE))
+      group_by(Region, Province_CN, City_CN, Veeva.code, Veeva.name, Decile) %>%
+      summarise(pp_sel = sum(pp, na.rm = TRUE),
+                cc_sel = sum(cc, na.rm = TRUE)
+                # bi_pp_sel = sum(pp * ifelse(Manufactory == "B.INGELHEIM", 1, 0), na.rm = TRUE),
+                # bi_cc_sel = sum(cc * ifelse(Manufactory == "B.INGELHEIM", 1, 0), na.rm = TRUE)
+                ) %>% 
+      ungroup() %>% 
+      setDF()
     
-    salesdata3_m <- salesdata3 %>%
-      group_by(Veeva.code) %>%
-      filter(row_number() / n() == 1)
+    # salesdata3_m <- salesdata3 %>%
+    #   group_by(Veeva.code) %>%
+    #   filter(row_number() / n() == 1)
     
-    t1 <- unique(salesdata3_m$date)
-    t2 <- sprintf("%.2f", as.numeric(t1) - 1)
+    # t1 <- unique(salesdata3_m$date)
+    # t2 <- sprintf("%.2f", as.numeric(t1) - 1)
     
-    salesdata3_m1 <- salesdata3 %>%
-      filter(date == t1 | date == t2)
+    # salesdata3_m1 <- salesdata3 %>%
+    #   filter(date == t1 | date == t2)
       # group_by(Veeva.code) %>%
       # filter(row_number() / n() == 0.5 |  row_number() / n() == 1)
     
-    salesdata3_dt <- setDT(salesdata3_m1)
+    # salesdata3_dt <- setDT(salesdata3_m1)
     
-    salesdata3_dt <-
-      data.table::dcast(salesdata3_dt,
-                        Region + Province_CN + City_CN + Veeva.code + Veeva.name +
-                          Decile  ~ date,
-                        value.var = c("prod.sum", "bi_prod.sum"))
+    # salesdata3_dt <-
+    #   data.table::dcast(salesdata3_dt,
+    #                     Region + Province_CN + City_CN + Veeva.code + Veeva.name +
+    #                       Decile  ~ date,
+    #                     value.var = c("prod.sum", "bi_prod.sum"))
     
     
-    salesdata4 <- setDF(salesdata3_dt)
+    # salesdata4 <- setDF(salesdata3_dt)
     
-    col_cnt <- ncol(salesdata4)
+    # col_cnt <- ncol(salesdata4)
     
-    salesdata5 <- salesdata2 %>%
-      filter(Region %in% region,
-             Province_CN %in% province,
-             City_CN %in% city,
-             Decile %in% decile,
-             Note %in% note) %>%
-      group_by(Region, Province_CN, City_CN, Veeva.code, Veeva.name,
-               Decile,
-               date) %>%
-      summarise(prod.sum = sum(value, na.rm = TRUE),
-                bi_prod.sum = sum(value * ifelse(Manufactory == "B.INGELHEIM", 1, 0),
-                                  na.rm = TRUE)) %>%
-      group_by(Veeva.code) %>%
-      filter(row_number() / n() == 1) %>%
-      filter(date == t1 | date == t2) %>% 
-      setDT() %>% 
-      dcast(Region + Province_CN + City_CN + Veeva.code + Veeva.name +
-              Decile  ~ date,
-            value.var = c("prod.sum", "bi_prod.sum")) %>% 
-      setDF()
+    salesdata7 <- salesdata5 %>%
+      left_join(salesdata6, by = c("Region", "Province_CN", "City_CN", "Veeva.code", "Veeva.name", "Decile"))
     
-    total_gr <- salesdata5[, col_cnt - 2] / salesdata5[, col_cnt - 3] - 1
-    bi_gr <- salesdata4[, col_cnt] / salesdata4[, col_cnt - 1] - 1
+    salesdata7[is.na(salesdata7)] <- 0
     
-    total_sh <- salesdata5[, col_cnt - 2] / sum(salesdata5[, col_cnt - 2], na.rm = TRUE)
-    bi_sh <- salesdata4[, col_cnt] / sum(salesdata4[, col_cnt], na.rm = TRUE)
-    
-    bi_ms <- salesdata4[, col_cnt] / salesdata4[, col_cnt - 2]
-    
-    salesdata6 <- salesdata5[c("Veeva.name", "Decile")] %>% 
-      mutate(total_gr = total_gr,
-             total_sh = total_sh)
-    
-    salesdata4 <- salesdata4 %>%
-      left_join(salesdata6, by = c("Veeva.name", "Decile")) %>% 
-      mutate(bi_gr = bi_gr,
-             bi_sh = bi_sh,
-             bi_ms = bi_ms) %>%
+    salesdata7 <- salesdata7 %>% 
+      mutate(total_gr = cc / pp - 1,
+             total_sh = cc / sum(cc, na.rm = TRUE),
+             selected_gr = cc_sel / pp_sel - 1,
+             selected_sh = cc_sel / sum(cc, na.rm = TRUE),
+             selected_ms = cc_sel / sum(cc, na.rm = TRUE),
+             gr_idx = (1 + selected_gr) / (1 + total_gr) * 100,
+             cont_idx = (1 + selected_sh) / (1 + total_sh) * 100) %>%
       arrange(desc(total_sh)) %>%
-      mutate(gr_idx = (1 + bi_gr) / (1 + total_gr) * 100,
-             cont_idx = bi_sh / total_sh * 100,
-             hosp_rank = row_number()) %>%
-      arrange(desc(bi_sh)) %>%
+      mutate(hosp_rank = row_number()) %>%
+      arrange(desc(selected_sh)) %>%
       mutate(bi_rank = row_number()) %>%
       dplyr::select("医院排名" = "hosp_rank", 
                     "产品贡献排名" = "bi_rank",
@@ -297,16 +295,16 @@ ddd_summary <-
                     "医院等级" = "Decile",
                     "医院增长率" = "total_gr", 
                     "医院贡献率" = "total_sh", 
-                    "产品增长率" = "bi_gr",
-                    "产品贡献率" = "bi_sh",
-                    "产品市场份额" = "bi_ms",
+                    "所选产品增长率" = "selected_gr",
+                    "所选产品贡献率" = "selected_sh",
+                    "所选产品市场份额" = "selected_ms",
                     "增长指数" = "gr_idx",
                     "贡献指数" = "cont_idx") %>%
-      arrange(医院排名)
-    salesdata4[is.na(salesdata4)] <- 0
-    salesdata4[salesdata4 == Inf] <- 1
+      arrange(`医院排名`)
+    salesdata7[is.na(salesdata7)] <- 0
+    salesdata7[salesdata7 == Inf] <- 1
     
-    return(salesdata4)
+    return(salesdata7)
   }
 
 

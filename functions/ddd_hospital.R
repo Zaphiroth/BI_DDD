@@ -221,7 +221,8 @@ ddd_hospital <- function(salesdata, main, category, subcategory, period) {
                            0,
                            ifelse(is.infinite(growth),
                                   1,
-                                  growth))) %>%
+                                  growth)),
+           recent = recent/3) %>%
     select("Veeva.name",
            "医院排名" = "hosp_rank",
            "BI 排名" = "BI_rank",
