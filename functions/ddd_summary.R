@@ -17,15 +17,15 @@ ddd_summary <-
            period,
            brand) {
     
-    salesdata = read.csv("D:/WORK/BI/test_data/ddd_Anti-PD_csv_format.csv", stringsAsFactors = FALSE)
-    cate = unique(salesdata$Category)
-    subcate = unique(salesdata$Sub.category)
-    region = unique(salesdata$Region)
-    province = unique(salesdata$Province_CN)
-    city = unique(salesdata$City_CN)
-    decile = unique(salesdata$Decile)
+    # salesdata = read.csv("D:/WORK/BI/test_data/ddd_Anti-PD_csv_format.csv", stringsAsFactors = FALSE)
+    # cate = unique(salesdata$Category)
+    # subcate = unique(salesdata$Sub.category)
+    # region = unique(salesdata$Region)
+    # province = unique(salesdata$Province_CN)
+    # city = unique(salesdata$City_CN)
+    # decile = unique(salesdata$Decile)
     # brand = unique(salesdata$Brand_CN)
-    brand = c("森福罗")
+    # brand = c("森福罗")
     # subcate = c("LABA",
     #             "LAMA",
     #             "Others")
@@ -304,11 +304,20 @@ ddd_summary <-
                     "所选产品市场份额" = "selected_ms",
                     "增长指数" = "gr_idx",
                     "贡献指数" = "cont_idx") %>%
-      arrange(`医院排名`)
-    salesdata7[is.na(salesdata7)] <- 0
-    salesdata7[salesdata7 == Inf] <- 1
+      arrange(`医院排名`) %>% 
+      mutate_all(function(x) {ifelse(is.na(x), 0, x)}) %>% 
+      mutate_all(function(x) {ifelse(is.infinite(x), 1, x)})
+    # salesdata7[is.na(salesdata7)] <- 0
+    # salesdata7[salesdata7 == Inf] <- 1
     
-    return(salesdata7)
+    total_num <- length(unique(salesdata5$Veeva.name[which(salesdata5$cc != 0)]))
+    selected_num <- length(unique(salesdata6$Veeva.name[which(salesdata6$cc_sel != 0)]))
+    
+    result <- list("table_data" = salesdata7,
+                   "total_num" = total_num,
+                   "selected_num" = selected_num)
+    
+    return(result)
   }
 
 

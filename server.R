@@ -808,6 +808,41 @@ server <- function(input, output, session) {
     return(result1)
   })
   
+  output$total.num <- renderInfoBox({
+    if (is.null(result1())) {
+      infoBox(
+        "Number of Total Hospitals",
+        0,
+        icon = icon("hospital"),
+        color = "blue"
+      )
+    } else {
+      infoBox(
+        "Number of Total Hospitals",
+        format(result1()$total_num, big.mark = ","),
+        icon = icon("hospital"),
+        color = "blue"
+      )
+    }
+  })
+  
+  output$sel.num <- renderInfoBox({
+    if (is.null(result1())) {
+      infoBox(
+        "Number of Brand Selected Hospitals",
+        0,
+        icon = icon("pills"),
+        color = "blue"
+      )
+    } else {
+      infoBox(
+        "Number of Brand Selected Hospitals",
+        format(result1()$selected_num, big.mark = ","),
+        icon = icon("pills"),
+        color = "blue"
+      )
+    }
+  })
   
   ot <- reactive({
     # if (input$goButton == 0)
@@ -819,7 +854,7 @@ server <- function(input, output, session) {
     if (is.null(result1()))
       return(NULL)
     
-    ot <- result1() %>%
+    ot <- result1()$table_data %>%
       ungroup() %>% 
       as.data.frame()
     
