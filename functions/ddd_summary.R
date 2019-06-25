@@ -17,11 +17,15 @@ ddd_summary <-
            period,
            brand) {
     
-    # salesdata = read.csv("D:/WORK/BI/test_data/ddd_Out hospital_csv_format.csv", stringsAsFactors = FALSE)
-    # cate = "Out hospital"
-    # subcate = unique(salesdata$Sub.category)
+    salesdata = read.csv("D:/WORK/BI/test_data/ddd_Anti-PD_csv_format.csv", stringsAsFactors = FALSE)
+    cate = unique(salesdata$Category)
+    subcate = unique(salesdata$Sub.category)
+    region = unique(salesdata$Region)
+    province = unique(salesdata$Province_CN)
+    city = unique(salesdata$City_CN)
+    decile = unique(salesdata$Decile)
     # brand = unique(salesdata$Brand_CN)
-    # brand = c("思合华", "平适", "森福罗")
+    brand = c("森福罗")
     # subcate = c("LABA",
     #             "LAMA",
     #             "Others")
@@ -277,10 +281,10 @@ ddd_summary <-
       mutate(total_gr = cc / pp - 1,
              total_sh = cc / sum(cc, na.rm = TRUE),
              selected_gr = cc_sel / pp_sel - 1,
-             selected_sh = cc_sel / sum(cc, na.rm = TRUE),
-             selected_ms = cc_sel / sum(cc, na.rm = TRUE),
+             selected_sh = cc_sel / sum(cc_sel, na.rm = TRUE),
+             selected_ms = cc_sel / cc,
              gr_idx = (1 + selected_gr) / (1 + total_gr) * 100,
-             cont_idx = (1 + selected_sh) / (1 + total_sh) * 100) %>%
+             cont_idx = selected_sh / total_sh * 100) %>%
       arrange(desc(total_sh)) %>%
       mutate(hosp_rank = row_number()) %>%
       arrange(desc(selected_sh)) %>%

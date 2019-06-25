@@ -1549,7 +1549,7 @@ server <- function(input, output, session) {
           "排名",
           "产品"
         ),
-        fontWeight = 'bold',
+        # fontWeight = 'bold',
         `font-size` = '15px',
         color = '#000'
       ) %>%
@@ -1559,14 +1559,15 @@ server <- function(input, output, session) {
           "市场份额",
           "产出"
         ),
-        fontWeight = 'bold',
+        # fontWeight = 'bold',
         `font-size` = '15px',
         color = '#1F497D'
       ) %>%
       formatStyle(c("增长率"),
-                  color = styleInterval(0, c('red', 'green')),
+                  color = styleInterval(0, c('red', 'green'))
                   # fontWeight = styleInterval(0, c('bold', 'normal')),
-                  fontWeight = 'bold') %>%
+                  # fontWeight = 'bold'
+                  ) %>%
       formatStyle("排名",
                   target = "row",
                   backgroundColor = styleEqual(1:rows, rep(c('#DCE6F0', 'white'), rows/2))) %>%
@@ -1676,7 +1677,7 @@ server <- function(input, output, session) {
       ) %>%
       layout(
         annotations = list(
-          text = paste0("<b>市场份额趋势 (", toupper(input$period1), ")</b>"),
+          text = paste0("市场份额趋势 (", toupper(input$period1), ")"),
           xref = "paper",
           x = 0.5,
           yref = "paper",
@@ -1798,7 +1799,7 @@ server <- function(input, output, session) {
       ) %>%
       layout(
         annotations = list(
-          text = paste0("<b>单产金额趋势 (", toupper(input$period1), ")</b>"),
+          text = paste0("单产金额趋势 (", toupper(input$period1), ")"),
           xref = "paper",
           x = 0.5,
           yref = "paper",
@@ -1916,7 +1917,7 @@ server <- function(input, output, session) {
       ) %>%
       layout(
         annotations = list(
-          text = paste0("<b>增长率趋势 (", toupper(input$period1), ")</b>"),
+          text = paste0("增长率趋势 (", toupper(input$period1), ")"),
           xref = "paper",
           x = 0.5,
           yref = "paper",
