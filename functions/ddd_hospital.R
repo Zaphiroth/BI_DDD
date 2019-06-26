@@ -170,7 +170,7 @@ ddd_hospital <- function(salesdata, main, category, subcategory, period) {
   
   data6 <- data3[c("Veeva.name", "Decile", 
                    names(data3)[which(names(data3) == paste0("mkt_", period, "_RMB_", date)) - df], 
-                   paste0("mkt_qtr_RMB_", date))]
+                   paste0("mkt_", period, "_RMB_", date))]
   names(data6) <- c("Veeva.name", "Decile", "past", "recent")
   data6 <- data6 %>% 
     mutate(growth = round(recent / past - 1, 2),
@@ -178,18 +178,18 @@ ddd_hospital <- function(salesdata, main, category, subcategory, period) {
     select(-`past`)
   
   if (main == "Out hospital") {
-    data7 <- data1[c("Brand_CN", "Veeva.name", "Decile", paste0("qtr_RMB_", date))] %>%
+    data7 <- data1[c("Brand_CN", "Veeva.name", "Decile", paste0(period, "_RMB_", date))] %>%
       filter(Brand_CN == "思合华" | Brand_CN == "思力华") %>%
       select(-`Brand_CN`)
     
   } else if (main == "HTN" & category == "ARB") {
-    data7 <- data1[c("Sub.category", "Veeva.name", "Decile", "MANU_CN", paste0("qtr_RMB_", date))] %>% 
+    data7 <- data1[c("Sub.category", "Veeva.name", "Decile", "MANU_CN", paste0(period, "_RMB_", date))] %>% 
       filter(Sub.category %in% subcategory) %>%
       filter(MANU_CN == "德国勃林格殷格翰国际公司") %>%
       select(-`Sub.category`, -`MANU_CN`)
     
   } else {
-    data7 <- data1[c("Veeva.name", "Decile", "MANU_CN", paste0("qtr_RMB_", date))] %>%
+    data7 <- data1[c("Veeva.name", "Decile", "MANU_CN", paste0(period, "_RMB_", date))] %>%
       filter(MANU_CN == "德国勃林格殷格翰国际公司") %>%
       select(-`MANU_CN`)
   }
@@ -221,12 +221,11 @@ ddd_hospital <- function(salesdata, main, category, subcategory, period) {
                            0,
                            ifelse(is.infinite(growth),
                                   1,
-                                  growth)),
-           recent = recent/3) %>%
+                                  growth))) %>%
     select("Veeva.name",
            "医院排名" = "hosp_rank",
            "BI 排名" = "BI_rank",
-           "月平均单产(滚动季度数据)" = "recent",
+           "医院产出" = "recent",
            "品类增长率" = "growth",
            "全国医院等级" = "Decile")
   

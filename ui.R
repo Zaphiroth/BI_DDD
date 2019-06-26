@@ -25,14 +25,15 @@ ui <- dashboardPage(
     )),
     fluidRow(tags$div(
       tags$div(
-        # column(12, actionButton("goButton", "Go!", width = "200px")),
-               column(12, selectInput("category", label = "Category", "", multiple = TRUE, width = "230px")),
-               column(12, selectInput("subcategory", label = "Subcategory",  "", multiple = TRUE, width = "230px")),
-               conditionalPanel(
-                 condition = "output.main2 == 2",
-                 column(12, selectInput("bl", label = "BI/Lilly", choices = c("BI", "Lilly"), multiple = TRUE, width = "230px"))
-               ),
-               style = "display:inline-block;margin-down: 1px;vertical-align:middle"),
+        column(12, selectInput("category", label = "Category", "", multiple = TRUE, width = "230px")),
+        column(12, selectInput("subcategory", label = "Subcategory",  "", multiple = TRUE, width = "230px")),
+        conditionalPanel(
+          condition = "output.main2 == 2",
+          column(12, selectInput("bl", label = "BI/Lilly", choices = c("BI", "Lilly"), multiple = TRUE, width = "230px"))
+        ),
+        column(12, style = "padding: 20px"),
+        column(12, actionButton("goButton", "Update", width = "200px")),
+        style = "display:inline-block;margin-down: 1px;vertical-align:middle"),
       tags$style(".skin-blue .sidebar a { color: #444; }")
       # tags$div(column(
       #   #offset = 1,
@@ -229,7 +230,7 @@ ui <- dashboardPage(
                              # "Rolling QTR" = "rqtr",
                              "MTH" = "mth"
                            ),
-                           selected = "qtr",
+                           selected = "mat",
                            multiple = FALSE
                          )),
                   column(2, selectInput("code", label = "Veeva Code", "", multiple = FALSE)),
@@ -251,16 +252,20 @@ ui <- dashboardPage(
                     column(12, tags$div(DT::dataTableOutput("rank1"), style = "font-size:100%")),
                     conditionalPanel(
                       condition = "input.period1 == 'qtr' | input.period1 == 'mth'",
-                      column(12, tags$div(style="margin-bottom:100px;"))
+                      # column(12, tags$div(style="margin-bottom:100px;"))
+                      column(12, style = "padding: 50px")
                     ),
-                    column(12, tags$div(DT::dataTableOutput("rank2"), style = "font-size:100%")),                    conditionalPanel(
+                    column(12, tags$div(DT::dataTableOutput("rank2"), style = "font-size:100%")),
+                    conditionalPanel(
                       condition = "input.period1 == 'qtr' | input.period1 == 'mth'",
-                      column(12, tags$div(style="margin-bottom:100px;"))
+                      # column(12, tags$div(style="margin-bottom:100px;"))
+                      column(12, style = "padding: 50px")
                     ),
                     column(12, tags$div(DT::dataTableOutput("rank3"), style = "font-size:100%")),
                     conditionalPanel(
                       condition = "input.period1 == 'qtr' | input.period1 == 'mth'",
-                      column(12, tags$div(style="margin-bottom:100px;"))
+                      # column(12, tags$div(style="margin-bottom:100px;"))
+                      column(12, style = "padding: 50px")
                     ),
                     column(12, tags$div(DT::dataTableOutput("rank4"), style = "font-size:100%"))
                   )

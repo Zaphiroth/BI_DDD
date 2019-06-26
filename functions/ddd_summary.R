@@ -274,10 +274,9 @@ ddd_summary <-
     
     salesdata7 <- salesdata5 %>%
       left_join(salesdata6, by = c("Region", "Province_CN", "City_CN", "Veeva.code", "Veeva.name", "Decile"))
-    
     salesdata7[is.na(salesdata7)] <- 0
     
-    salesdata7 <- salesdata7 %>% 
+    salesdata8 <- salesdata7 %>% 
       mutate(total_gr = cc / pp - 1,
              total_sh = cc / sum(cc, na.rm = TRUE),
              selected_gr = cc_sel / pp_sel - 1,
@@ -297,8 +296,10 @@ ddd_summary <-
                     "Veeva Code" = "Veeva.code",
                     "Veeva Name" = "Veeva.name", 
                     "医院等级" = "Decile",
+                    "医院产出" = "cc",
                     "医院增长率" = "total_gr", 
                     "医院贡献率" = "total_sh", 
+                    "所选产品产出" = "cc_sel",
                     "所选产品增长率" = "selected_gr",
                     "所选产品贡献率" = "selected_sh",
                     "所选产品市场份额" = "selected_ms",
@@ -310,10 +311,51 @@ ddd_summary <-
     # salesdata7[is.na(salesdata7)] <- 0
     # salesdata7[salesdata7 == Inf] <- 1
     
+    salesdata9 <- salesdata7 %>% 
+      summarise(pp = sum(pp),
+                cc = sum(cc),
+                pp_sel = sum(pp_sel),
+                cc_sel = sum(cc_sel)) %>% 
+      mutate(total_gr = cc / pp - 1,
+             total_sh = cc / sum(cc, na.rm = TRUE),
+             selected_gr = cc_sel / pp_sel - 1,
+             selected_sh = cc_sel / sum(cc_sel, na.rm = TRUE),
+             selected_ms = cc_sel / cc,
+             gr_idx = (1 + selected_gr) / (1 + total_gr) * 100,
+             cont_idx = selected_sh / total_sh * 100) %>%
+      mutate(hosp_rank = NA,
+             bi_rank = NA,
+             Region = NA,
+             Province_CN  = NA,
+             City_CN = NA,
+             Veeva.code = NA,
+             Veeva.name = "Total",
+             Decile = NA) %>% 
+      dplyr::select("医院排名" = "hosp_rank", 
+                    "产品贡献排名" = "bi_rank",
+                    "Region", 
+                    "省份" = "Province_CN", 
+                    "城市" = "City_CN", 
+                    "Veeva Code" = "Veeva.code",
+                    "Veeva Name" = "Veeva.name", 
+                    "医院等级" = "Decile",
+                    "医院产出" = "cc",
+                    "医院增长率" = "total_gr", 
+                    "医院贡献率" = "total_sh", 
+                    "所选产品产出" = "cc_sel",
+                    "所选产品增长率" = "selected_gr",
+                    "所选产品贡献率" = "selected_sh",
+                    "所选产品市场份额" = "selected_ms",
+                    "增长指数" = "gr_idx",
+                    "贡献指数" = "cont_idx") %>%
+      arrange(`医院排名`)
+    
+    salesdata10 <- bind_rows(salesdata9, salesdata8)
+    
     total_num <- length(unique(salesdata5$Veeva.name[which(salesdata5$cc != 0)]))
     selected_num <- length(unique(salesdata6$Veeva.name[which(salesdata6$cc_sel != 0)]))
     
-    result <- list("table_data" = salesdata7,
+    result <- list("table_data" = salesdata10,
                    "total_num" = total_num,
                    "selected_num" = selected_num)
     
