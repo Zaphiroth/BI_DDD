@@ -624,11 +624,11 @@ server <- function(input, output, session) {
       summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
     }
     
-    if ("ALL" %in% input$brand) {
-      summary <- summary
-    } else {
-      summary <- summary[summary$Brand_CN %in% input$brand, ]
-    }
+    # if ("ALL" %in% input$brand) {
+    #   summary <- summary
+    # } else {
+    #   summary <- summary[summary$Brand_CN %in% input$brand, ]
+    # }
     
     category <- unique(summary$Category)
     subcategory <- unique(summary$Sub.category)
@@ -645,7 +645,6 @@ server <- function(input, output, session) {
     # veeva <- unique(summary$Veeva.code)
     # hosp_name <- unique(summary$Veeva.name)
     note <- unique(summary$Note)
-    brand <- unique(summary$Brand_CN)
     
     result1 <- ddd_summary(salesdata = summary(),
                            cate = input$category,
@@ -659,7 +658,7 @@ server <- function(input, output, session) {
                            note = note,
                            value = "RMB",
                            period = input$period,
-                           brand = brand)
+                           brand = input$brand)
     
     # rank_info <- rbind.fill(
     #   ddd_summary(
