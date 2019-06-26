@@ -828,14 +828,14 @@ server <- function(input, output, session) {
   output$sel.num <- renderInfoBox({
     if (is.null(result1())) {
       infoBox(
-        "Number of Brand Selected Hospitals",
+        "Number of Covered Hospitals",
         0,
         icon = icon("pills"),
         color = "blue"
       )
     } else {
       infoBox(
-        "Number of Brand Selected Hospitals",
+        "Number of Covered Hospitals",
         format(result1()$selected_num, big.mark = ","),
         icon = icon("pills"),
         color = "blue"
