@@ -308,8 +308,8 @@ ddd_summary <-
                     "增长指数" = "gr_idx",
                     "贡献指数" = "cont_idx") %>%
       arrange(`医院排名`) %>% 
-      mutate_all(function(x) {ifelse(is.na(x), 0, x)}) %>% 
-      mutate_all(function(x) {ifelse(is.infinite(x), 1, x)})
+      mutate_all(function(x) {ifelse(is.na(x), NA, x)}) %>% 
+      mutate_all(function(x) {ifelse(is.infinite(x), NA, x)})
     # salesdata7[is.na(salesdata7)] <- 0
     # salesdata7[salesdata7 == Inf] <- 1
     

@@ -31,6 +31,10 @@ ui <- dashboardPage(
           condition = "output.main2 == 2",
           column(12, selectInput("bl", label = "BI/Lilly", choices = c("BI", "Lilly"), multiple = TRUE, width = "230px"))
         ),
+        conditionalPanel(
+          condition = "output.main2 == 1",
+          column(12, selectInput("note", label = "Note", "", multiple = TRUE, width = "230px"))
+        ),
         column(12, style = "padding: 20px"),
         column(12, actionButton("goButton", "Update", width = "200px")),
         style = "display:inline-block;margin-down: 1px;vertical-align:middle"),
@@ -91,13 +95,10 @@ ui <- dashboardPage(
                   column(4,
                          selectInput("decile",
                                      label = "Decile",
-                                     c("ALL", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "Others", "#N/A"),
+                                     "",
+                                     # c("ALL", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "Others", "#N/A"),
                                      # selected = "ALL",
                                      multiple = TRUE)),
-                  conditionalPanel(
-                    condition = "output.main2 == 1",
-                    column(2, selectInput("note", label = "Note", "", multiple = TRUE))
-                  ),
                   column(12, selectInput("brand", label = "Brand", "", multiple = TRUE)),
                   # column(2, selectInput("veeva", "Veeva Code", "", multiple = TRUE)),
                   # column(2, selectInput("hospital", "Hospital", "", multiple = TRUE)),
@@ -144,11 +145,11 @@ ui <- dashboardPage(
                          )),
                   column(6,
                          "排名原则：医院排名/产品贡献排名基于Value固定不变，不随所选Measurment更改。",
-                         style = "color: #1F497D; padding: 30px;"),
+                         style = "color: #1F497D; padding: 25px;"),
                   column(2,
                          column(3),
                          column(9, downloadButton(outputId = "downloadData", label = "Download"),
-                                style = "color: #1F497D; padding: 30px;")),
+                                style = "color: #1F497D; padding: 25px;")),
                   style = "color: #1F497D"
                 ),
                 style = "background: #DDD9C4"
@@ -186,10 +187,10 @@ ui <- dashboardPage(
                 collapsible = FALSE,
                 width = 12,
                 tags$div(
-                  conditionalPanel(
-                    condition = "output.main2 == 2",
-                    column(2, selectInput("bl1", label = "BI/Lilly", choices = c("BI", "Lilly"), multiple = TRUE))
-                  ),
+                  # conditionalPanel(
+                  #   condition = "output.main2 == 2",
+                  #   column(2, selectInput("bl1", label = "BI/Lilly", choices = c("BI", "Lilly"), multiple = TRUE))
+                  # ),
                   conditionalPanel(
                     condition = "output.main1 == 1",
                     column(2, selectInput("region1", label = "Region", choices = "", multiple = TRUE))
@@ -199,7 +200,8 @@ ui <- dashboardPage(
                   column(4,
                          selectInput("decile1",
                                      label = "Decile",
-                                     c("ALL", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "Others", "#N/A"),
+                                     "",
+                                     # c("ALL", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "Others", "#N/A"),
                                      # selected = "ALL",
                                      multiple = TRUE)),
                   conditionalPanel(
@@ -238,6 +240,10 @@ ui <- dashboardPage(
                   # column(12, selectInput("brand1", label = "Brand", "", multiple = TRUE)),
                   style = "color: #1F497D"
                 ),
+                column(2,
+                       column(3),
+                       column(9, downloadButton(outputId = "downloadPlotData", label = "Download"),
+                              style = "color: #1F497D; padding: 25px;")),
                 style = "background: #DDD9C4"
               )
             ),
@@ -290,7 +296,10 @@ ui <- dashboardPage(
                       column(12, plotlyOutput("plot3", width = "100%", height = "270px"))
                     )
                   )
-                )
+                ),
+                column(12,
+                       "Note：排名均已Value为准",
+                       style = "color: #1F497D; padding: 25px;")
               )
             )
           )
