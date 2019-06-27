@@ -173,7 +173,7 @@ ddd_hospital <- function(salesdata, main, category, subcategory, period) {
                    paste0("mkt_", period, "_RMB_", date))]
   names(data6) <- c("Veeva.name", "Decile", "past", "recent")
   data6 <- data6 %>% 
-    mutate(growth = round(recent / past - 1, 2),
+    mutate(growth = recent / past - 1,
            hosp_rank = rank(-recent, ties.method = "min")) %>%
     select(-`past`)
   

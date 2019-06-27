@@ -230,7 +230,7 @@ ui <- dashboardPage(
                              # "Rolling QTR" = "rqtr",
                              "MTH" = "mth"
                            ),
-                           selected = "mat",
+                           selected = "qtr",
                            multiple = FALSE
                          )),
                   column(2, selectInput("code", label = "Veeva Code", "", multiple = FALSE)),
@@ -248,7 +248,7 @@ ui <- dashboardPage(
                 width = 12,
                 column(
                   2,
-                  fluidRow(
+                  fixedRow(
                     column(12, tags$div(DT::dataTableOutput("rank1"), style = "font-size:100%")),
                     conditionalPanel(
                       condition = "input.period1 == 'qtr' | input.period1 == 'mth'",

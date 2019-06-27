@@ -1335,7 +1335,7 @@ server <- function(input, output, session) {
         autoWidth = TRUE,
         # dom = '<"bottom">Bfrtpl',
         # buttons = I('colvis'),
-        scrollX = FALSE,
+        scrollY = FALSE,
         paging = FALSE,
         searching = FALSE,
         ordering = FALSE,
@@ -1383,7 +1383,7 @@ server <- function(input, output, session) {
         autoWidth = TRUE,
         # dom = '<"bottom">Bfrtpl',
         # buttons = I('colvis'),
-        scrollX = FALSE,
+        scrollY = FALSE,
         paging = FALSE,
         searching = FALSE,
         ordering = FALSE,
@@ -1431,7 +1431,7 @@ server <- function(input, output, session) {
         autoWidth = TRUE,
         # dom = '<"bottom">Bfrtpl',
         # buttons = I('colvis'),
-        scrollX = FALSE,
+        scrollY = FALSE,
         paging = FALSE,
         searching = FALSE,
         ordering = FALSE,
@@ -1459,7 +1459,7 @@ server <- function(input, output, session) {
         # color = styleInterval(0, c('red', 'green')),
         # fontWeight = styleInterval(0, c('bold', 'normal'))
       ) %>%
-      formatPercentage(c("品类增长率"), 0)
+      formatPercentage(c("品类增长率"), 2)
     
     return(r)
   })
@@ -1481,7 +1481,7 @@ server <- function(input, output, session) {
         autoWidth = TRUE,
         # dom = '<"bottom">Bfrtpl',
         # buttons = I('colvis'),
-        scrollX = FALSE,
+        scrollY = FALSE,
         paging = FALSE,
         searching = FALSE,
         ordering = FALSE,
@@ -1596,8 +1596,8 @@ server <- function(input, output, session) {
         autoWidth = TRUE,
         # dom = '<"bottom">Bfrtpl',
         # buttons = I('colvis'),
-        # scrollX = FALSE,
-        # scrollY = FALSE,
+        # scrollX = TRUE,
+        scrollY = FALSE,
         ordering = FALSE,
         paging = TRUE,
         bLengthChange = FALSE,
@@ -1744,7 +1744,13 @@ server <- function(input, output, session) {
     
     p <- p %>%
       config(
-        displaylogo = FALSE
+        displaylogo = FALSE,
+        toImageButtonOptions = list(
+          # format = "svg",
+          filename = paste0(input$name, "(", input$code, ")-市场份额趋势 (", toupper(input$period1), ")")
+          # width = 600,
+          # height = 700
+        )
         # collaborate = FALSE
       ) %>%
       layout(
@@ -1775,6 +1781,7 @@ server <- function(input, output, session) {
         )
       )
     
+    export(p, file = "aaa.png")
     return(p)
   })
   
@@ -1866,7 +1873,13 @@ server <- function(input, output, session) {
     
     p <- p %>%
       config(
-        displaylogo = FALSE
+        displaylogo = FALSE,
+        toImageButtonOptions = list(
+          # format = "svg",
+          filename = paste0(input$name, "(", input$code, ")-产出趋势 (", toupper(input$period1), ")")
+          # width = 600,
+          # height = 700
+        )
         # collaborate = FALSE
       ) %>%
       layout(
@@ -1984,7 +1997,13 @@ server <- function(input, output, session) {
     
     p <- p %>%
       config(
-        displaylogo = FALSE
+        displaylogo = FALSE,
+        toImageButtonOptions = list(
+          # format = "svg",
+          filename = paste0(input$name, "(", input$code, ")-增长率趋势 (", toupper(input$period1), ")")
+          # width = 600,
+          # height = 700
+        )
         # collaborate = FALSE
       ) %>%
       layout(

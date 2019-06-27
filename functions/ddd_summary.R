@@ -284,10 +284,12 @@ ddd_summary <-
              selected_ms = cc_sel / cc,
              gr_idx = (1 + selected_gr) / (1 + total_gr) * 100,
              cont_idx = selected_sh / total_sh * 100) %>%
-      arrange(desc(total_sh)) %>%
-      mutate(hosp_rank = row_number()) %>%
-      arrange(desc(selected_sh)) %>%
-      mutate(bi_rank = row_number()) %>%
+      mutate(hosp_rank = rank(-total_sh, ties.method = "min"),
+             bi_rank = rank(-selected_sh, ties.method = "min")) %>% 
+      # arrange(desc(total_sh)) %>%
+      # mutate(hosp_rank = row_number()) %>%
+      # arrange(desc(selected_sh)) %>%
+      # mutate(bi_rank = row_number()) %>%
       dplyr::select("医院排名" = "hosp_rank", 
                     "产品贡献排名" = "bi_rank",
                     "Region", 
