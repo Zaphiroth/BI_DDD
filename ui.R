@@ -248,7 +248,7 @@ ui <- dashboardPage(
                 width = 12,
                 column(
                   2,
-                  fixedRow(
+                  fluidRow(
                     column(12, tags$div(DT::dataTableOutput("rank1"), style = "font-size:100%")),
                     conditionalPanel(
                       condition = "input.period1 == 'qtr' | input.period1 == 'mth'",
