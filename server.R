@@ -241,8 +241,9 @@ server <- function(input, output, session) {
 
     if (main() == "Diabetes") {
       cate_data <- cate_data[cate_data$Note %in% input$bl, ]
+      cate_data$Region <- cate_data$Note
     }
-
+    
     if (main() == "Out hospital") {
       cate_data <- cate_data[replace_na(cate_data$Note, "NA") %in% input$note, ]
     }
@@ -899,7 +900,7 @@ server <- function(input, output, session) {
     # input$goButton
     
     # isolate({
-    if (is.null(result1()))
+    if (nrow(result1()$table_data) <= 1)
       return(NULL)
     
     ot <- result1()$table_data %>%
@@ -981,11 +982,7 @@ server <- function(input, output, session) {
   
   output$contents <- renderDataTable({
     
-    if (is.null(ot())){
-      return(NULL)
-    } else {
-      ot()
-    }
+    ot()
   })
   
   ##-- hospital
