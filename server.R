@@ -1065,10 +1065,10 @@ server <- function(input, output, session) {
   ##--- region
   region1 <- reactive({
     
-    if (is.null(summary()))
+    if (is.null(cate_data()))
       return(NULL)
     
-    summary <- summary()
+    summary <- cate_data()
     summary <- summary[summary$Category %in% input$category, ]
     summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
@@ -1085,7 +1085,8 @@ server <- function(input, output, session) {
     reglist <- c("ALL", reglist)
   })
   
-  observeEvent(c(input$category, input$subcategory, input$bl), {
+  observeEvent(c(# input$category, input$subcategory, input$bl, 
+                 input$goButton), {
     updateSelectInput(session,
                       "region1",
                       choices = region1(),
@@ -1094,10 +1095,10 @@ server <- function(input, output, session) {
   ##--- province
   province1 <- reactive({
     
-    if (is.null(summary()))
+    if (is.null(cate_data()))
       return(NULL)
     
-    summary <- summary()
+    summary <- cate_data()
     summary <- summary[summary$Category %in% input$category, ]
     summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
@@ -1120,8 +1121,8 @@ server <- function(input, output, session) {
     provlist <- c("ALL", provlist)
   })
   
-  observeEvent(c(input$category, input$subcategory, input$bl,
-                 input$region1), {
+  observeEvent(c(# input$category, input$subcategory, input$bl, 
+                 input$goButton, input$region1), {
     updateSelectInput(session,
                       "province1",
                       choices =  province1(),
@@ -1131,10 +1132,10 @@ server <- function(input, output, session) {
   ##--- city
   city1 <- reactive({
     
-    if (is.null(summary()))
+    if (is.null(cate_data()))
       return(NULL)
     
-    summary <- summary()
+    summary <- cate_data()
     summary <- summary[summary$Category %in% input$category, ]
     summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
@@ -1163,8 +1164,8 @@ server <- function(input, output, session) {
     citylist <- c("ALL", citylist)
   })
   
-  observeEvent(c(input$category, input$subcategory, input$bl, 
-                 input$region1, input$province1), {
+  observeEvent(c(# input$category, input$subcategory, input$bl, 
+                 input$goButton, input$region1, input$province1), {
                    updateSelectInput(session,
                                      "city1",
                                      choices =  city1(),
@@ -1174,10 +1175,10 @@ server <- function(input, output, session) {
   ##--- decile
   decile1 <- reactive({
     
-    if (is.null(summary()))
+    if (is.null(cate_data()))
       return(NULL)
     
-    summary <- summary()
+    summary <- cate_data()
     summary <- summary[summary$Category %in% input$category, ]
     summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
@@ -1212,8 +1213,8 @@ server <- function(input, output, session) {
     decile_list <- c("ALL", decile_list)
   })
   
-  observeEvent(c(input$category, input$subcategory, input$bl, 
-                 input$region1, input$province1, input$city1), {
+  observeEvent(c(# input$category, input$subcategory, input$bl, 
+                 input$goButton, input$region1, input$province1, input$city1), {
                    updateSelectInput(session,
                                      "decile1",
                                      choices = decile1(),
@@ -1273,10 +1274,10 @@ server <- function(input, output, session) {
   ##--- code and name
   c_n <- reactive({
     
-    if (is.null(summary()))
+    if (is.null(cate_data()))
       return(NULL)
     
-    summary <- summary()
+    summary <- cate_data()
     summary <- summary[summary$Category %in% input$category, ]
     summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
@@ -1316,8 +1317,8 @@ server <- function(input, output, session) {
     c_n <- distinct(c_n)
   })
   
-  observeEvent(c(input$category, input$subcategory, input$bl, input$note1,
-                 input$region1, input$province1, input$city1,
+  observeEvent(c(# input$category, input$subcategory, input$bl, input$note1,
+                 input$goButton, input$region1, input$province1, input$city1,
                  input$decile1, input$code), ignoreInit = TRUE, {
                    updateSelectInput(session,
                                      inputId = "name",
@@ -1326,8 +1327,8 @@ server <- function(input, output, session) {
                                      selected = c_n()[c_n()$`Veeva.code` == input$code, "Veeva.name"])
                  })
   
-  observeEvent(c(input$category, input$subcategory, input$bl, input$note1,
-                 input$region1, input$province1, input$city1,
+  observeEvent(c(# input$category, input$subcategory, input$bl, input$note1,
+                 input$goButton, input$region1, input$province1, input$city1,
                  input$decile1, input$name), ignoreInit = TRUE, {
                    updateSelectInput(session,
                                      inputId = "code",
