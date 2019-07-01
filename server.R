@@ -2195,7 +2195,7 @@ server <- function(input, output, session) {
         colNames = T
       )
       
-      if (input$period1 == "QTR" | input$period1 == "MTH") {
+      if (input$period1 == "qtr" | input$period1 == "mth") {
         addWorksheet(wb, paste0("增长率(", input$period1, ")"))
         writeDataTable(
           wb,
