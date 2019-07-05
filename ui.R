@@ -36,7 +36,7 @@ ui <- dashboardPage(
           column(12, selectInput("note", label = "Note", "", multiple = TRUE, width = "230px"))
         ),
         column(12, style = "padding: 20px"),
-        column(12, actionButton("goButton", "Update", width = "200px")),
+        column(12, actionButton("goButton", "Go", width = "200px")),
         style = "display:inline-block;margin-down: 1px;vertical-align:middle"),
       tags$style(".skin-blue .sidebar a { color: #444; }")
       # tags$div(column(
@@ -145,7 +145,7 @@ ui <- dashboardPage(
                          )),
                   column(6,
                          "排名原则：医院排名/产品贡献排名基于Value固定不变，不随所选Measurment更改。",
-                         style = "color: #1F497D; padding: 25px;"),
+                         style = "color: #1F497D; padding: 30px;"),
                   column(2,
                          column(3),
                          column(9, downloadButton(outputId = "downloadData", label = "Download"),
@@ -204,10 +204,10 @@ ui <- dashboardPage(
                                      # c("ALL", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "Others", "#N/A"),
                                      # selected = "ALL",
                                      multiple = TRUE)),
-                  conditionalPanel(
-                    condition = "output.main2 == 1",
-                    column(2, selectInput("note1", label = "Note", "", multiple = TRUE))
-                  ),
+                  # conditionalPanel(
+                  #   condition = "output.main2 == 1",
+                  #   column(2, selectInput("note1", label = "Note", "", multiple = TRUE))
+                  # ),
                   fluidRow(),
                   column(2,
                          selectInput(
@@ -240,18 +240,14 @@ ui <- dashboardPage(
                   # column(12, selectInput("brand1", label = "Brand", "", multiple = TRUE)),
                   style = "color: #1F497D"
                 ),
-                column(2,
-                       column(3),
-                       column(9, downloadButton(outputId = "downloadPlotData", label = "Download"),
-                              style = "color: #1F497D; padding: 25px;")),
                 style = "background: #DDD9C4"
               )
             ),
             fluidRow(
-              box(
-                solidHeader = TRUE,
-                collapsible = FALSE,
-                width = 12,
+              # box(
+              #   solidHeader = TRUE,
+              #   collapsible = FALSE,
+              #   width = 12,
                 column(
                   2,
                   fluidRow(
@@ -296,11 +292,20 @@ ui <- dashboardPage(
                       column(12, plotlyOutput("plot3", width = "100%", height = "270px"))
                     )
                   )
-                ),
-                column(12,
-                       "Note：排名均已Value为准",
-                       style = "color: #1F497D; padding: 25px;")
-              )
+                )
+              # )
+            ),
+            fluidRow(
+              column(2,
+                     "Note：排名均已Value为准",
+                     style = "color:#1F497D; padding:10px; display:inline-block; text-align:center;"),
+              
+              column(4,
+                     downloadButton(outputId = "downloadTable", label = "Download"),
+                     style = "color:#1F497D; display:inline-block; text-align:center;"),
+              column(6,
+                     downloadButton(outputId = "downloadPlotData", label = "Download"),
+                     style = "color:#1F497D; display:inline-block; text-align:center;")
             )
           )
         )

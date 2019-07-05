@@ -274,7 +274,7 @@ ddd_summary <-
     
     salesdata7 <- salesdata5 %>%
       left_join(salesdata6, by = c("Region", "Province_CN", "City_CN", "Veeva.code", "Veeva.name", "Decile"))
-    salesdata7[is.na(salesdata7)] <- 0
+    # salesdata7[is.na(salesdata7)] <- 0
     
     salesdata8 <- salesdata7 %>% 
       mutate(total_gr = cc / pp - 1,
@@ -307,9 +307,9 @@ ddd_summary <-
                     "所选产品市场份额" = "selected_ms",
                     "增长指数" = "gr_idx",
                     "贡献指数" = "cont_idx") %>%
-      arrange(`医院排名`) %>% 
-      mutate_all(function(x) {ifelse(is.na(x), NA, x)}) %>% 
-      mutate_all(function(x) {ifelse(is.infinite(x), NA, x)})
+      arrange(`医院排名`)
+      # mutate_all(function(x) {ifelse(is.na(x), NA, x)}) %>% 
+      # mutate_all(function(x) {ifelse(is.infinite(x), NA, x)})
     # salesdata7[is.na(salesdata7)] <- 0
     # salesdata7[salesdata7 == Inf] <- 1
     
