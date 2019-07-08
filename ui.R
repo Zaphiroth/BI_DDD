@@ -36,7 +36,7 @@ ui <- dashboardPage(
           column(12, selectInput("note", label = "Note", "", multiple = TRUE, width = "230px"))
         ),
         column(12, style = "padding: 20px"),
-        column(12, actionButton("goButton", "Go", width = "200px")),
+        column(12, actionButton("goButton", "Update", width = "200px")),
         style = "display:inline-block;margin-down: 1px;vertical-align:middle"),
       tags$style(".skin-blue .sidebar a { color: #444; }")
       # tags$div(column(
@@ -86,20 +86,24 @@ ui <- dashboardPage(
                   #   condition = "output.main2 == 2",
                   #   column(2, selectInput("bl", label = "BI/Lilly", choices = c("BI", "Lilly"), multiple = TRUE))
                   # ),
-                  conditionalPanel(
-                    condition = "output.main1 == 1",
-                    column(2, selectInput("region", label = "Region", choices = "", multiple = TRUE))
+                  fluidRow(
+                    column(12, selectInput("brand", label = "Brand", "", multiple = TRUE))
                   ),
-                  column(2, selectInput("province", "Province", "", multiple = TRUE)),
-                  column(2, selectInput("city", "City", "", multiple = TRUE)),
-                  column(4,
-                         selectInput("decile",
-                                     label = "Decile",
-                                     "",
-                                     # c("ALL", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "Others", "#N/A"),
-                                     # selected = "ALL",
-                                     multiple = TRUE)),
-                  column(12, selectInput("brand", label = "Brand", "", multiple = TRUE)),
+                  fluidRow(
+                    conditionalPanel(
+                      condition = "output.main1 == 1",
+                      column(2, selectInput("region", label = "Region", choices = "", multiple = TRUE))
+                    ),
+                    column(2, selectInput("province", "Province", "", multiple = TRUE)),
+                    column(2, selectInput("city", "City", "", multiple = TRUE)),
+                    column(4,
+                           selectInput("decile",
+                                       label = "Decile",
+                                       "",
+                                       # c("ALL", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "Others", "#N/A"),
+                                       # selected = "ALL",
+                                       multiple = TRUE))
+                  ),
                   # column(2, selectInput("veeva", "Veeva Code", "", multiple = TRUE)),
                   # column(2, selectInput("hospital", "Hospital", "", multiple = TRUE)),
                   # column(2,
@@ -116,40 +120,42 @@ ui <- dashboardPage(
                   #          selected = 20,
                   #          multiple = FALSE
                   #        )),
-                  column(2,
-                         selectInput(
-                           "value",
-                           label = ("Measurement"),
-                           choices = list(
-                             "Value In RMB" = "RMB",
-                             "UNIT" = "UNIT",
-                             "DOT" = "DOT"
-                           ),
-                           selected = "RMB",
-                           multiple = FALSE
-                         )),
-                  column(2,
-                         selectInput(
-                           "period",
-                           label = ("Period"),
-                           choices = list(
-                             "MAT" = "mat",
-                             "YTD" = "ytd",
-                             "QTR" = "qtr",
-                             # "Rolling QTR" = "rqtr",
-                             "MTH" = "mth"
-                             # ,"YEARLY" = "yrl"
-                           ),
-                           selected = "qtr",
-                           multiple = FALSE
-                         )),
-                  column(6,
-                         "排名原则：医院排名/产品贡献排名基于Value固定不变，不随所选Measurment更改。",
-                         style = "color: #1F497D; padding: 30px;"),
-                  column(2,
-                         column(3),
-                         column(9, downloadButton(outputId = "downloadData", label = "Download"),
-                                style = "color: #1F497D; padding: 25px;")),
+                  fluidRow(
+                    column(2,
+                           selectInput(
+                             "value",
+                             label = ("Measurement"),
+                             choices = list(
+                               "Value In RMB" = "RMB",
+                               "UNIT" = "UNIT",
+                               "DOT" = "DOT"
+                             ),
+                             selected = "RMB",
+                             multiple = FALSE
+                           )),
+                    column(2,
+                           selectInput(
+                             "period",
+                             label = ("Period"),
+                             choices = list(
+                               "MAT" = "mat",
+                               "YTD" = "ytd",
+                               "QTR" = "qtr",
+                               # "Rolling QTR" = "rqtr",
+                               "MTH" = "mth"
+                               # ,"YEARLY" = "yrl"
+                             ),
+                             selected = "qtr",
+                             multiple = FALSE
+                           )),
+                    column(6,
+                           "排名原则：医院排名/产品贡献排名基于Value固定不变，不随所选Measurment更改。",
+                           style = "color: #1F497D; padding: 30px;"),
+                    column(2,
+                           column(3),
+                           column(9, downloadButton(outputId = "downloadData", label = "Download"),
+                                  style = "color: #1F497D; padding: 25px;"))
+                  ),
                   style = "color: #1F497D"
                 ),
                 style = "background: #DDD9C4"
@@ -280,6 +286,9 @@ ui <- dashboardPage(
                 ),
                 column(
                   6,
+                  fluidRow(
+                    column(12, selectInput("brand_3", label = "Brand", "", multiple = TRUE))
+                  ),
                   fluidRow(
                     column(12, plotlyOutput("plot1", width = "100%", height = "270px"))
                   ),

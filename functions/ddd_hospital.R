@@ -300,47 +300,48 @@ ddd_hospital <- function(salesdata, main, value, period) {
   # bi_brand <- bi_brand[!duplicated(bi_brand)]
   # bi_brand <- as.character(bi_brand)[!is.na(bi_brand)]
   
-  if (main == "Anti-PD") {
-    bi_brand <- unique(salesdata$Brand_CN[which(salesdata$Brand %in% c("SIFROL B.I"))])
-    
-  } else if (main == "Anti-thrombus") {
-    bi_brand <- unique(salesdata$Brand_CN[which(salesdata$Brand %in% c("ACTILYSE B.I"))])
-    
-  } else if (main == "Diabetes") {
-    bi_brand <- unique(salesdata$Brand_CN[which(salesdata$Brand %in% c("TRAJENTA B.I", "TRAJENTA DUO B.I", "JARDIANCE B.I"))])
-    
-  } else if (main == "Expectorant AMP") {
-    bi_brand <- unique(salesdata$Brand_CN[which(salesdata$Brand %in% c("MUCOSOLVAN B.I"))])
-    
-  } else if (main == "HTN") {
-    bi_brand <- unique(salesdata$Brand_CN[which(salesdata$Brand %in% c("MICARDIS PLUS B.I", "MICARDIS B.I"))])
-    
-  } else if (main == "in hospital") {
-    bi_brand <- unique(salesdata$Brand_CN[which(salesdata$Brand %in% c("ATROVENT B.I", "COMBIVENT B.I"))])
-    
-  } else if (main == "IPF") {
-    bi_brand <- unique(salesdata$Brand_CN[which(salesdata$Brand %in% c("OFEV B.I"))])
-    
-  } else if (main == "Onco") {
-    bi_brand <- unique(salesdata$Brand_CN[which(salesdata$Brand %in% c("GIOTRIF B.I"))])
-    
-  } else if (main == "Out hospital") {
-    bi_brand <- unique(salesdata$Brand_CN[which(salesdata$Brand %in% c("SPIRIVA B.I", "SPIOLTO B.I"))])
-    
-  } else if (main == "Pain") {
-    bi_brand <- unique(salesdata$Brand_CN[which(salesdata$Brand %in% c("MOBIC B.I"))])
-    
-  } else if (main == "SPAF") {
-    bi_brand <- unique(salesdata$Brand_CN[which(salesdata$Brand %in% c("PRADAXA B.IP"))])
-    
-  } else {
-    bi_brand <- NA
-  }
+  # if (main == "Anti-PD") {
+  #   bi_brand <- unique(salesdata$Brand_CN[which(salesdata$Brand %in% c("SIFROL B.I"))])
+  #   
+  # } else if (main == "Anti-thrombus") {
+  #   bi_brand <- unique(salesdata$Brand_CN[which(salesdata$Brand %in% c("ACTILYSE B.I"))])
+  #   
+  # } else if (main == "Diabetes") {
+  #   bi_brand <- unique(salesdata$Brand_CN[which(salesdata$Brand %in% c("TRAJENTA B.I", "TRAJENTA DUO B.I", "JARDIANCE B.I"))])
+  #   
+  # } else if (main == "Expectorant AMP") {
+  #   bi_brand <- unique(salesdata$Brand_CN[which(salesdata$Brand %in% c("MUCOSOLVAN B.I"))])
+  #   
+  # } else if (main == "HTN") {
+  #   bi_brand <- unique(salesdata$Brand_CN[which(salesdata$Brand %in% c("MICARDIS PLUS B.I", "MICARDIS B.I"))])
+  #   
+  # } else if (main == "in hospital") {
+  #   bi_brand <- unique(salesdata$Brand_CN[which(salesdata$Brand %in% c("ATROVENT B.I", "COMBIVENT B.I"))])
+  #   
+  # } else if (main == "IPF") {
+  #   bi_brand <- unique(salesdata$Brand_CN[which(salesdata$Brand %in% c("OFEV B.I"))])
+  #   
+  # } else if (main == "Onco") {
+  #   bi_brand <- unique(salesdata$Brand_CN[which(salesdata$Brand %in% c("GIOTRIF B.I"))])
+  #   
+  # } else if (main == "Out hospital") {
+  #   bi_brand <- unique(salesdata$Brand_CN[which(salesdata$Brand %in% c("SPIRIVA B.I", "SPIOLTO B.I"))])
+  #   
+  # } else if (main == "Pain") {
+  #   bi_brand <- unique(salesdata$Brand_CN[which(salesdata$Brand %in% c("MOBIC B.I"))])
+  #   
+  # } else if (main == "SPAF") {
+  #   bi_brand <- unique(salesdata$Brand_CN[which(salesdata$Brand %in% c("PRADAXA B.IP"))])
+  #   
+  # } else {
+  #   bi_brand <- NA
+  # }
   
   out <- list(rank = data8,
               table = data5,
-              plot = data4,
-              bi_brand = bi_brand)
+              plot = data4
+              # bi_brand = bi_brand
+              )
   
   return(out)
 }

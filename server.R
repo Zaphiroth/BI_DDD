@@ -91,10 +91,7 @@ server <- function(input, output, session) {
       updateSelectizeInput(session,
                            "category",
                            choices =  categorytype(),
-                           selected = categorytype()[1],
-                           options = list(
-                             maxItems = 999
-                           ))
+                           selected = categorytype())
     }
   })
   
@@ -231,6 +228,84 @@ server <- function(input, output, session) {
                       selected = note())
   })
   
+  ##--- cate
+  cate_data <- eventReactive(input$goButton, {
+    if (is.null(summary()) & is.null(main()))
+      return(NULL)
+    
+    cate_data <- summary()
+    cate_data <- cate_data[cate_data$Category %in% input$category, ]
+    cate_data <- cate_data[cate_data$Sub.category %in% input$subcategory, ]
+    
+    if (main() == "Diabetes") {
+      cate_data <- cate_data[cate_data$Note %in% input$bl, ]
+      cate_data$Region <- cate_data$Note
+    }
+    
+    if (main() == "Out hospital") {
+      cate_data <- cate_data[replace_na(cate_data$Note, "NA") %in% input$note, ]
+    }
+    
+    return(cate_data)
+  })
+  
+  ##--- Brand
+  brand <- reactive({
+    
+    if (is.null(cate_data()))
+      return(NULL)
+    
+    summary <- cate_data()
+    # summary <- summary[summary$Category %in% input$category, ]
+    # summary <- summary[summary$Sub.category %in% input$subcategory, ]
+    
+    # if (main() == "Diabetes") {
+    #   summary <- summary[summary$Note %in% input$bl, ]
+    # }
+    # 
+    # if (main() == "Out hospital") {
+    #   summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
+    # }
+    
+    # if ("ALL" %in% input$region) {
+    #   summary <- summary
+    # } else {
+    #   summary <- summary[summary$Region %in% input$region, ]
+    # }
+    # 
+    # if ("ALL" %in% input$province) {
+    #   summary <- summary
+    # } else {
+    #   summary <- summary[summary$Province_CN %in% input$province, ]
+    # }
+    # 
+    # if ("ALL" %in% input$city) {
+    #   summary <- summary
+    # } else {
+    #   summary <- summary[summary$City_CN %in% input$city, ]
+    # }
+    # 
+    # if ("ALL" %in% input$decile) {
+    #   summary <- summary
+    # } else {
+    #   summary <- summary[summary$Decile %in% input$decile, ]
+    # }
+    
+    brand_list <- summary$Brand_CN[!duplicated(summary$Brand_CN)]
+    brand_list <- brand_list[order(brand_list)]
+    # brand_list <- c("ALL", brand_list)
+  })
+  
+  observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
+                 # input$region, input$province, input$city, input$decile
+                 input$goButton), {
+                   updateSelectInput(session,
+                                     inputId = "brand",
+                                     label = "Brand",
+                                     choices = brand(),
+                                     selected = brand()[1])
+                 })
+  
   ##--- Region information
   region <- reactive({
     # if ("ALL" %in% input$decile) {
@@ -240,31 +315,36 @@ server <- function(input, output, session) {
     # }
     # summary <- summary()[summary()$Decile %in% input$decile,]
     
-    if (is.null(summary()))
+    if (is.null(cate_data()))
       return(NULL)
     
-    summary <- summary()
-    summary <- summary[summary$Category %in% input$category, ]
-    summary <- summary[summary$Sub.category %in% input$subcategory, ]
+    summary <- cate_data()
+    # summary <- summary[summary$Category %in% input$category, ]
+    # summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
-    if (main() == "Diabetes") {
-      summary <- summary[summary$Note %in% input$bl, ]
-    }
-
-    if (main() == "Out hospital") {
-      summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
-    }
+    # if (main() == "Diabetes") {
+    #   summary <- summary[summary$Note %in% input$bl, ]
+    # }
+    # 
+    # if (main() == "Out hospital") {
+    #   summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
+    # }
+    
+    summary <- summary[summary$Brand_CN %in% input$brand, ]
     
     reglist <- summary$Region[!duplicated(summary$Region)]
     reglist <- reglist[order(reglist)]
-    reglist <- c("ALL", reglist)
+    if (length(reglist) > 0) {
+      reglist <- c("ALL", reglist)
+    }
   })
   
-  observeEvent(c(input$category, input$subcategory, input$bl, input$note), {
+  observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
+                 input$brand), {
     updateSelectInput(session,
                       "region",
                       choices = region(),
-                      selected = "ALL")
+                      selected = region()[1])
   })
   
   ##--- Province information
@@ -275,20 +355,20 @@ server <- function(input, output, session) {
     #   summary <- summary()[summary()$Decile %in% input$decile,]
     # }
     
-    if (is.null(summary()))
+    if (is.null(brand()))
       return(NULL)
     
-    summary <- summary()
-    summary <- summary[summary$Category %in% input$category, ]
-    summary <- summary[summary$Sub.category %in% input$subcategory, ]
+    summary <- cate_data()
+    # summary <- summary[summary$Category %in% input$category, ]
+    # summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
-    if (main() == "Diabetes") {
-      summary <- summary[summary$Note %in% input$bl, ]
-    }
-
-    if (main() == "Out hospital") {
-      summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
-    }
+    # if (main() == "Diabetes") {
+    #   summary <- summary[summary$Note %in% input$bl, ]
+    # }
+    # 
+    # if (main() == "Out hospital") {
+    #   summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
+    # }
     
     # if (main() %in% c("Anti-PD", "Anti-Thrombus", "In hospital",
     #                   "Out hospital", "SPAF", "Onco", "IPF", "Pain")) {
@@ -300,6 +380,8 @@ server <- function(input, output, session) {
     # } else {
     #   summary <- summary
     # }
+    
+    summary <- summary[summary$Brand_CN %in% input$brand, ]
     
     if ("ALL" %in% input$region) {
       summary <- summary
@@ -314,12 +396,12 @@ server <- function(input, output, session) {
     provlist <- c("ALL", provlist)
   })
   
-  observeEvent(c(input$category, input$subcategory, input$bl, input$note, 
-                 input$region), {
+  observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
+                 input$brand, input$region), {
     updateSelectInput(session, 
                       "province",
                       choices =  province(),
-                      selected = "ALL")
+                      selected = province()[1])
   })
   
   ##--- City information
@@ -336,20 +418,22 @@ server <- function(input, output, session) {
     #   summary <- summary()[summary()$Region %in% input$region, ]
     # }
     
-    if (is.null(summary()))
+    if (is.null(brand()))
       return(NULL)
     
-    summary <- summary()
-    summary <- summary[summary$Category %in% input$category, ]
-    summary <- summary[summary$Sub.category %in% input$subcategory, ]
+    summary <- cate_data()
+    # summary <- summary[summary$Category %in% input$category, ]
+    # summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
-    if (main() == "Diabetes") {
-      summary <- summary[summary$Note %in% input$bl, ]
-    }
-
-    if (main() == "Out hospital") {
-      summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
-    }
+    # if (main() == "Diabetes") {
+    #   summary <- summary[summary$Note %in% input$bl, ]
+    # }
+    # 
+    # if (main() == "Out hospital") {
+    #   summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
+    # }
+    
+    summary <- summary[summary$Brand_CN %in% input$brand, ]
     
     if ("ALL" %in% input$region) {
       summary <- summary
@@ -368,12 +452,12 @@ server <- function(input, output, session) {
     citylist <- c("ALL", citylist)
   })
   
-  observeEvent(c(input$category, input$subcategory, input$bl, input$note, 
-                 input$region, input$province), {
+  observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
+                 input$brand, input$region, input$province), {
     updateSelectInput(session,
                       "city", 
-                      choices =  city(),
-                      selected = "ALL")
+                      choices = city(),
+                      selected = city()[1])
   })
   
   ##--- Decile information
@@ -384,20 +468,22 @@ server <- function(input, output, session) {
     #   summary <- summary()[summary()$Region %in% input$region, ]
     # }
     
-    if (is.null(summary()))
+    if (is.null(brand()))
       return(NULL)
     
-    summary <- summary()
-    summary <- summary[summary$Category %in% input$category, ]
-    summary <- summary[summary$Sub.category %in% input$subcategory, ]
+    summary <- cate_data()
+    # summary <- summary[summary$Category %in% input$category, ]
+    # summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
-    if (main() == "Diabetes") {
-      summary <- summary[summary$Note %in% input$bl, ]
-    }
-
-    if (main() == "Out hospital") {
-      summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
-    }
+    # if (main() == "Diabetes") {
+    #   summary <- summary[summary$Note %in% input$bl, ]
+    # }
+    # 
+    # if (main() == "Out hospital") {
+    #   summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
+    # }
+    
+    summary <- summary[summary$Brand_CN %in% input$brand, ]
     
     if ("ALL" %in% input$region) {
       summary <- summary
@@ -422,12 +508,12 @@ server <- function(input, output, session) {
     decile_list <- c("ALL", decile_list)
   })
   
-  observeEvent(c(input$category, input$subcategory, input$bl, input$note, 
-                 input$region, input$province, input$city), {
+  observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
+                 input$brand, input$region, input$province, input$city), {
     updateSelectInput(session,
                       "decile",
                       choices = decile(),
-                      selected = "ALL")
+                      selected = decile()[1])
   })
   
   ##--- Veeva Code and Name
@@ -512,62 +598,6 @@ server <- function(input, output, session) {
   #                     selected = "ALL")
   # })
   
-  ##--- Brand
-  brand <- reactive({
-    
-    if (is.null(summary()))
-      return(NULL)
-    
-    summary <- summary()
-    summary <- summary[summary$Category %in% input$category, ]
-    summary <- summary[summary$Sub.category %in% input$subcategory, ]
-    
-    if (main() == "Diabetes") {
-      summary <- summary[summary$Note %in% input$bl, ]
-    }
-
-    if (main() == "Out hospital") {
-      summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
-    }
-    
-    if ("ALL" %in% input$region) {
-      summary <- summary
-    } else {
-      summary <- summary[summary$Region %in% input$region, ]
-    }
-    
-    if ("ALL" %in% input$province) {
-      summary <- summary
-    } else {
-      summary <- summary[summary$Province_CN %in% input$province, ]
-    }
-    
-    if ("ALL" %in% input$city) {
-      summary <- summary
-    } else {
-      summary <- summary[summary$City_CN %in% input$city, ]
-    }
-    
-    if ("ALL" %in% input$decile) {
-      summary <- summary
-    } else {
-      summary <- summary[summary$Decile %in% input$decile, ]
-    }
-    
-    brand_list <- summary$Brand_CN[!duplicated(summary$Brand_CN)]
-    brand_list <- brand_list[order(brand_list)]
-    # brand_list <- c("ALL", brand_list)
-  })
-  
-  observeEvent(c(input$category, input$subcategory, input$bl, input$note, 
-                 input$region, input$province, input$city, input$decile), {
-    updateSelectInput(session,
-                      inputId = "brand",
-                      label = "Brand",
-                      choices = brand(),
-                      selected = brand()[1])
-  })
-  
   ##--- Top
   # toplist <- reactive({
   #   summary1 <- summary()
@@ -596,25 +626,27 @@ server <- function(input, output, session) {
   #   tmp
   # })
   
-  result1 <- eventReactive(input$goButton, {
+  result1 <- reactive({
     
-    if (is.null(summary()))
+    if (is.null(summary()) | is.null(brand()))
       return(NULL)
     
-    summary <- summary()
-    summary <- summary[summary$Category %in% input$category, ]
-    summary <- summary[summary$Sub.category %in% input$subcategory, ]
+    summary <- cate_data()
+    # summary <- summary[summary$Category %in% input$category, ]
+    # summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
     # if (is.null(input$brand) | is.null(summary))
     #   return(NULL)
     
-    if (main() == "Diabetes") {
-      summary <- summary[summary$Note %in% input$bl, ]
-    }
+    # if (main() == "Diabetes") {
+    #   summary <- summary[summary$Note %in% input$bl, ]
+    # }
+    # 
+    # if (main() == "Out hospital") {
+    #   summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
+    # }
     
-    if (main() == "Out hospital") {
-      summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
-    }
+    summary <- summary[summary$Brand_CN %in% input$brand, ]
     
     if ("ALL" %in% input$region) {
       summary <- summary
@@ -640,11 +672,11 @@ server <- function(input, output, session) {
       summary <- summary[summary$Decile %in% input$decile, ]
     }
     
-    if ("ALL" %in% input$brand) {
-      summary <- summary
-    } else {
-      summary <- summary[summary$Brand_CN %in% input$brand, ]
-    }
+    # if ("ALL" %in% input$brand) {
+    #   summary <- summary
+    # } else {
+    #   summary <- summary[summary$Brand_CN %in% input$brand, ]
+    # }
     
     category <- unique(summary$Category)
     subcategory <- unique(summary$Sub.category)
@@ -663,7 +695,7 @@ server <- function(input, output, session) {
     note <- unique(summary$Note)
     
     result <- ddd_summary(
-      salesdata = summary(),
+      salesdata = cate_data(),
       cate = category,
       subcate = subcategory,
       region = region,
@@ -679,9 +711,9 @@ server <- function(input, output, session) {
     )
     
     rank_info <- ddd_summary(
-      salesdata = summary(),
-      cate = input$category,
-      subcate = input$subcategory,
+      salesdata = cate_data(),
+      cate = category,
+      subcate = subcategory,
       region = region,
       province = province,
       city = city,
@@ -698,7 +730,7 @@ server <- function(input, output, session) {
     
     table_data <- distinct(result$table_data) %>%
       dplyr::select(-`医院排名`, -`产品贡献排名`) %>%
-      left_join(rank_info_m, by = c("Veeva Code", "Veeva Name")) %>%
+      right_join(rank_info_m, by = c("Veeva Code", "Veeva Name")) %>%
       dplyr::select("医院排名", "产品贡献排名", "Region", "省份", "城市", "Veeva Code", "Veeva Name", 
                     "医院等级", "医院产出", "医院增长率", "医院贡献率", "所选产品产出", "所选产品增长率", 
                     "所选产品贡献率", "所选产品市场份额", "增长指数", "贡献指数")
@@ -873,12 +905,14 @@ server <- function(input, output, session) {
     # input$goButton
     
     # isolate({
-    if (nrow(result1()$table_data) <= 1)
+    if (is.null(brand()))
       return(NULL)
     
     ot <- result1()$table_data %>%
       ungroup() %>% 
       as.data.frame()
+    ot[is.na(ot)] <- "-"
+    ot[ot == Inf] <- "-"
     
     dat <- DT::datatable(
       ot,
@@ -1038,49 +1072,50 @@ server <- function(input, output, session) {
   ##--- region
   region1 <- reactive({
     
-    if (is.null(summary()))
+    if (is.null(cate_data()))
       return(NULL)
     
-    summary <- summary()
-    summary <- summary[summary$Category %in% input$category, ]
-    summary <- summary[summary$Sub.category %in% input$subcategory, ]
+    summary <- cate_data()
+    # summary <- summary[summary$Category %in% input$category, ]
+    # summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
-    if (main() == "Diabetes") {
-      summary <- summary[summary$Note %in% input$bl, ]
-    }
-
-    if (main() == "Out hospital") {
-      summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
-    }
+    # if (main() == "Diabetes") {
+    #   summary <- summary[summary$Note %in% input$bl, ]
+    # }
+    # 
+    # if (main() == "Out hospital") {
+    #   summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
+    # }
     
-    reglist <- summary()$Region[!duplicated(summary()$Region)]
+    reglist <- summary$Region[!duplicated(summary$Region)]
     reglist <- reglist[order(reglist)]
     reglist <- c("ALL", reglist)
   })
   
-  observeEvent(c(input$category, input$subcategory, input$bl, input$note), {
+  observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
+                 input$goButton), {
     updateSelectInput(session,
                       "region1",
                       choices = region1(),
-                      selected = "ALL")
+                      selected = region1()[1])
   })
   ##--- province
   province1 <- reactive({
     
-    if (is.null(summary()))
+    if (is.null(cate_data()))
       return(NULL)
     
-    summary <- summary()
-    summary <- summary[summary$Category %in% input$category, ]
-    summary <- summary[summary$Sub.category %in% input$subcategory, ]
+    summary <- cate_data()
+    # summary <- summary[summary$Category %in% input$category, ]
+    # summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
-    if (main() == "Diabetes") {
-      summary <- summary[summary$Note %in% input$bl, ]
-    }
-
-    if (main() == "Out hospital") {
-      summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
-    }
+    # if (main() == "Diabetes") {
+    #   summary <- summary[summary$Note %in% input$bl, ]
+    # }
+    # 
+    # if (main() == "Out hospital") {
+    #   summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
+    # }
     
     if ("ALL" %in% input$region1) {
       summary <- summary
@@ -1093,31 +1128,31 @@ server <- function(input, output, session) {
     provlist <- c("ALL", provlist)
   })
   
-  observeEvent(c(input$category, input$subcategory, input$bl, input$note, 
+  observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
                  input$region1), {
     updateSelectInput(session,
                       "province1",
                       choices =  province1(),
-                      selected = "ALL")
+                      selected = province1()[1])
   })
   
   ##--- city
   city1 <- reactive({
     
-    if (is.null(summary()))
+    if (is.null(cate_data()))
       return(NULL)
     
-    summary <- summary()
-    summary <- summary[summary$Category %in% input$category, ]
-    summary <- summary[summary$Sub.category %in% input$subcategory, ]
+    summary <- cate_data()
+    # summary <- summary[summary$Category %in% input$category, ]
+    # summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
-    if (main() == "Diabetes") {
-      summary <- summary[summary$Note %in% input$bl, ]
-    }
-
-    if (main() == "Out hospital") {
-      summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
-    }
+    # if (main() == "Diabetes") {
+    #   summary <- summary[summary$Note %in% input$bl, ]
+    # }
+    # 
+    # if (main() == "Out hospital") {
+    #   summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
+    # }
     
     if ("ALL" %in% input$region1) {
       summary <- summary
@@ -1136,31 +1171,31 @@ server <- function(input, output, session) {
     citylist <- c("ALL", citylist)
   })
   
-  observeEvent(c(input$category, input$subcategory, input$bl, input$note, 
+  observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
                  input$region1, input$province1), {
                    updateSelectInput(session,
                                      "city1",
                                      choices =  city1(),
-                                     selected = "ALL")
+                                     selected = city1()[1])
                  })
   
   ##--- decile
   decile1 <- reactive({
     
-    if (is.null(summary()))
+    if (is.null(cate_data()))
       return(NULL)
     
-    summary <- summary()
-    summary <- summary[summary$Category %in% input$category, ]
-    summary <- summary[summary$Sub.category %in% input$subcategory, ]
+    summary <- cate_data()
+    # summary <- summary[summary$Category %in% input$category, ]
+    # summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
-    if (main() == "Diabetes") {
-      summary <- summary[summary$Note %in% input$bl, ]
-    }
-
-    if (main() == "Out hospital") {
-      summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
-    }
+    # if (main() == "Diabetes") {
+    #   summary <- summary[summary$Note %in% input$bl, ]
+    # }
+    # 
+    # if (main() == "Out hospital") {
+    #   summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
+    # }
     
     if ("ALL" %in% input$region1) {
       summary <- summary
@@ -1185,12 +1220,12 @@ server <- function(input, output, session) {
     decile_list <- c("ALL", decile_list)
   })
   
-  observeEvent(c(input$category, input$subcategory, input$bl, input$note, 
+  observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
                  input$region1, input$province1, input$city1), {
                    updateSelectInput(session,
                                      "decile1",
                                      choices = decile1(),
-                                     selected = "ALL")
+                                     selected = decile1()[1])
                  })
   
   ##--- Note
@@ -1246,20 +1281,20 @@ server <- function(input, output, session) {
   ##--- code and name
   c_n <- reactive({
     
-    if (is.null(summary()))
+    if (is.null(cate_data()))
       return(NULL)
     
-    summary <- summary()
-    summary <- summary[summary$Category %in% input$category, ]
-    summary <- summary[summary$Sub.category %in% input$subcategory, ]
+    summary <- cate_data()
+    # summary <- summary[summary$Category %in% input$category, ]
+    # summary <- summary[summary$Sub.category %in% input$subcategory, ]
     
-    if (main() == "Diabetes") {
-      summary <- summary[summary$Note %in% input$bl, ]
-    }
-
-    if (main() == "Out hospital") {
-      summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
-    }
+    # if (main() == "Diabetes") {
+    #   summary <- summary[summary$Note %in% input$bl, ]
+    # }
+    # 
+    # if (main() == "Out hospital") {
+    #   summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
+    # }
     
     if ("ALL" %in% input$region1) {
       summary <- summary
@@ -1309,7 +1344,7 @@ server <- function(input, output, session) {
   #                                    selected = c_n()[c_n()$`Veeva.name` == input$name, "Veeva.code"])
   #                })
   
-  observeEvent(c(input$category, input$subcategory, input$bl, input$note, 
+  observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
                  input$region1, input$province1, input$city1, input$decile1), {
                    updateSelectInput(session,
                                      inputId = "name",
@@ -1318,7 +1353,7 @@ server <- function(input, output, session) {
                                      selected = c_n()$`Veeva.name`[1])
                  })
   
-  observeEvent(c(input$category, input$subcategory, input$bl, input$note, 
+  observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
                  input$region1, input$province1, input$city1, input$decile1), {
                    updateSelectInput(session,
                                      inputId = "code",
@@ -1345,10 +1380,10 @@ server <- function(input, output, session) {
   
   ##--- result2
   result2 <- reactive({
-    if (is.null(summary()))
+    if (is.null(cate_data()))
       return(NULL)
     
-    ddd_hospital(summary(), main(), input$value1, input$period1)
+    ddd_hospital(cate_data(), main(), input$value1, input$period1)
   })
   
   ##--- rank
@@ -1364,6 +1399,7 @@ server <- function(input, output, session) {
       return(NULL)
     
     r[is.na(r)] <- "-"
+    r[r == Inf] <- "-"
     
     return(r)
   })
@@ -1563,12 +1599,12 @@ server <- function(input, output, session) {
   })
   
   ##--- table contents
-  bi_brand <- reactive({
-    if (is.null(result2()))
-      return(NULL)
-    
-    result2()$bi_brand
-  })
+  # bi_brand <- reactive({
+  #   if (is.null(result2()))
+  #     return(NULL)
+  #   
+  #   result2()$bi_brand
+  # })
   
   ot1 <- reactive({
     if (is.null(result2()) | is.null(input$name))
@@ -1638,6 +1674,8 @@ server <- function(input, output, session) {
         "市场份额",
         "产出"
       )
+    ot[is.na(ot)] <- "-"
+    ot[ot == Inf] <- "-"
     
     dat <- DT::datatable(
       ot,
@@ -1715,6 +1753,21 @@ server <- function(input, output, session) {
   # })
   
   ##--- plot contents
+  brand_3 <- reactive({
+    if (is.null(ot1()))
+      return(NULL)
+    
+    ot1()$`产品`
+  })
+  
+  observeEvent(input$code, {
+    updateSelectInput(session,
+                      inputId = "brand_3",
+                      label = "Brand",
+                      choices = brand_3(),
+                      selected = brand_3()[c(1, 2, 3)])
+  })
+  
   plot1 <- reactive({
     if (is.null(result2()) | is.null(ot1())
         # | is.null(input$brand1)
@@ -1753,8 +1806,8 @@ server <- function(input, output, session) {
       names(pd1)[i+1] <- substring(gsub("[.]", "", x), y[1]+z)
     }
     
-    # brand <- input$brand1
-    brand <- unique(pd1$Brand_CN)
+    brand <- input$brand_3
+    # brand <- unique(pd1$Brand_CN)
     
     pd3 <- pd1 %>%
       melt(id.vars = "Brand_CN", variable.name = "Date", value.name = "Share") %>%
@@ -1775,20 +1828,20 @@ server <- function(input, output, session) {
                   name = i)
     }
     
-    text_brand <- brand[which(brand %in% bi_brand())]
+    # text_brand <- brand[which(brand %in% bi_brand())]
     
-    if (length(text_brand) > 0) {
-      for (i in text_brand) {
-        p <- p %>%
-          add_text(x = pd3[pd3$Brand_CN == i, "Date"],
-                   y = pd3[pd3$Brand_CN == i, "Share"],
-                   text = paste0(pd3[pd3$Brand_CN == i, "Share"], "%"),
-                   textfont = list(size = 13),
-                   textposition = "top",
-                   name = i,
-                   showlegend = FALSE)
-      }
-    }
+    # if (length(text_brand) > 0) {
+    #   for (i in text_brand) {
+    #     p <- p %>%
+    #       add_text(x = pd3[pd3$Brand_CN == i, "Date"],
+    #                y = pd3[pd3$Brand_CN == i, "Share"],
+    #                text = paste0(pd3[pd3$Brand_CN == i, "Share"], "%"),
+    #                textfont = list(size = 13),
+    #                textposition = "top",
+    #                name = i,
+    #                showlegend = FALSE)
+    #   }
+    # }
     
     p <- p %>%
       config(
@@ -1880,8 +1933,8 @@ server <- function(input, output, session) {
       names(pd1)[i+1] <- substring(gsub("[.]", "", x), y[1]+z)
     }
     
-    # brand <- input$brand1
-    brand <- unique(pd1$Brand_CN)
+    brand <- input$brand_3
+    # brand <- unique(pd1$Brand_CN)
     
     pd3 <- pd1 %>%
       melt(id.vars = "Brand_CN", variable.name = "Date", value.name = "Sales") %>% 
@@ -1901,20 +1954,20 @@ server <- function(input, output, session) {
                   text = paste0("(", pd3[pd3$Brand_CN == i, "Date"], ", ", format(round(pd3[pd3$Brand_CN == i, "Sales"], 0), big.mark = ","), ")"))
     }
     
-    text_brand <- brand[which(brand %in% bi_brand())]
+    # text_brand <- brand[which(brand %in% bi_brand())]
     
-    if (length(text_brand) > 0) {
-      for (i in text_brand) {
-        p <- p %>%
-          add_text(x = pd3[pd3$Brand_CN == i, "Date"],
-                   y = round(pd3[pd3$Brand_CN == i, "Sales"]),
-                   text = format(round(pd3[pd3$Brand_CN == i, "Sales"], 0), big.mark = ","),
-                   textfont = list(size = 13),
-                   textposition = "top",
-                   name = i,
-                   showlegend = FALSE)
-      }
-    }
+    # if (length(text_brand) > 0) {
+    #   for (i in text_brand) {
+    #     p <- p %>%
+    #       add_text(x = pd3[pd3$Brand_CN == i, "Date"],
+    #                y = round(pd3[pd3$Brand_CN == i, "Sales"]),
+    #                text = format(round(pd3[pd3$Brand_CN == i, "Sales"], 0), big.mark = ","),
+    #                textfont = list(size = 13),
+    #                textposition = "top",
+    #                name = i,
+    #                showlegend = FALSE)
+    #   }
+    # }
     
     p <- p %>%
       config(
@@ -2001,8 +2054,8 @@ server <- function(input, output, session) {
       names(pd1)[i+1] <- substring(gsub("[.]", "", x), y[1]+z)
     }
     
-    # brand <- input$brand1
-    brand <- pd1$Brand_CN
+    brand <- input$brand_3
+    # brand <- pd1$Brand_CN
     
     pd3 <- pd1 %>%
       melt(id.vars = "Brand_CN", variable.name = "Date", value.name = "Growth") %>%
@@ -2023,20 +2076,20 @@ server <- function(input, output, session) {
                   name = i)
     }
     
-    text_brand <- brand[which(brand %in% bi_brand())]
+    # text_brand <- brand[which(brand %in% bi_brand())]
     
-    if (length(text_brand) > 0) {
-      for (i in text_brand) {
-        p <- p %>%
-          add_text(x = pd3[pd3$Brand_CN == i, "Date"],
-                   y = pd3[pd3$Brand_CN == i, "Growth"],
-                   text = paste0(pd3[pd3$Brand_CN == i, "Growth"], "%"),
-                   textfont = list(size = 13),
-                   textposition = "top",
-                   name = i,
-                   showlegend = FALSE)
-      }
-    }
+    # if (length(text_brand) > 0) {
+    #   for (i in text_brand) {
+    #     p <- p %>%
+    #       add_text(x = pd3[pd3$Brand_CN == i, "Date"],
+    #                y = pd3[pd3$Brand_CN == i, "Growth"],
+    #                text = paste0(pd3[pd3$Brand_CN == i, "Growth"], "%"),
+    #                textfont = list(size = 13),
+    #                textposition = "top",
+    #                name = i,
+    #                showlegend = FALSE)
+    #   }
+    # }
     
     p <- p %>%
       config(
