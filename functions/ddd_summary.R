@@ -12,7 +12,7 @@ ddd_summary <-
            decile,
            # veeva,
            # hosp_name,
-           note,
+           # note,
            value,
            period,
            brand) {
@@ -128,8 +128,8 @@ ddd_summary <-
     # window <- min(5, window + 1)
     window <- 2
     
-    salesdata1 <- salesdata[which(salesdata$Category  %in% cate), ]
-    salesdata2 <- salesdata1[which(salesdata1$Sub.category  %in% subcate), ]
+    # salesdata1 <- salesdata[which(salesdata$Category  %in% cate), ]
+    # salesdata2 <- salesdata1[which(salesdata1$Sub.category  %in% subcate), ]
     
     fmr <-
       min(c(which(grepl(
@@ -219,8 +219,7 @@ ddd_summary <-
       filter(Region %in% region,
              Province_CN %in% province,
              City_CN %in% city,
-             Decile %in% decile,
-             Note %in% note) %>% 
+             Decile %in% decile) %>% 
       group_by(Region, Province_CN, City_CN, Veeva.code, Veeva.name, Decile) %>% 
       summarise(pp = sum(pp, na.rm = TRUE),
                 cc = sum(cc, na.rm = TRUE)
@@ -232,12 +231,11 @@ ddd_summary <-
     
     ## selected
     salesdata6 <- salesdata4 %>%
-      filter(Region %in% region,
+      filter(Brand_CN %in% brand,
+             Region %in% region,
              Province_CN %in% province,
              City_CN %in% city,
-             Decile %in% decile,
-             Note %in% note,
-             Brand_CN %in% brand) %>%
+             Decile %in% decile) %>%
       group_by(Region, Province_CN, City_CN, Veeva.code, Veeva.name, Decile) %>%
       summarise(pp_sel = sum(pp, na.rm = TRUE),
                 cc_sel = sum(cc, na.rm = TRUE)
@@ -314,10 +312,10 @@ ddd_summary <-
     # salesdata7[salesdata7 == Inf] <- 1
     
     salesdata9 <- salesdata7 %>% 
-      summarise(pp = sum(pp),
-                cc = sum(cc),
-                pp_sel = sum(pp_sel),
-                cc_sel = sum(cc_sel)) %>% 
+      summarise(pp = sum(pp, na.rm = TRUE),
+                cc = sum(cc, na.rm = TRUE),
+                pp_sel = sum(pp_sel, na.rm = TRUE),
+                cc_sel = sum(cc_sel, na.rm = TRUE)) %>% 
       mutate(total_gr = cc / pp - 1,
              total_sh = cc / sum(cc, na.rm = TRUE),
              selected_gr = cc_sel / pp_sel - 1,

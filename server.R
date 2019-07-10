@@ -315,7 +315,7 @@ server <- function(input, output, session) {
     # }
     # summary <- summary()[summary()$Decile %in% input$decile,]
     
-    if (is.null(cate_data()))
+    if (is.null(cate_data()) | is.null(input$brand))
       return(NULL)
     
     summary <- cate_data()
@@ -355,7 +355,7 @@ server <- function(input, output, session) {
     #   summary <- summary()[summary()$Decile %in% input$decile,]
     # }
     
-    if (is.null(brand()))
+    if (is.null(cate_data()) | is.null(input$brand) | is.null(input$region))
       return(NULL)
     
     summary <- cate_data()
@@ -418,7 +418,7 @@ server <- function(input, output, session) {
     #   summary <- summary()[summary()$Region %in% input$region, ]
     # }
     
-    if (is.null(brand()))
+    if (is.null(cate_data()) | is.null(input$brand) | is.null(input$region) | is.null(input$province))
       return(NULL)
     
     summary <- cate_data()
@@ -468,7 +468,7 @@ server <- function(input, output, session) {
     #   summary <- summary()[summary()$Region %in% input$region, ]
     # }
     
-    if (is.null(brand()))
+    if (is.null(cate_data()) | is.null(input$brand) | is.null(input$region) | is.null(input$province) | is.null(input$city))
       return(NULL)
     
     summary <- cate_data()
@@ -628,7 +628,7 @@ server <- function(input, output, session) {
   
   result1 <- reactive({
     
-    if (is.null(cate_data()) | is.null(brand()))
+    if (is.null(cate_data()) | is.null(input$brand) | is.null(input$region) | is.null(input$province) | is.null(input$city) | is.null(input$decile))
       return(NULL)
     
     summary <- cate_data()
@@ -646,7 +646,7 @@ server <- function(input, output, session) {
     #   summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
     # }
     
-    summary <- summary[summary$Brand_CN %in% input$brand, ]
+    # summary <- summary[summary$Brand_CN %in% input$brand, ]
     
     if ("ALL" %in% input$region) {
       summary <- summary
@@ -704,7 +704,7 @@ server <- function(input, output, session) {
       decile = decile,
       # veeva = veeva,
       # hosp_name = hosp_name,
-      note = note,
+      # note = note,
       value = input$value,
       period = input$period,
       brand = input$brand
@@ -720,7 +720,7 @@ server <- function(input, output, session) {
       decile = decile,
       # veeva = veeva,
       # hosp_name = hosp_name,
-      note = note,
+      # note = note,
       value = "RMB",
       period = input$period,
       brand = input$brand
@@ -905,13 +905,14 @@ server <- function(input, output, session) {
     # input$goButton
     
     # isolate({
-    if (is.null(brand()))
+    if (is.null(result1()))
       return(NULL)
     
     ot <- result1()$table_data %>%
       ungroup() %>% 
       as.data.frame()
     ot[is.na(ot)] <- "-"
+    ot[ot == NaN] <- "-"
     ot[ot == Inf] <- "-"
     
     dat <- DT::datatable(
@@ -1399,6 +1400,7 @@ server <- function(input, output, session) {
       return(NULL)
     
     r[is.na(r)] <- "-"
+    r[r == NaN] <- "-"
     r[r == Inf] <- "-"
     
     return(r)
@@ -1675,6 +1677,7 @@ server <- function(input, output, session) {
         "产出"
       )
     ot[is.na(ot)] <- "-"
+    ot[ot == NaN] <- "-"
     ot[ot == Inf] <- "-"
     
     dat <- DT::datatable(
