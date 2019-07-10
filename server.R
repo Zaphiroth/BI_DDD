@@ -298,7 +298,7 @@ server <- function(input, output, session) {
   
   observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
                  # input$region, input$province, input$city, input$decile
-                 input$goButton), {
+                 cate_data()), {
                    updateSelectInput(session,
                                      inputId = "brand",
                                      label = "Brand",
@@ -340,7 +340,7 @@ server <- function(input, output, session) {
   })
   
   observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
-                 input$brand), {
+                 cate_data(), input$brand), {
     updateSelectInput(session,
                       "region",
                       choices = region(),
@@ -397,7 +397,7 @@ server <- function(input, output, session) {
   })
   
   observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
-                 input$brand, input$region), {
+                 cate_data(), input$brand, input$region), {
     updateSelectInput(session, 
                       "province",
                       choices =  province(),
@@ -453,7 +453,7 @@ server <- function(input, output, session) {
   })
   
   observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
-                 input$brand, input$region, input$province), {
+                 cate_data(), input$brand, input$region, input$province), {
     updateSelectInput(session,
                       "city", 
                       choices = city(),
@@ -509,7 +509,7 @@ server <- function(input, output, session) {
   })
   
   observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
-                 input$brand, input$region, input$province, input$city), {
+                 cate_data(), input$brand, input$region, input$province, input$city), {
     updateSelectInput(session,
                       "decile",
                       choices = decile(),
@@ -628,7 +628,7 @@ server <- function(input, output, session) {
   
   result1 <- reactive({
     
-    if (is.null(summary()) | is.null(brand()))
+    if (is.null(cate_data()) | is.null(brand()))
       return(NULL)
     
     summary <- cate_data()
@@ -1093,7 +1093,7 @@ server <- function(input, output, session) {
   })
   
   observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
-                 input$goButton), {
+                 cate_data()), {
     updateSelectInput(session,
                       "region1",
                       choices = region1(),
@@ -1129,7 +1129,7 @@ server <- function(input, output, session) {
   })
   
   observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
-                 input$region1), {
+                 cate_data(), input$region1), {
     updateSelectInput(session,
                       "province1",
                       choices =  province1(),
@@ -1172,7 +1172,7 @@ server <- function(input, output, session) {
   })
   
   observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
-                 input$region1, input$province1), {
+                 cate_data(), input$region1, input$province1), {
                    updateSelectInput(session,
                                      "city1",
                                      choices =  city1(),
@@ -1221,7 +1221,7 @@ server <- function(input, output, session) {
   })
   
   observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
-                 input$region1, input$province1, input$city1), {
+                 cate_data(), input$region1, input$province1, input$city1), {
                    updateSelectInput(session,
                                      "decile1",
                                      choices = decile1(),
@@ -1345,7 +1345,7 @@ server <- function(input, output, session) {
   #                })
   
   observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
-                 input$region1, input$province1, input$city1, input$decile1), {
+                 cate_data(), input$region1, input$province1, input$city1, input$decile1), {
                    updateSelectInput(session,
                                      inputId = "name",
                                      label = "Hospial Name",
@@ -1354,7 +1354,7 @@ server <- function(input, output, session) {
                  })
   
   observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
-                 input$region1, input$province1, input$city1, input$decile1), {
+                 cate_data(), input$region1, input$province1, input$city1, input$decile1), {
                    updateSelectInput(session,
                                      inputId = "code",
                                      label = "Veeva Code",
@@ -1760,7 +1760,7 @@ server <- function(input, output, session) {
     ot1()$`产品`
   })
   
-  observeEvent(input$code, {
+  observeEvent(c(input$code, ot1()), {
     updateSelectInput(session,
                       inputId = "brand_3",
                       label = "Brand",
