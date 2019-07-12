@@ -130,6 +130,7 @@ ddd_summary <-
     
     # salesdata1 <- salesdata[which(salesdata$Category  %in% cate), ]
     # salesdata2 <- salesdata1[which(salesdata1$Sub.category  %in% subcate), ]
+    salesdata2 <- salesdata
     
     fmr <-
       min(c(which(grepl(

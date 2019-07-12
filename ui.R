@@ -171,7 +171,7 @@ ui <- dashboardPage(
                   infoBoxOutput("sel.num")
                 ),
                 fluidRow(column(
-                  12, tags$div(DT::dataTableOutput("contents"), style = "font-size:80%")
+                  12, tags$div(DT::dataTableOutput("contents", width = "2000px"), style = "font-size:80%; overflow-x:scroll;")
                 ))
               )
             )
@@ -257,31 +257,31 @@ ui <- dashboardPage(
                 column(
                   2,
                   fluidRow(
-                    column(12, tags$div(DT::dataTableOutput("rank1"), style = "font-size:100%")),
+                    column(12, tags$div(DT::dataTableOutput("rank1", width = "245px"), style = "font-size:100%; overflow-x:scroll;")),
                     conditionalPanel(
                       condition = "input.period1 == 'qtr' | input.period1 == 'mth'",
                       # column(12, tags$div(style="margin-bottom:100px;"))
-                      column(12, style = "padding: 50px")
+                      column(12, style = "padding: 48px")
                     ),
-                    column(12, tags$div(DT::dataTableOutput("rank2"), style = "font-size:100%")),
+                    column(12, tags$div(DT::dataTableOutput("rank2", width = "245px"), style = "font-size:100%; overflow-x:scroll;")),
                     conditionalPanel(
                       condition = "input.period1 == 'qtr' | input.period1 == 'mth'",
                       # column(12, tags$div(style="margin-bottom:100px;"))
-                      column(12, style = "padding: 50px")
+                      column(12, style = "padding: 48px")
                     ),
-                    column(12, tags$div(DT::dataTableOutput("rank3"), style = "font-size:100%")),
+                    column(12, tags$div(DT::dataTableOutput("rank3", width = "245px"), style = "font-size:100%; overflow-x:scroll;")),
                     conditionalPanel(
                       condition = "input.period1 == 'qtr' | input.period1 == 'mth'",
                       # column(12, tags$div(style="margin-bottom:100px;"))
-                      column(12, style = "padding: 50px")
+                      column(12, style = "padding: 48px")
                     ),
-                    column(12, tags$div(DT::dataTableOutput("rank4"), style = "font-size:100%"))
+                    column(12, tags$div(DT::dataTableOutput("rank4", width = "245px"), style = "font-size:100%; overflow-x:scroll;"))
                   )
                 ),
                 column(
                   4,
                   fluidRow(
-                    column(12, tags$div(DT::dataTableOutput("contents_hosp"), style = "font-size:100%"))
+                    column(12, tags$div(DT::dataTableOutput("contents_hosp", width = "520px"), style = "font-size:100%; overflow-x:scroll;"))
                   )
                 ),
                 column(

@@ -1763,7 +1763,7 @@ server <- function(input, output, session) {
     ot1()$`产品`
   })
   
-  observeEvent(c(input$code, ot1()), {
+  observeEvent(c(input$name, ot1()), {
     updateSelectInput(session,
                       inputId = "brand_3",
                       label = "Brand",
@@ -1771,7 +1771,7 @@ server <- function(input, output, session) {
                       selected = brand_3()[c(1, 2, 3)])
   })
   
-  plot1 <- reactive({
+  plot1 <- eventReactive(input$brand_3, {
     if (is.null(result2()) | is.null(ot1())
         # | is.null(input$brand1)
     )
@@ -1851,7 +1851,8 @@ server <- function(input, output, session) {
         displaylogo = FALSE,
         toImageButtonOptions = list(
           # format = "svg",
-          filename = paste0(input$name, "(", input$code, ")-市场份额趋势 (", toupper(input$period1), ")")
+          filename = paste0(input$name, "(", c_n()$`Veeva.code`[which(c_n()$`Veeva.name` == input$name)], 
+                            ")-市场份额趋势 (", toupper(input$period1), ")")
           # width = 600,
           # height = 700
         )
@@ -1897,7 +1898,7 @@ server <- function(input, output, session) {
     }
   })
   
-  plot2 <- reactive({
+  plot2 <- eventReactive(input$brand_3, {
     if (is.null(result2()) | is.null(ot1())
         # | is.null(input$brand1)
     )
@@ -1977,7 +1978,8 @@ server <- function(input, output, session) {
         displaylogo = FALSE,
         toImageButtonOptions = list(
           # format = "svg",
-          filename = paste0(input$name, "(", input$code, ")-产出趋势 (", toupper(input$period1), ")")
+          filename = paste0(input$name, "(", c_n()$`Veeva.code`[which(c_n()$`Veeva.name` == input$name)], 
+                            ")-产出趋势 (", toupper(input$period1), ")")
           # width = 600,
           # height = 700
         )
@@ -2023,7 +2025,7 @@ server <- function(input, output, session) {
     }
   )
   
-  plot3 <- reactive({
+  plot3 <- eventReactive(input$brand_3, {
     if (is.null(result2()) | is.null(ot1()) |
         # is.null(input$brand1) |
         input$period1 == "mat" | input$period1 == "ytd")
@@ -2099,7 +2101,8 @@ server <- function(input, output, session) {
         displaylogo = FALSE,
         toImageButtonOptions = list(
           # format = "svg",
-          filename = paste0(input$name, "(", input$code, ")-增长率趋势 (", toupper(input$period1), ")")
+          filename = paste0(input$name, "(", c_n()$`Veeva.code`[which(c_n()$`Veeva.name` == input$name)], 
+                            ")-增长率趋势 (", toupper(input$period1), ")")
           # width = 600,
           # height = 700
         )
