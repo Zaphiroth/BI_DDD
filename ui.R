@@ -152,9 +152,10 @@ ui <- dashboardPage(
                            "排名原则：医院排名/产品贡献排名基于Value固定不变，不随所选Measurment更改。",
                            style = "color: #1F497D; padding: 30px;"),
                     column(2,
-                           column(3),
-                           column(9, downloadButton(outputId = "downloadData", label = "Download"),
-                                  style = "color: #1F497D; padding: 25px;"))
+                           column(1),
+                           column(10, downloadButton(outputId = "downloadData", label = "Download"),
+                                  style = "color: #1F497D; padding: 25px;"),
+                           column(1))
                   ),
                   style = "color: #1F497D"
                 ),
