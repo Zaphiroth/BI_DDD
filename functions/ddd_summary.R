@@ -273,7 +273,7 @@ ddd_summary <-
     
     salesdata7 <- salesdata5 %>%
       left_join(salesdata6, by = c("Region", "Province_CN", "City_CN", "Veeva.code", "Veeva.name", "Decile"))
-    # salesdata7[is.na(salesdata7)] <- 0
+    salesdata7[is.na(salesdata7)] <- 0
     
     salesdata8 <- salesdata7 %>% 
       mutate(total_gr = cc / pp - 1,

@@ -1677,7 +1677,6 @@ server <- function(input, output, session) {
         "产出"
       )
     ot[is.na(ot)] <- "-"
-    ot[ot == NaN] <- "-"
     ot[ot == Inf] <- "-"
     
     dat <- DT::datatable(
@@ -1756,14 +1755,14 @@ server <- function(input, output, session) {
   # })
   
   ##--- plot contents
-  brand_3 <- reactive({
+  brand_3 <- eventReactive(ot1(), {
     if (is.null(ot1()))
       return(NULL)
     
     ot1()$`产品`
   })
   
-  observeEvent(c(input$name, ot1()), {
+  observeEvent(brand_3(), {
     updateSelectInput(session,
                       inputId = "brand_3",
                       label = "Brand",
@@ -1771,8 +1770,8 @@ server <- function(input, output, session) {
                       selected = brand_3()[c(1, 2, 3)])
   })
   
-  plot1 <- eventReactive(input$brand_3, {
-    if (is.null(result2()) | is.null(ot1())
+  plot1 <- eventReactive(c(input$value1, input$period1, input$brand_3), {
+    if (is.null(result2()) | is.null(brand_3())
         # | is.null(input$brand1)
     )
       return(NULL)
@@ -1785,9 +1784,8 @@ server <- function(input, output, session) {
     if (dim(pd)[1] == 0)
       return(NULL)
     
-    pd_order <- ot1()["产品"]
+    pd_order <- data.frame("Brand_CN" = brand_3())
     pd1 <- pd_order %>% 
-      rename("Brand_CN" = "产品") %>% 
       left_join(pd, by = c("Brand_CN"))
     
     if (input$period1 == "mat" | input$period1 == "ytd") {
@@ -1898,8 +1896,8 @@ server <- function(input, output, session) {
     }
   })
   
-  plot2 <- eventReactive(input$brand_3, {
-    if (is.null(result2()) | is.null(ot1())
+  plot2 <- eventReactive(c(input$value1, input$period1, input$brand_3), {
+    if (is.null(result2()) | is.null(brand_3())
         # | is.null(input$brand1)
     )
       return(NULL)
@@ -1913,9 +1911,8 @@ server <- function(input, output, session) {
     if (dim(pd)[1] == 0)
       return(NULL)
     
-    pd_order <- ot1()["产品"]
+    pd_order <- data.frame("Brand_CN" = brand_3())
     pd1 <- pd_order %>% 
-      rename("Brand_CN" = "产品") %>% 
       left_join(pd, by = c("Brand_CN"))
     
     if (input$period1 == "mat" | input$period1 == "ytd") {
@@ -2025,8 +2022,8 @@ server <- function(input, output, session) {
     }
   )
   
-  plot3 <- eventReactive(input$brand_3, {
-    if (is.null(result2()) | is.null(ot1()) |
+  plot3 <- eventReactive(c(input$value1, input$period1, input$brand_3), {
+    if (is.null(result2()) | is.null(brand_3()) |
         # is.null(input$brand1) |
         input$period1 == "mat" | input$period1 == "ytd")
       return(NULL)
@@ -2039,9 +2036,8 @@ server <- function(input, output, session) {
     if (dim(pd)[1] == 0)
       return(NULL)
     
-    pd_order <- ot1()["产品"]
+    pd_order <- data.frame("Brand_CN" = brand_3())
     pd1 <- pd_order %>% 
-      rename("Brand_CN" = "产品") %>% 
       left_join(pd, by = c("Brand_CN"))
     
     if (input$period1 == "qtr") {
@@ -2199,6 +2195,8 @@ server <- function(input, output, session) {
       return(NULL)
     ot <- result1()$table_data
     ot <- as.data.frame(ot)
+    ot[ot == Inf] <- NA
+    ot[is.na(ot)] <- NA
     ot
     # })
   })
@@ -2228,12 +2226,17 @@ server <- function(input, output, session) {
     },
     
     content = function(file) {
+      ot1 <- ot1() %>% 
+        as.data.frame()
+      ot1[ot1 == Inf] <- NA
+      ot1[is.na(ot1)] <- NA
+      
       wb <- createWorkbook()
       addWorksheet(wb, "Detail")
       writeDataTable(
         wb,
         sheet = "Detail",
-        x = ot1(),
+        x = ot1,
         withFilter = F,
         rowNames = F,
         colNames = T
@@ -2244,6 +2247,35 @@ server <- function(input, output, session) {
                    overwrite = TRUE)
     }
   )
+  
+  plot_data <- reactive({
+    if (is.null(plot1()$plot_data))
+      return(NULL)
+    
+    pd1 <- plot1()$plot_data %>% 
+      as.data.frame()
+    pd1[pd1 == Inf] <- NA
+    pd1[is.na(pd1)] <- NA
+    
+    pd2 <- plot2()$plot_data %>% 
+      as.data.frame()
+    pd2[pd2 == Inf] <- NA
+    pd2[is.na(pd2)] <- NA
+    
+    if (input$period1 == "mat" | input$period1 == "ytd") {
+      return(list(pd1 = pd1,
+                  pd2 = pd2))
+    }
+      
+    pd3 <- plot3()$plot_data %>% 
+      as.data.frame()
+    pd3[pd3 == Inf] <- NA
+    pd3[is.na(pd3)] <- NA
+    
+    return(list(pd1 = pd1,
+                pd2 = pd2,
+                pd3 = pd3))
+  })
   
   output$downloadPlotData <- downloadHandler(
     filename = function() {
@@ -2257,7 +2289,7 @@ server <- function(input, output, session) {
       writeDataTable(
         wb,
         sheet = paste0("市场份额(", input$period1, ")"),
-        x = plot1()$plot_data,
+        x = plot_data()$pd1,
         withFilter = F,
         rowNames = F,
         colNames = T
@@ -2267,7 +2299,7 @@ server <- function(input, output, session) {
       writeDataTable(
         wb,
         sheet = paste0("产出(", input$period1, ")"),
-        x = plot2()$plot_data,
+        x = plot_data()$pd2,
         withFilter = F,
         rowNames = F,
         colNames = T
@@ -2278,7 +2310,7 @@ server <- function(input, output, session) {
         writeDataTable(
           wb,
           sheet = paste0("增长率(", input$period1, ")"),
-          x = plot3()$plot_data,
+          x = plot_data()$pd3,
           withFilter = F,
           rowNames = F,
           colNames = T

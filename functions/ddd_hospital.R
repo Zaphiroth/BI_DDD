@@ -85,11 +85,11 @@ ddd_hospital <- function(salesdata, main, value, period) {
   # names(hospital) <- c("Veeva.name", paste0(names(hospital)[2:length(hospital)], "_mkt"))
   
   data4 <- data1 %>% 
-    left_join(data3, by = c("Veeva.name", "Decile")) %>% 
     select(-`Sub.category`, -`Decile`, -`MANU_CN`) %>% 
     group_by(Veeva.name, Brand_CN) %>% 
     summarise_all(sum) %>% 
-    ungroup()
+    ungroup() %>% 
+    left_join(data3, by = c("Veeva.name"))
   
   for (i in data_names[6:length(data_names)]) {
     data4[paste0("ms_", i)] <- data4[i] / data4[paste0("mkt_", i)]
