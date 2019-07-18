@@ -1678,6 +1678,7 @@ server <- function(input, output, session) {
       )
     ot[is.na(ot)] <- "-"
     ot[ot == Inf] <- "-"
+    ot[ot == NaN] <- "-"
     
     dat <- DT::datatable(
       ot,
