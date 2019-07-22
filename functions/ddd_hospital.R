@@ -85,8 +85,8 @@ ddd_hospital <- function(salesdata, main, value, period) {
   # names(hospital) <- c("Veeva.name", paste0(names(hospital)[2:length(hospital)], "_mkt"))
   
   data4 <- data1 %>% 
-    select(-`Sub.category`, -`Decile`, -`MANU_CN`) %>% 
-    group_by(Veeva.name, Brand_CN) %>% 
+    select(-`Sub.category`, -`Decile`) %>% 
+    group_by(Veeva.name, MANU_CN, Brand_CN) %>% 
     summarise_all(sum) %>% 
     ungroup() %>% 
     left_join(data3, by = c("Veeva.name"))
@@ -126,7 +126,7 @@ ddd_hospital <- function(salesdata, main, value, period) {
   
   date <- substr(tail(data_names, 1), 9, 15)
   
-  table_names <- c("Veeva.name", "Brand_CN",
+  table_names <- c("Veeva.name", "Brand_CN", "MANU_CN", 
                    grep("mkt", grep(date, names(data4), value = TRUE), value = TRUE, invert = TRUE))
   data5 <- data4[table_names]
   
@@ -177,8 +177,7 @@ ddd_hospital <- function(salesdata, main, value, period) {
                    paste0("mkt_", period, "_RMB_", date))]
   names(data6) <- c("Veeva.name", "Decile", "past", "recent", "product")
   data6 <- data6 %>% 
-    mutate(growth = recent / past - 1,
-           hosp_rank = rank(-product, ties.method = "min")) %>%
+    mutate(growth = recent / past - 1) %>%
     select(-`past`, -`product`)
   
   if (main == "Out hospital") {
@@ -202,26 +201,27 @@ ddd_hospital <- function(salesdata, main, value, period) {
   data7 <- data7 %>% 
     group_by(Veeva.name, Decile) %>%
     summarise_all(sum) %>%
-    ungroup() %>%
-    mutate(BI_rank = rank(-recent_bi, ties.method = "min"))
+    ungroup()
   
   if (nrow(data7) > 0) {
-    if (!(max(data7$recent_bi) > 0)) {
-      data7$BI_rank <- "-"
-    }
+    # if (!(max(data7$recent_bi) > 0)) {
+    #   data7$BI_rank <- "-"
+    # }
     
-    if (!(max(data6$hosp_rank) > 0)) {
-      data6$hosp_rank <- "-"
-    }
+    # if (!(max(data6$hosp_rank) > 0)) {
+    #   data6$hosp_rank <- "-"
+    # }
     
     data8 <- data6 %>% 
       left_join(data7, by = c("Veeva.name", "Decile")) %>% 
-      mutate(BI_rank = ifelse(is.na(BI_rank),
-                              max(data7$BI_rank)+1,
-                              BI_rank),
-             hosp_rank = ifelse(is.na(hosp_rank),
-                                max(data6$hosp_rank)+1,
-                                hosp_rank)) %>%
+      mutate(recent_bi = ifelse(is.na(recent_bi),
+                                0,
+                                recent_bi),
+             recent = ifelse(is.na(recent),
+                             0,
+                             recent),
+             BI_rank = rank(-recent_bi, ties.method = "min"),
+             hosp_rank = rank(-recent, ties.method = "min")) %>%
       # mutate(growth = ifelse(is.na(growth),
       #                        0,
       #                        ifelse(is.infinite(growth),

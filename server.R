@@ -91,7 +91,10 @@ server <- function(input, output, session) {
       updateSelectizeInput(session,
                            "category",
                            choices =  categorytype(),
-                           selected = categorytype())
+                           selected = categorytype(),
+                           options = list(
+                             maxItems = 99
+                           ))
     }
   })
   
@@ -1608,7 +1611,7 @@ server <- function(input, output, session) {
   #   result2()$bi_brand
   # })
   
-  ot1 <- reactive({
+  ot1 <- eventReactive(input$name, {
     if (is.null(result2()) | is.null(input$name))
       return(NULL)
     
@@ -1625,7 +1628,7 @@ server <- function(input, output, session) {
       arrange(-`ranking`) %>% 
       select(`Brand_CN`)
     
-    ot1_names <- c("Brand_CN", grep(paste0(input$period1, "_", input$value1), names(ot1), value = TRUE))
+    ot1_names <- c("Brand_CN", "MANU_CN", grep(paste0(input$period1, "_", input$value1), names(ot1), value = TRUE))
     ot1 <- ot1[ot1_names]
     
     # if (length(ot1) == 3) {
@@ -1641,7 +1644,7 @@ server <- function(input, output, session) {
     #                                         1,
     #                                         x))})
     
-    colnames(t) <- c("产品", "产出", "市场份额", "增长率")
+    colnames(t) <- c("产品", "厂商", "产出", "市场份额", "增长率")
     
     return(t)
   })
@@ -1649,7 +1652,7 @@ server <- function(input, output, session) {
   output$contents_hosp <- renderDataTable({
     
     if (is.null(ot1())) {
-      ot1 <- tibble(`产品` = " ", `产出` = " ", `市场份额` = " ", `增长率` = " ")
+      ot1 <- tibble(`产品` = " ", `厂商` = " ", `产出` = " ", `市场份额` = " ", `增长率` = " ")
     } else {
       ot1 <- ot1()
     }
@@ -1661,7 +1664,7 @@ server <- function(input, output, session) {
     }
     
     rows <- (dim(ot1)[1] %/% pageLength + 1) * pageLength
-    ot <- tibble(`产品` = rep(" ", rows), `产出` = rep(" ", rows), `市场份额` = rep(" ", rows), `增长率` = rep(" ", rows))
+    ot <- tibble(`产品` = rep(" ", rows), `厂商` = rep(" ", rows), `产出` = rep(" ", rows), `市场份额` = rep(" ", rows), `增长率` = rep(" ", rows))
     
     for (i in 1:dim(ot1)[1]) {
       ot[i, ] <- ot1[i, ]
@@ -1672,6 +1675,7 @@ server <- function(input, output, session) {
       dplyr::select(
         "排名",
         "产品",
+        "厂商",
         "增长率",
         "市场份额",
         "产出"
@@ -1711,7 +1715,8 @@ server <- function(input, output, session) {
       formatStyle(
         c(
           "排名",
-          "产品"
+          "产品",
+          "厂商"
         ),
         # fontWeight = 'bold',
         `font-size` = '15px',
@@ -1826,7 +1831,7 @@ server <- function(input, output, session) {
                   y = pd3[pd3$Brand_CN == i, "Share"],
                   type = "scatter",
                   mode = "lines + markers",
-                  marker = list(size = 5),
+                  marker = list(size = 8),
                   name = i)
     }
     
@@ -1951,7 +1956,7 @@ server <- function(input, output, session) {
                   y = round(pd3[pd3$Brand_CN == i, "Sales"], 0),
                   type = "scatter",
                   mode = "lines + markers",
-                  marker = list(size = 5),
+                  marker = list(size = 8),
                   name = i,
                   text = paste0("(", pd3[pd3$Brand_CN == i, "Date"], ", ", format(round(pd3[pd3$Brand_CN == i, "Sales"], 0), big.mark = ","), ")"))
     }
@@ -2074,7 +2079,7 @@ server <- function(input, output, session) {
                   y = pd3[pd3$Brand_CN == i, "Growth"],
                   type = "scatter",
                   mode = "lines + markers",
-                  marker = list(size = 5),
+                  marker = list(size = 8),
                   name = i)
     }
     

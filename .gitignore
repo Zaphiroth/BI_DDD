@@ -8,3 +8,7 @@
 Delivery/
 
 test_data/
+
+\.RDataTmp
+
+final data/

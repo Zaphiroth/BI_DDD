@@ -280,13 +280,13 @@ ui <- dashboardPage(
                   )
                 ),
                 column(
-                  4,
+                  5,
                   fluidRow(
-                    column(12, tags$div(DT::dataTableOutput("contents_hosp", width = "520px"), style = "font-size:100%; overflow-x:scroll;"))
+                    column(12, tags$div(DT::dataTableOutput("contents_hosp", width = "650px"), style = "font-size:100%; overflow-x:scroll;"))
                   )
                 ),
                 column(
-                  6,
+                  5,
                   fluidRow(
                     column(12, selectInput("brand_3", label = "Brand", "", multiple = TRUE))
                   ),
