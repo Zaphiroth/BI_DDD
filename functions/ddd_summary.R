@@ -306,7 +306,8 @@ ddd_summary <-
                     "所选产品市场份额" = "selected_ms",
                     "增长指数" = "gr_idx",
                     "贡献指数" = "cont_idx") %>%
-      arrange(`医院排名`)
+      arrange(`医院排名`) %>% 
+      as.data.frame()
       # mutate_all(function(x) {ifelse(is.na(x), NA, x)}) %>% 
       # mutate_all(function(x) {ifelse(is.infinite(x), NA, x)})
     # salesdata7[is.na(salesdata7)] <- 0
@@ -326,12 +327,12 @@ ddd_summary <-
              cont_idx = selected_sh / total_sh * 100) %>%
       mutate(hosp_rank = NA,
              bi_rank = NA,
-             Region = NA,
-             Province_CN  = NA,
-             City_CN = NA,
-             Veeva.code = NA,
+             Region = "-",
+             Province_CN  = "-",
+             City_CN = "-",
+             Veeva.code = "-",
              Veeva.name = "Total",
-             Decile = NA) %>% 
+             Decile = "-") %>% 
       dplyr::select("医院排名" = "hosp_rank", 
                     "产品贡献排名" = "bi_rank",
                     "Region", 
@@ -349,7 +350,8 @@ ddd_summary <-
                     "所选产品市场份额" = "selected_ms",
                     "增长指数" = "gr_idx",
                     "贡献指数" = "cont_idx") %>%
-      arrange(`医院排名`)
+      arrange(`医院排名`) %>% 
+      as.data.frame()
     
     salesdata10 <- bind_rows(salesdata9, salesdata8)
     

@@ -39,7 +39,39 @@ server <- function(input, output, session) {
       na.strings = "NA",
       stringsAsFactors = F,
       fileEncoding = 'GB2312'
-    )
+    ) %>% 
+      mutate(Region = as.character(Region),
+             Region = ifelse(is.na(Region),
+                             "-",
+                             Region),
+             Province_CN = as.character(Province_CN),
+             Province_CN = ifelse(is.na(Province_CN),
+                                  "-",
+                                  Province_CN),
+             City_CN = as.character(City_CN),
+             City_CN = ifelse(is.na(City_CN),
+                              "-",
+                              City_CN),
+             Veeva.code = as.character(Veeva.code),
+             Veeva.code = ifelse(is.na(Veeva.code),
+                                 "-",
+                                 Veeva.code),
+             Veeva.name = as.character(Veeva.name),
+             Veeva.name = ifelse(is.na(Veeva.name),
+                                 "-",
+                                 Veeva.name),
+             Decile = as.character(Decile),
+             Decile = ifelse(is.na(Decile),
+                             "-",
+                             Decile),
+             Brand_CN = as.character(Brand_CN),
+             Brand_CN = ifelse(is.na(Brand_CN),
+                               "-",
+                               Brand_CN),
+             MANU_CN = as.character(MANU_CN),
+             MANU_CN = ifelse(is.na(MANU_CN),
+                              "-",
+                              MANU_CN))
     tmp$Note <- as.character(tmp$Note)
     tmp
   })
@@ -1106,7 +1138,7 @@ server <- function(input, output, session) {
   ##--- province
   province1 <- reactive({
     
-    if (is.null(cate_data()))
+    if (is.null(cate_data()) | is.null(input$region1))
       return(NULL)
     
     summary <- cate_data()
@@ -1143,7 +1175,7 @@ server <- function(input, output, session) {
   ##--- city
   city1 <- reactive({
     
-    if (is.null(cate_data()))
+    if (is.null(cate_data()) | is.null(input$region1) | is.null(input$province1))
       return(NULL)
     
     summary <- cate_data()
@@ -1186,7 +1218,7 @@ server <- function(input, output, session) {
   ##--- decile
   decile1 <- reactive({
     
-    if (is.null(cate_data()))
+    if (is.null(cate_data()) | is.null(input$region1) | is.null(input$province1) | is.null(input$city1))
       return(NULL)
     
     summary <- cate_data()
@@ -1285,7 +1317,7 @@ server <- function(input, output, session) {
   ##--- code and name
   c_n <- reactive({
     
-    if (is.null(cate_data()))
+    if (is.null(cate_data()) | is.null(input$region1) | is.null(input$province1) | is.null(input$city1) | is.null(input$decile1))
       return(NULL)
     
     summary <- cate_data()
@@ -1325,7 +1357,13 @@ server <- function(input, output, session) {
     }
     
     c_n <- summary[, c("Veeva.code", "Veeva.name")]
-    c_n <- distinct(c_n)
+    
+    if (nrow(c_n) == 0) {
+      c_n <- data.frame("Veeva.code" = "-",
+                        "Veeva.name" = "-")
+    } else {
+      c_n <- distinct(c_n)
+    }
   })
   
   # observeEvent(c(input$category, input$subcategory, input$bl, input$note, 
@@ -1391,7 +1429,7 @@ server <- function(input, output, session) {
   })
   
   ##--- rank
-  rank <- reactive({
+  rank <- eventReactive(input$name, {
     if (is.null(result2()) | is.null(input$name))
       return(NULL)
     
@@ -1418,43 +1456,47 @@ server <- function(input, output, session) {
       r1 <- r1[c(2, 3)]
     }
     
-    r <- DT::datatable(
-      r1,
-      rownames = FALSE,
-      # extensions = c('FixedColumns', 'Buttons'),
-      options = list(
-        autoWidth = TRUE,
-        # dom = '<"bottom">Bfrtpl',
-        # buttons = I('colvis'),
-        scrollY = FALSE,
-        paging = FALSE,
-        searching = FALSE,
-        ordering = FALSE,
-        bInfo = FALSE,
-        columnDefs = list(list(
-          className = 'dt-center',
-          targets = seq(0, 1)
-        )),
-        autoWidth = TRUE,
-        pageLength = 1,
-        initComplete = JS(
-          "function(settings, json) {",
-          "$(this.api().table().header()).css({'background-color': '#fff', 'color': '#1F497D'});",
-          "}"
-        )
-      )
-    ) %>%
-      formatStyle(
-        c(
-          "医院排名",
-          "BI 排名"
-        ),
-        `font-size` = '45px',
-        fontWeight = 'bold',
-        color = '#1F497D'
-      )
+    input$update
     
-    return(r)
+    isolate({
+      r <- DT::datatable(
+        r1,
+        rownames = FALSE,
+        # extensions = c('FixedColumns', 'Buttons'),
+        options = list(
+          autoWidth = TRUE,
+          # dom = '<"bottom">Bfrtpl',
+          # buttons = I('colvis'),
+          scrollY = FALSE,
+          paging = FALSE,
+          searching = FALSE,
+          ordering = FALSE,
+          bInfo = FALSE,
+          columnDefs = list(list(
+            className = 'dt-center',
+            targets = seq(0, 1)
+          )),
+          autoWidth = TRUE,
+          pageLength = 1,
+          initComplete = JS(
+            "function(settings, json) {",
+            "$(this.api().table().header()).css({'background-color': '#fff', 'color': '#1F497D'});",
+            "}"
+          )
+        )
+      ) %>%
+        formatStyle(
+          c(
+            "医院排名",
+            "BI 排名"
+          ),
+          `font-size` = '45px',
+          fontWeight = 'bold',
+          color = '#1F497D'
+        )
+      
+      return(r)
+    })
   })
   
   output$rank2 <- renderDataTable({
@@ -1622,11 +1664,11 @@ server <- function(input, output, session) {
     if (dim(ot1)[1] == 0)
       return(NULL)
     
-    rank_data <- ot1[c("Brand_CN", grep("ms|gth", grep(paste0(input$period1, "_RMB"), names(ot1), value = TRUE), invert = TRUE, value = TRUE))]
-    names(rank_data) <- c("Brand_CN", "ranking")
+    rank_data <- ot1[c("Brand_CN", "MANU_CN", grep("ms|gth", grep(paste0(input$period1, "_RMB"), names(ot1), value = TRUE), invert = TRUE, value = TRUE))]
+    names(rank_data) <- c("Brand_CN", "MANU_CN", "ranking")
     rank_data <- rank_data %>% 
       arrange(-`ranking`) %>% 
-      select(`Brand_CN`)
+      select(`Brand_CN`, `MANU_CN`)
     
     ot1_names <- c("Brand_CN", "MANU_CN", grep(paste0(input$period1, "_", input$value1), names(ot1), value = TRUE))
     ot1 <- ot1[ot1_names]
@@ -1636,7 +1678,7 @@ server <- function(input, output, session) {
     # }
     
     t <- rank_data %>% 
-      left_join(ot1, by = c("Brand_CN"))
+      left_join(ot1, by = c("Brand_CN", "MANU_CN"))
     # %>% 
     #   mutate_all(function(x) {ifelse(is.na(x),
     #                                  0,
@@ -1701,7 +1743,7 @@ server <- function(input, output, session) {
         bInfo = FALSE,
         columnDefs = list(list(
           className = 'dt-center',
-          targets = seq(0, 4)
+          targets = seq(0, 5)
         )),
         autoWidth = TRUE,
         pageLength = pageLength,
@@ -1765,7 +1807,7 @@ server <- function(input, output, session) {
     if (is.null(ot1()))
       return(NULL)
     
-    ot1()$`产品`
+    paste(ot1()$`产品`, ot1()$`厂商`, sep = " ")
   })
   
   observeEvent(brand_3(), {
@@ -1782,7 +1824,9 @@ server <- function(input, output, session) {
     )
       return(NULL)
     
-    pd_names <- c("Brand_CN", grep("ms", grep(paste0(input$period1, "_", input$value1), names(result2()$plot), value = TRUE), value = TRUE))
+    pd_names <- c("Brand_CN", "MANU_CN", 
+                  grep("ms", grep(paste0(input$period1, "_", input$value1), 
+                                  names(result2()$plot), value = TRUE), value = TRUE))
     pd <- result2()$plot %>% 
       filter(Veeva.name == input$name) %>%
       select(pd_names)
@@ -1790,48 +1834,48 @@ server <- function(input, output, session) {
     if (dim(pd)[1] == 0)
       return(NULL)
     
-    pd_order <- data.frame("Brand_CN" = brand_3())
-    pd1 <- pd_order %>% 
-      left_join(pd, by = c("Brand_CN"))
+    # pd_order <- data.frame("Brand_CN" = brand_3())
+    # pd1 <- pd_order %>% 
+    #   left_join(pd, by = c("Brand_CN"))
     
     if (input$period1 == "mat" | input$period1 == "ytd") {
-      names(pd1) <- c("Brand_CN", 1, 2)
+      names(pd) <- c("Brand_CN", "MANU_CN", 1, 2)
       
     } else if (input$period1 == "qtr") {
-      pd1 <- pd1[c("Brand_CN", tail(names(pd1), 13))]
-      names(pd1) <- c("Brand_CN", 1:13)
+      pd <- pd[c("Brand_CN", "MANU_CN", tail(names(pd), 13))]
+      names(pd) <- c("Brand_CN", "MANU_CN", 1:13)
       
     } else if (input$period1 == "mth") {
-      names(pd1) <- c("Brand_CN", 1:24)
+      names(pd) <- c("Brand_CN", "MANU_CN", 1:24)
     }
     
-    pd_names1 <- tail(pd_names, length(pd1)-1)
-    for (i in 1:(length(pd1)-1)) {
+    pd_names1 <- tail(pd_names, length(pd)-2)
+    for (i in 1:(length(pd)-2)) {
       x <- pd_names1[i]
       y <- regexpr(paste0(input$period1, "_", input$value1, "_"), x, useBytes = TRUE)
       z <- attr(y,"match.length")
-      names(pd1)[i+1] <- substring(gsub("[.]", "", x), y[1]+z)
+      names(pd)[i+2] <- substring(gsub("[.]", "", x), y[1]+z)
     }
     
     brand <- input$brand_3
-    # brand <- unique(pd1$Brand_CN)
     
-    pd3 <- pd1 %>%
-      melt(id.vars = "Brand_CN", variable.name = "Date", value.name = "Share") %>%
+    pd3 <- pd %>%
+      melt(id.vars = c("Brand_CN", "MANU_CN"), variable.name = "Date", value.name = "Share") %>%
       mutate(Share = Share * 100,
              Share = round(Share, 2)) %>% 
+      unite("brand_manu", Brand_CN, MANU_CN, sep = " ") %>% 
       distinct() %>% 
-      arrange(Brand_CN, Date)
+      arrange(brand_manu, Date)
     
     p <- plot_ly(hoverinfo = "name + x + y")
     
     for (i in brand) {
       p <- p %>%
-        add_trace(x = pd3[pd3$Brand_CN == i, "Date"],
-                  y = pd3[pd3$Brand_CN == i, "Share"],
+        add_trace(x = pd3[pd3$brand_manu == i, "Date"],
+                  y = pd3[pd3$brand_manu == i, "Share"],
                   type = "scatter",
-                  mode = "lines + markers",
-                  marker = list(size = 8),
+                  mode = "lines+markers",
+                  marker = list(size = 5),
                   name = i)
     }
     
@@ -1891,7 +1935,7 @@ server <- function(input, output, session) {
       )
     
     return(list(plot = p,
-                plot_data = pd1))
+                plot_data = pd))
   })
   
   output$plot1 <- renderPlotly({
@@ -1908,8 +1952,9 @@ server <- function(input, output, session) {
     )
       return(NULL)
     
-    pd_names <- c("Brand_CN", grep("mkt|ms|gth", grep(paste0(input$period1, "_", input$value1), 
-                                                      names(result2()$plot), value = TRUE), invert = TRUE, value = TRUE))
+    pd_names <- c("Brand_CN", "MANU_CN", 
+                  grep("mkt|ms|gth", grep(paste0(input$period1, "_", input$value1), 
+                                          names(result2()$plot), value = TRUE), invert = TRUE, value = TRUE))
     pd <- result2()$plot %>% 
       filter(Veeva.name == input$name) %>%
       select(pd_names)
@@ -1917,48 +1962,49 @@ server <- function(input, output, session) {
     if (dim(pd)[1] == 0)
       return(NULL)
     
-    pd_order <- data.frame("Brand_CN" = brand_3())
-    pd1 <- pd_order %>% 
-      left_join(pd, by = c("Brand_CN"))
+    # pd_order <- data.frame("Brand_CN" = brand_3())
+    # pd1 <- pd_order %>% 
+    #   left_join(pd, by = c("Brand_CN"))
     
     if (input$period1 == "mat" | input$period1 == "ytd") {
-      names(pd1) <- c("Brand_CN", 1, 2)
+      names(pd) <- c("Brand_CN", "MANU_CN", 1, 2)
       
     } else if (input$period1 == "qtr") {
-      pd1 <- pd1[c("Brand_CN", tail(names(pd1), 13))]
-      names(pd1) <- c("Brand_CN", 1:13)
+      pd <- pd[c("Brand_CN", "MANU_CN", tail(names(pd), 13))]
+      names(pd) <- c("Brand_CN", "MANU_CN", 1:13)
       
     } else if (input$period1 == "mth") {
-      names(pd1) <- c("Brand_CN", 1:24)
+      names(pd) <- c("Brand_CN", "MANU_CN", 1:24)
     }
     
-    pd_names1 <- tail(pd_names, length(pd1)-1)
-    for (i in 1:(length(pd1)-1)) {
+    pd_names1 <- tail(pd_names, length(pd)-2)
+    for (i in 1:(length(pd)-2)) {
       x <- pd_names1[i]
       y <- regexpr(paste0(input$period1, "_", input$value1, "_"), x, useBytes = TRUE)
       z <- attr(y,"match.length")
-      names(pd1)[i+1] <- substring(gsub("[.]", "", x), y[1]+z)
+      names(pd)[i+2] <- substring(gsub("[.]", "", x), y[1]+z)
     }
     
     brand <- input$brand_3
-    # brand <- unique(pd1$Brand_CN)
+    # brand <- unique(pd$Brand_CN)
     
-    pd3 <- pd1 %>%
-      melt(id.vars = "Brand_CN", variable.name = "Date", value.name = "Sales") %>% 
+    pd3 <- pd %>%
+      melt(id.vars = c("Brand_CN", "MANU_CN"), variable.name = "Date", value.name = "Sales") %>% 
+      unite("brand_manu", Brand_CN, MANU_CN, sep = " ") %>% 
       distinct() %>% 
-      arrange(Brand_CN, Date)
+      arrange(brand_manu, Date)
     
     p <- plot_ly(hoverinfo = "name+text")
     
     for (i in brand) {
       p <- p %>%
-        add_trace(x = pd3[pd3$Brand_CN == i, "Date"],
-                  y = round(pd3[pd3$Brand_CN == i, "Sales"], 0),
+        add_trace(x = pd3[pd3$brand_manu == i, "Date"],
+                  y = round(pd3[pd3$brand_manu == i, "Sales"], 0),
                   type = "scatter",
-                  mode = "lines + markers",
-                  marker = list(size = 8),
+                  mode = "lines+markers",
+                  marker = list(size = 5),
                   name = i,
-                  text = paste0("(", pd3[pd3$Brand_CN == i, "Date"], ", ", format(round(pd3[pd3$Brand_CN == i, "Sales"], 0), big.mark = ","), ")"))
+                  text = paste0("(", pd3[pd3$brand_manu == i, "Date"], ", ", format(round(pd3[pd3$brand_manu == i, "Sales"], 0), big.mark = ","), ")"))
     }
     
     # text_brand <- brand[which(brand %in% bi_brand())]
@@ -2017,7 +2063,7 @@ server <- function(input, output, session) {
       )
     
     return(list(plot = p,
-                plot_data = pd1))
+                plot_data = pd))
   })
   
   output$plot2 <- renderPlotly(
@@ -2034,7 +2080,9 @@ server <- function(input, output, session) {
         input$period1 == "mat" | input$period1 == "ytd")
       return(NULL)
     
-    pd_names <- c("Brand_CN", grep("gth", grep(paste0(input$period1, "_", input$value1), names(result2()$plot), value = TRUE), value = TRUE))
+    pd_names <- c("Brand_CN", "MANU_CN", 
+                  grep("gth", grep(paste0(input$period1, "_", input$value1), 
+                                   names(result2()$plot), value = TRUE), value = TRUE))
     pd <- result2()$plot %>% 
       filter(Veeva.name == input$name) %>%
       select(pd_names)
@@ -2042,44 +2090,45 @@ server <- function(input, output, session) {
     if (dim(pd)[1] == 0)
       return(NULL)
     
-    pd_order <- data.frame("Brand_CN" = brand_3())
-    pd1 <- pd_order %>% 
-      left_join(pd, by = c("Brand_CN"))
+    # pd_order <- data.frame("Brand_CN" = brand_3())
+    # pd1 <- pd_order %>% 
+    #   left_join(pd, by = c("Brand_CN"))
     
     if (input$period1 == "qtr") {
-      names(pd1) <- c("Brand_CN", 1:10)
+      names(pd) <- c("Brand_CN", "MANU_CN", 1:10)
       
     } else if (input$period1 == "mth") {
-      names(pd1) <- c("Brand_CN", 1:12)
+      names(pd) <- c("Brand_CN", "MANU_CN", 1:12)
     }
     
-    pd_names1 <- tail(pd_names, length(pd1)-1)
-    for (i in 1:(length(pd1)-1)) {
+    pd_names1 <- tail(pd_names, length(pd)-2)
+    for (i in 1:(length(pd)-2)) {
       x <- pd_names1[i]
       y <- regexpr(paste0(input$period1, "_", input$value1, "_"), x, useBytes = TRUE)
       z <- attr(y,"match.length")
-      names(pd1)[i+1] <- substring(gsub("[.]", "", x), y[1]+z)
+      names(pd)[i+2] <- substring(gsub("[.]", "", x), y[1]+z)
     }
     
     brand <- input$brand_3
-    # brand <- pd1$Brand_CN
+    # brand <- pd$Brand_CN
     
-    pd3 <- pd1 %>%
-      melt(id.vars = "Brand_CN", variable.name = "Date", value.name = "Growth") %>%
+    pd3 <- pd %>%
+      melt(id.vars = c("Brand_CN", "MANU_CN"), variable.name = "Date", value.name = "Growth") %>%
       mutate(Growth = Growth * 100,
              Growth = round(Growth, 2)) %>% 
+      unite("brand_manu", Brand_CN, MANU_CN, sep = " ") %>% 
       distinct() %>% 
-      arrange(Brand_CN, Date)
+      arrange(brand_manu, Date)
     
     p <- plot_ly(hoverinfo = "name + x + y")
     
     for (i in brand) {
       p <- p %>%
-        add_trace(x = pd3[pd3$Brand_CN == i, "Date"],
-                  y = pd3[pd3$Brand_CN == i, "Growth"],
+        add_trace(x = pd3[pd3$brand_manu == i, "Date"],
+                  y = pd3[pd3$brand_manu == i, "Growth"],
                   type = "scatter",
-                  mode = "lines + markers",
-                  marker = list(size = 8),
+                  mode = "lines+markers",
+                  marker = list(size = 5),
                   name = i)
     }
     
@@ -2139,7 +2188,7 @@ server <- function(input, output, session) {
       )
     
     return(list(plot = p,
-                plot_data = pd1))
+                plot_data = pd))
   })
   
   output$plot3 <- renderPlotly({

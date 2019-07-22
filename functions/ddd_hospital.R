@@ -203,7 +203,7 @@ ddd_hospital <- function(salesdata, main, value, period) {
     summarise_all(sum) %>%
     ungroup()
   
-  if (nrow(data7) > 0) {
+  # if (nrow(data7) > 0) {
     # if (!(max(data7$recent_bi) > 0)) {
     #   data7$BI_rank <- "-"
     # }
@@ -212,45 +212,45 @@ ddd_hospital <- function(salesdata, main, value, period) {
     #   data6$hosp_rank <- "-"
     # }
     
-    data8 <- data6 %>% 
-      left_join(data7, by = c("Veeva.name", "Decile")) %>% 
-      mutate(recent_bi = ifelse(is.na(recent_bi),
-                                0,
-                                recent_bi),
-             recent = ifelse(is.na(recent),
-                             0,
-                             recent),
-             BI_rank = rank(-recent_bi, ties.method = "min"),
-             hosp_rank = rank(-recent, ties.method = "min")) %>%
-      # mutate(growth = ifelse(is.na(growth),
-      #                        0,
-      #                        ifelse(is.infinite(growth),
-      #                               1,
-      #                               growth))) %>%
-      select("Veeva.name",
-             "医院排名" = "hosp_rank",
-             "BI 排名" = "BI_rank",
-             "医院产出" = "recent",
-             "品类增长率" = "growth",
-             "全国医院等级" = "Decile")
-  } else {
-    data8 <- data6 %>% 
-      mutate(BI_rank = "-",
-             hosp_rank = ifelse(is.na(hosp_rank),
-                                max(data6$hosp_rank)+1,
-                                hosp_rank)) %>%
-      # mutate(growth = ifelse(is.na(growth),
-      #                        0,
-      #                        ifelse(is.infinite(growth),
-      #                               1,
-      #                               growth))) %>%
-      select("Veeva.name",
-             "医院排名" = "hosp_rank",
-             "BI 排名" = "BI_rank",
-             "医院产出" = "recent",
-             "品类增长率" = "growth",
-             "全国医院等级" = "Decile")
-  }
+  data8 <- data6 %>% 
+    left_join(data7, by = c("Veeva.name", "Decile")) %>% 
+    mutate(recent_bi = ifelse(is.na(recent_bi),
+                              0,
+                              recent_bi),
+           recent = ifelse(is.na(recent),
+                           0,
+                           recent),
+           BI_rank = rank(-recent_bi, ties.method = "min"),
+           hosp_rank = rank(-recent, ties.method = "min")) %>%
+    # mutate(growth = ifelse(is.na(growth),
+    #                        0,
+    #                        ifelse(is.infinite(growth),
+    #                               1,
+    #                               growth))) %>%
+    select("Veeva.name",
+           "医院排名" = "hosp_rank",
+           "BI 排名" = "BI_rank",
+           "医院产出" = "recent",
+           "品类增长率" = "growth",
+           "全国医院等级" = "Decile")
+  # } else {
+  #   data8 <- data6 %>% 
+  #     mutate(BI_rank = "-",
+  #            hosp_rank = ifelse(is.na(hosp_rank),
+  #                               max(data6$hosp_rank)+1,
+  #                               hosp_rank)) %>%
+  #     mutate(growth = ifelse(is.na(growth),
+  #                            0,
+  #                            ifelse(is.infinite(growth),
+  #                                   1,
+  #                                   growth))) %>%
+  #     select("Veeva.name",
+  #            "医院排名" = "hosp_rank",
+  #            "BI 排名" = "BI_rank",
+  #            "医院产出" = "recent",
+  #            "品类增长率" = "growth",
+  #            "全国医院等级" = "Decile")
+  # }
   
   # data6 <- data2[c("Veeva.name", "Decile", date[1], date[length(date)])]
   # names(data6) <- c("Veeva.name", "Decile", "past", "recent")
