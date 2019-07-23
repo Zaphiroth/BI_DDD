@@ -5,7 +5,7 @@ library(readxl)
 library(purrr)
 library(data.table)
 library(stringr)
-# library(openxlsx)
+library(openxlsx)
 
 
 ##-- 注意如果确认你的数据时放在下面这个文件下的子文件夹：ffromall raw
