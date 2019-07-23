@@ -1810,7 +1810,7 @@ server <- function(input, output, session) {
     paste(ot1()$`产品`, ot1()$`厂商`, sep = " ")
   })
   
-  observeEvent(brand_3(), {
+  observeEvent(ot1(), {
     updateSelectInput(session,
                       inputId = "brand_3",
                       label = "Brand",
@@ -1875,7 +1875,7 @@ server <- function(input, output, session) {
                   y = pd3[pd3$brand_manu == i, "Share"],
                   type = "scatter",
                   mode = "lines+markers",
-                  marker = list(size = 5),
+                  marker = list(size = 7),
                   name = i)
     }
     
@@ -2002,7 +2002,7 @@ server <- function(input, output, session) {
                   y = round(pd3[pd3$brand_manu == i, "Sales"], 0),
                   type = "scatter",
                   mode = "lines+markers",
-                  marker = list(size = 5),
+                  marker = list(size = 7),
                   name = i,
                   text = paste0("(", pd3[pd3$brand_manu == i, "Date"], ", ", format(round(pd3[pd3$brand_manu == i, "Sales"], 0), big.mark = ","), ")"))
     }
@@ -2128,7 +2128,7 @@ server <- function(input, output, session) {
                   y = pd3[pd3$brand_manu == i, "Growth"],
                   type = "scatter",
                   mode = "lines+markers",
-                  marker = list(size = 5),
+                  marker = list(size = 7),
                   name = i)
     }
     

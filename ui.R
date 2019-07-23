@@ -282,7 +282,7 @@ ui <- dashboardPage(
                 column(
                   5,
                   fluidRow(
-                    column(12, tags$div(DT::dataTableOutput("contents_hosp", width = "700px"), style = "font-size:100%; overflow-x:scroll;"))
+                    column(12, tags$div(DT::dataTableOutput("contents_hosp", width = "650px"), style = "font-size:100%; overflow-x:scroll;"))
                   )
                 ),
                 column(
