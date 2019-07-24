@@ -17,7 +17,7 @@ ddd_summary <-
            period,
            brand) {
     
-    # salesdata = read.csv("D:/WORK/BI/test_data/ddd_Anti-PD_csv_format.csv", stringsAsFactors = FALSE)
+    # salesdata = read.csv("./final data/ddd_Anti-PD.csv", stringsAsFactors = FALSE)
     # cate = unique(salesdata$Category)
     # subcate = unique(salesdata$Sub.category)
     # region = unique(salesdata$Region)
@@ -222,11 +222,8 @@ ddd_summary <-
              City_CN %in% city,
              Decile %in% decile) %>% 
       group_by(Region, Province_CN, City_CN, Veeva.code, Veeva.name, Decile) %>% 
-      summarise(pp = sum(pp, na.rm = TRUE),
-                cc = sum(cc, na.rm = TRUE)
-                # bi_pp = sum(pp * ifelse(Manufactory == "B.INGELHEIM", 1, 0), na.rm = TRUE),
-                # bi_cp = sum(cc * ifelse(Manufactory == "B.INGELHEIM", 1, 0), na.rm = TRUE)
-                ) %>% 
+      dplyr::summarise(pp = sum(pp, na.rm = TRUE),
+                       cc = sum(cc, na.rm = TRUE)) %>% 
       ungroup() %>% 
       setDF()
     
@@ -238,7 +235,7 @@ ddd_summary <-
              City_CN %in% city,
              Decile %in% decile) %>%
       group_by(Region, Province_CN, City_CN, Veeva.code, Veeva.name, Decile) %>%
-      summarise(pp_sel = sum(pp, na.rm = TRUE),
+      dplyr::summarise(pp_sel = sum(pp, na.rm = TRUE),
                 cc_sel = sum(cc, na.rm = TRUE)
                 # bi_pp_sel = sum(pp * ifelse(Manufactory == "B.INGELHEIM", 1, 0), na.rm = TRUE),
                 # bi_cc_sel = sum(cc * ifelse(Manufactory == "B.INGELHEIM", 1, 0), na.rm = TRUE)
@@ -314,7 +311,7 @@ ddd_summary <-
     # salesdata7[salesdata7 == Inf] <- 1
     
     salesdata9 <- salesdata7 %>% 
-      summarise(pp = sum(pp, na.rm = TRUE),
+      dplyr::summarise(pp = sum(pp, na.rm = TRUE),
                 cc = sum(cc, na.rm = TRUE),
                 pp_sel = sum(pp_sel, na.rm = TRUE),
                 cc_sel = sum(cc_sel, na.rm = TRUE)) %>% 

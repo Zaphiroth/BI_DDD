@@ -53,12 +53,17 @@ lm1 <- select_var[12]
 lm2 <- select_var[24]
 
 ddd_m <- data.table::dcast(setDT(ddd), 
-                           ATC.1.Code + ATC.2.Code + ATC.3.Code + ATC.4.Code + 
-                             Molecule.code + Molecule + Product + APP1 + Form1 + Manufactory + 
-                             Corporation + Pack.Molecule + Main + Category + Category_CN + 
-                             Category.type + Sub.category + Molecule_CN + Brand + Brand_CN + 
-                             MANU_CN + Region + Province + Province_CN + City + City_CN + 
-                             Veeva.code + Veeva.name + Decile + Note ~ Period + Measurement,
+                           # ATC.1.Code + ATC.2.Code + ATC.3.Code + ATC.4.Code + 
+                           #   Molecule.code + Molecule + Product + APP1 + Form1 + Manufactory + 
+                           #   Corporation + Pack.Molecule + Main + Category + Category_CN + 
+                           #   Category.type + Sub.category + Molecule_CN + Brand + Brand_CN + 
+                           #   MANU_CN + Region + Province + Province_CN + City + City_CN + 
+                           #   Veeva.code + Veeva.name + Decile + Note ~ Period + Measurement,
+                           Region + Province + Province_CN + City + City_CN + Veeva.code + Veeva.name + 
+                             Decile + Note + ATC.3.Code + Main + Category + Category_CN + Sub.category + 
+                             Molecule + Molecule_CN + Brand + Brand_CN + Corporation + MANU_CN + APP1 + 
+                             Form1 + Package ~ 
+                             Period + Measurement,
                            value.var = select_var,
                            fun = sum,
                            na.rm = TRUE)
@@ -117,7 +122,7 @@ output <-
          function(x) {
            tmp <- ddd_m %>%
              filter(Main == x)
-           write.csv(tmp, paste("./final data/ddd_", x, "_csv_format.csv", sep = ""),
+           write.csv(tmp, paste("./final data/ddd_", x, ".csv", sep = ""),
                      row.names = FALSE)
            print(paste(x, " finished!"))
            invisible()
