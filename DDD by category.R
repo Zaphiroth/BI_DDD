@@ -24,10 +24,10 @@ ddd <- read.csv("./final data/ffromall raw.csv",
 new_brand_data <- read.xlsx("./final data/Brand Rename.xlsx",
                             check.names = FALSE) %>% 
   mutate(PACK = as.character(PACK)) %>% 
-  select("PACK", "new_brand" = "New.Brand_CN")
+  select("PACK", "File.Name", "new_brand" = "New.Brand_CN")
 
 ddd <- ddd %>% 
-  left_join(new_brand_data, by = c("PACK")) %>% 
+  left_join(new_brand_data, by = c("Main" = "File.Name", "PACK")) %>% 
   mutate(Brand_CN = ifelse(!is.na(new_brand),
                            new_brand,
                            Brand_CN)) %>% 

@@ -310,10 +310,10 @@ ui <- dashboardPage(
                      "Note：排名均已Value为准",
                      style = "color:#1F497D; padding:10px; display:inline-block; text-align:center;"),
               
-              column(4,
+              column(5,
                      downloadButton(outputId = "downloadTable", label = "Download"),
                      style = "color:#1F497D; display:inline-block; text-align:center;"),
-              column(6,
+              column(5,
                      downloadButton(outputId = "downloadPlotData", label = "Download"),
                      style = "color:#1F497D; display:inline-block; text-align:center;")
             )
