@@ -1807,7 +1807,7 @@ server <- function(input, output, session) {
     if (is.null(ot1()))
       return(NULL)
     
-    paste(ot1()$`产品`, ot1()$`厂商`, sep = " ")
+    ot1()$`产品`
   })
   
   observeEvent(ot1(), {
@@ -1863,16 +1863,16 @@ server <- function(input, output, session) {
       melt(id.vars = c("Brand_CN", "MANU_CN"), variable.name = "Date", value.name = "Share") %>%
       mutate(Share = Share * 100,
              Share = round(Share, 2)) %>% 
-      unite("brand_manu", Brand_CN, MANU_CN, sep = " ") %>% 
+      # unite("brand_manu", Brand_CN, MANU_CN, sep = " ") %>% 
       distinct() %>% 
-      arrange(brand_manu, Date)
+      arrange(Brand_CN, Date)
     
     p <- plot_ly(hoverinfo = "name + x + y")
     
     for (i in brand) {
       p <- p %>%
-        add_trace(x = pd3[pd3$brand_manu == i, "Date"],
-                  y = pd3[pd3$brand_manu == i, "Share"],
+        add_trace(x = pd3[pd3$Brand_CN == i, "Date"],
+                  y = pd3[pd3$Brand_CN == i, "Share"],
                   type = "scatter",
                   mode = "lines+markers",
                   marker = list(size = 7),
@@ -1990,21 +1990,21 @@ server <- function(input, output, session) {
     
     pd3 <- pd %>%
       melt(id.vars = c("Brand_CN", "MANU_CN"), variable.name = "Date", value.name = "Sales") %>% 
-      unite("brand_manu", Brand_CN, MANU_CN, sep = " ") %>% 
+      # unite("brand_manu", Brand_CN, MANU_CN, sep = " ") %>% 
       distinct() %>% 
-      arrange(brand_manu, Date)
+      arrange(Brand_CN, Date)
     
     p <- plot_ly(hoverinfo = "name+text")
     
     for (i in brand) {
       p <- p %>%
-        add_trace(x = pd3[pd3$brand_manu == i, "Date"],
-                  y = round(pd3[pd3$brand_manu == i, "Sales"], 0),
+        add_trace(x = pd3[pd3$Brand_CN == i, "Date"],
+                  y = round(pd3[pd3$Brand_CN == i, "Sales"], 0),
                   type = "scatter",
                   mode = "lines+markers",
                   marker = list(size = 7),
                   name = i,
-                  text = paste0("(", pd3[pd3$brand_manu == i, "Date"], ", ", format(round(pd3[pd3$brand_manu == i, "Sales"], 0), big.mark = ","), ")"))
+                  text = paste0("(", pd3[pd3$Brand_CN == i, "Date"], ", ", format(round(pd3[pd3$Brand_CN == i, "Sales"], 0), big.mark = ","), ")"))
     }
     
     # text_brand <- brand[which(brand %in% bi_brand())]
@@ -2116,16 +2116,16 @@ server <- function(input, output, session) {
       melt(id.vars = c("Brand_CN", "MANU_CN"), variable.name = "Date", value.name = "Growth") %>%
       mutate(Growth = Growth * 100,
              Growth = round(Growth, 2)) %>% 
-      unite("brand_manu", Brand_CN, MANU_CN, sep = " ") %>% 
+      # unite("brand_manu", Brand_CN, MANU_CN, sep = " ") %>% 
       distinct() %>% 
-      arrange(brand_manu, Date)
+      arrange(Brand_CN, Date)
     
     p <- plot_ly(hoverinfo = "name + x + y")
     
     for (i in brand) {
       p <- p %>%
-        add_trace(x = pd3[pd3$brand_manu == i, "Date"],
-                  y = pd3[pd3$brand_manu == i, "Growth"],
+        add_trace(x = pd3[pd3$Brand_CN == i, "Date"],
+                  y = pd3[pd3$Brand_CN == i, "Growth"],
                   type = "scatter",
                   mode = "lines+markers",
                   marker = list(size = 7),
