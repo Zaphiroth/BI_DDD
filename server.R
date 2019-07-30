@@ -2308,11 +2308,13 @@ server <- function(input, output, session) {
       return(NULL)
     
     pd1 <- plot1()$plot_data %>% 
+      right_join(ot1()[, "产品"], by = c("Brand_CN" = "产品")) %>% 
       as.data.frame()
     pd1[pd1 == Inf] <- NA
     pd1[is.na(pd1)] <- NA
     
     pd2 <- plot2()$plot_data %>% 
+      right_join(ot1()[, "产品"], by = c("Brand_CN" = "产品")) %>% 
       as.data.frame()
     pd2[pd2 == Inf] <- NA
     pd2[is.na(pd2)] <- NA
@@ -2323,6 +2325,7 @@ server <- function(input, output, session) {
     }
       
     pd3 <- plot3()$plot_data %>% 
+      right_join(ot1()[, "产品"], by = c("Brand_CN" = "产品")) %>% 
       as.data.frame()
     pd3[pd3 == Inf] <- NA
     pd3[is.na(pd3)] <- NA
