@@ -360,6 +360,9 @@ server <- function(input, output, session) {
     decile_list <- summary$Decile[!duplicated(summary$Decile)]
     decile_list <- decile_list[order(decile_list)]
     decile_list <- c("ALL", decile_list)
+    
+    total_list <- c("ALL", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "Others", "#N/A")
+    total_list[total_list %in% decile_list]
   })
   
   observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
@@ -685,6 +688,9 @@ server <- function(input, output, session) {
     decile_list <- summary$Decile[!duplicated(summary$Decile)]
     decile_list <- decile_list[order(decile_list)]
     decile_list <- c("ALL", decile_list)
+    
+    total_list <- c("ALL", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "Others", "#N/A")
+    total_list[total_list %in% decile_list]
   })
   
   observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
@@ -773,10 +779,42 @@ server <- function(input, output, session) {
   
   ##--- result2
   result2 <- reactive({
-    if (is.null(cate_data()))
+    if (is.null(cate_data()) | is.null(input$region1) | is.null(input$province1) | is.null(input$city1) 
+        | is.null(input$decile1) | is.null(input$value1) | is.null(input$period1))
       return(NULL)
     
-    ddd_hospital(cate_data(), main(), input$value1, input$period1)
+    summary <- cate_data()
+    
+    if ("ALL" %in% input$region1) {
+      summary <- summary
+    } else {
+      summary <- summary[summary$Region %in% input$region1, ]
+    }
+    
+    if ("ALL" %in% input$province1) {
+      summary <- summary
+    } else {
+      summary <- summary[summary$Province_CN %in% input$province1, ]
+    }
+    
+    if ("ALL" %in% input$city1) {
+      summary <- summary
+    } else {
+      summary <- summary[summary$City_CN %in% input$city1, ]
+    }
+    
+    if ("ALL" %in% input$decile1) {
+      summary <- summary
+    } else {
+      summary <- summary[summary$Decile %in% input$decile1, ]
+    }
+    
+    # region <- unique(summary$Region)
+    # province <- unique(summary$Province_CN)
+    # city <- unique(summary$City_CN)
+    # decile <- unique(summary$Decile)
+    
+    ddd_hospital(summary, main(), input$value1, input$period1)
   })
   
   ##--- rank

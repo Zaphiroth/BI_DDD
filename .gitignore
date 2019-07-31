@@ -12,3 +12,4 @@ test_data/
 \.RDataTmp
 
 final data/
+.Rproj.user
