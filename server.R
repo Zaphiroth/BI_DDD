@@ -1256,6 +1256,7 @@ server <- function(input, output, session) {
         ),
         showlegend = TRUE,
         xaxis = list(
+          range = c(pd3$Date[1], pd3$Date[length(pd3$Date)]),
           zeroline = FALSE,
           title = "",
           showline = TRUE,
@@ -1364,6 +1365,7 @@ server <- function(input, output, session) {
         ),
         showlegend = TRUE,
         xaxis = list(
+          range = c(pd3$Date[1], pd3$Date[length(pd3$Date)]),
           zeroline = FALSE,
           title = "",
           showline = TRUE,
@@ -1469,6 +1471,7 @@ server <- function(input, output, session) {
         ),
         showlegend = TRUE,
         xaxis = list(
+          range = c(pd3$Date[1], pd3$Date[length(pd3$Date)]),
           zeroline = FALSE,
           title = "",
           showline = TRUE,
