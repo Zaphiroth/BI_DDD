@@ -196,7 +196,7 @@ server <- function(input, output, session) {
   
   ##--- cate
   cate_data <- eventReactive(input$goButton, {
-    if (is.null(summary()) & is.null(main()))
+    if (is.null(summary()) | is.null(main()))
       return(NULL)
     
     cate_data <- summary()
@@ -1192,13 +1192,16 @@ server <- function(input, output, session) {
     
     if (input$period1 == "mat" | input$period1 == "ytd") {
       names(pd) <- c("Brand_CN", "MANU_CN", 1, 2)
+      x.range <- c(-1, 2)
       
     } else if (input$period1 == "qtr") {
       pd <- pd[c("Brand_CN", "MANU_CN", tail(names(pd), 13))]
       names(pd) <- c("Brand_CN", "MANU_CN", 1:13)
+      x.range <- c(-1, 13)
       
     } else if (input$period1 == "mth") {
       names(pd) <- c("Brand_CN", "MANU_CN", 1:24)
+      x.range <- c(-1, 24)
     }
     
     pd_names1 <- tail(pd_names, length(pd)-2)
@@ -1256,7 +1259,7 @@ server <- function(input, output, session) {
         ),
         showlegend = TRUE,
         xaxis = list(
-          range = c(pd3$Date[1], pd3$Date[length(pd3$Date)]),
+          range = x.range,
           zeroline = FALSE,
           title = "",
           showline = TRUE,
@@ -1301,13 +1304,16 @@ server <- function(input, output, session) {
     
     if (input$period1 == "mat" | input$period1 == "ytd") {
       names(pd) <- c("Brand_CN", "MANU_CN", 1, 2)
+      x.range <- c(-1, 2)
       
     } else if (input$period1 == "qtr") {
       pd <- pd[c("Brand_CN", "MANU_CN", tail(names(pd), 13))]
       names(pd) <- c("Brand_CN", "MANU_CN", 1:13)
+      x.range <- c(-1, 13)
       
     } else if (input$period1 == "mth") {
       names(pd) <- c("Brand_CN", "MANU_CN", 1:24)
+      x.range <- c(-1, 24)
     }
     
     pd_names1 <- tail(pd_names, length(pd)-2)
@@ -1365,7 +1371,7 @@ server <- function(input, output, session) {
         ),
         showlegend = TRUE,
         xaxis = list(
-          range = c(pd3$Date[1], pd3$Date[length(pd3$Date)]),
+          range = x.range,
           zeroline = FALSE,
           title = "",
           showline = TRUE,
@@ -1410,9 +1416,11 @@ server <- function(input, output, session) {
     
     if (input$period1 == "qtr") {
       names(pd) <- c("Brand_CN", "MANU_CN", 1:10)
+      x.range <- c(-1, 10)
       
     } else if (input$period1 == "mth") {
       names(pd) <- c("Brand_CN", "MANU_CN", 1:12)
+      x.range <- c(-1, 12)
     }
     
     pd_names1 <- tail(pd_names, length(pd)-2)
@@ -1471,7 +1479,7 @@ server <- function(input, output, session) {
         ),
         showlegend = TRUE,
         xaxis = list(
-          range = c(pd3$Date[1], pd3$Date[length(pd3$Date)]),
+          range = x.range,
           zeroline = FALSE,
           title = "",
           showline = TRUE,
