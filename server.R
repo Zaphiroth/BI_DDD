@@ -1190,19 +1190,19 @@ server <- function(input, output, session) {
     if (dim(pd)[1] == 0)
       return(NULL)
     
-    if (input$period1 == "mat" | input$period1 == "ytd") {
-      names(pd) <- c("Brand_CN", "MANU_CN", 1, 2)
-      x.range <- c(-1, 2)
-      
-    } else if (input$period1 == "qtr") {
-      pd <- pd[c("Brand_CN", "MANU_CN", tail(names(pd), 13))]
-      names(pd) <- c("Brand_CN", "MANU_CN", 1:13)
-      x.range <- c(-1, 13)
-      
-    } else if (input$period1 == "mth") {
-      names(pd) <- c("Brand_CN", "MANU_CN", 1:24)
-      x.range <- c(-1, 24)
-    }
+    # if (input$period1 == "mat" | input$period1 == "ytd") {
+    #   names(pd) <- c("Brand_CN", "MANU_CN", 1, 2)
+    #   x.range <- c(-1, 2)
+    #   
+    # } else if (input$period1 == "qtr") {
+    #   pd <- pd[c("Brand_CN", "MANU_CN", tail(names(pd), 13))]
+    #   names(pd) <- c("Brand_CN", "MANU_CN", 1:13)
+    #   x.range <- c(-1, 13)
+    #   
+    # } else if (input$period1 == "mth") {
+    #   names(pd) <- c("Brand_CN", "MANU_CN", 1:24)
+    #   x.range <- c(-1, 24)
+    # }
     
     pd_names1 <- tail(pd_names, length(pd)-2)
     for (i in 1:(length(pd)-2)) {
@@ -1259,7 +1259,8 @@ server <- function(input, output, session) {
         ),
         showlegend = TRUE,
         xaxis = list(
-          range = x.range,
+          # range = x.range,
+          type = "category",
           zeroline = FALSE,
           title = "",
           showline = TRUE,
@@ -1302,19 +1303,19 @@ server <- function(input, output, session) {
     if (dim(pd)[1] == 0)
       return(NULL)
     
-    if (input$period1 == "mat" | input$period1 == "ytd") {
-      names(pd) <- c("Brand_CN", "MANU_CN", 1, 2)
-      x.range <- c(-1, 2)
-      
-    } else if (input$period1 == "qtr") {
-      pd <- pd[c("Brand_CN", "MANU_CN", tail(names(pd), 13))]
-      names(pd) <- c("Brand_CN", "MANU_CN", 1:13)
-      x.range <- c(-1, 13)
-      
-    } else if (input$period1 == "mth") {
-      names(pd) <- c("Brand_CN", "MANU_CN", 1:24)
-      x.range <- c(-1, 24)
-    }
+    # if (input$period1 == "mat" | input$period1 == "ytd") {
+    #   names(pd) <- c("Brand_CN", "MANU_CN", 1, 2)
+    #   x.range <- c(-1, 2)
+    #   
+    # } else if (input$period1 == "qtr") {
+    #   pd <- pd[c("Brand_CN", "MANU_CN", tail(names(pd), 13))]
+    #   names(pd) <- c("Brand_CN", "MANU_CN", 1:13)
+    #   x.range <- c(-1, 13)
+    #   
+    # } else if (input$period1 == "mth") {
+    #   names(pd) <- c("Brand_CN", "MANU_CN", 1:24)
+    #   x.range <- c(-1, 24)
+    # }
     
     pd_names1 <- tail(pd_names, length(pd)-2)
     for (i in 1:(length(pd)-2)) {
@@ -1371,7 +1372,8 @@ server <- function(input, output, session) {
         ),
         showlegend = TRUE,
         xaxis = list(
-          range = x.range,
+          # range = x.range,
+          type = "category",
           zeroline = FALSE,
           title = "",
           showline = TRUE,
@@ -1414,14 +1416,14 @@ server <- function(input, output, session) {
     if (dim(pd)[1] == 0)
       return(NULL)
     
-    if (input$period1 == "qtr") {
-      names(pd) <- c("Brand_CN", "MANU_CN", 1:10)
-      x.range <- c(-1, 10)
-      
-    } else if (input$period1 == "mth") {
-      names(pd) <- c("Brand_CN", "MANU_CN", 1:12)
-      x.range <- c(-1, 12)
-    }
+    # if (input$period1 == "qtr") {
+    #   names(pd) <- c("Brand_CN", "MANU_CN", 1:10)
+    #   x.range <- c(-1, 10)
+    #   
+    # } else if (input$period1 == "mth") {
+    #   names(pd) <- c("Brand_CN", "MANU_CN", 1:12)
+    #   x.range <- c(-1, 12)
+    # }
     
     pd_names1 <- tail(pd_names, length(pd)-2)
     for (i in 1:(length(pd)-2)) {
@@ -1441,7 +1443,8 @@ server <- function(input, output, session) {
       distinct() %>% 
       arrange(Brand_CN, Date)
     
-    p <- plot_ly(hoverinfo = "name + x + y")
+    p <- plot_ly(x = uniq(pd3$Date),
+                 hoverinfo = "name + x + y")
     
     for (i in brand) {
       p <- p %>%
@@ -1479,7 +1482,8 @@ server <- function(input, output, session) {
         ),
         showlegend = TRUE,
         xaxis = list(
-          range = x.range,
+          # range = x.range,
+          type = "category",
           zeroline = FALSE,
           title = "",
           showline = TRUE,
