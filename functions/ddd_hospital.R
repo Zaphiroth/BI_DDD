@@ -185,7 +185,7 @@ ddd_hospital <- function(salesdata, main, value, period) {
       filter(Brand_CN == "思合华" | Brand_CN == "思力华") %>%
       select(-`Brand_CN`)
     
-  } else if (main == "HTN" & category == "ARB") {
+  } else if (main == "HTN" && category == "ARB") {
     data7 <- data1[c("Sub.category", "Veeva.name", "Decile", "MANU_CN", paste0(period, "_RMB_", date))] %>% 
       filter(Sub.category %in% subcategory) %>%
       filter(MANU_CN == "德国勃林格殷格翰国际公司") %>%

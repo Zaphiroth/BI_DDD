@@ -239,7 +239,7 @@ server <- function(input, output, session) {
   
   ##--- Region information
   region <- reactive({
-    if (is.null(cate_data()) | is.null(input$brand))
+    if (is.null(cate_data()))
       return(NULL)
     
     summary <- cate_data()
@@ -254,7 +254,7 @@ server <- function(input, output, session) {
     #   summary <- summary[replace_na(summary$Note, "NA") %in% input$note, ]
     # }
     
-    summary <- summary[summary$Brand_CN %in% input$brand, ]
+    # summary <- summary[summary$Brand_CN %in% input$brand, ]
     
     reglist <- summary$Region[!duplicated(summary$Region)]
     reglist <- reglist[order(reglist)]
@@ -263,8 +263,7 @@ server <- function(input, output, session) {
     }
   })
   
-  observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
-                 cate_data(), input$brand), {
+  observeEvent(cate_data(), {
     updateSelectInput(session,
                       "region",
                       choices = region(),
@@ -273,11 +272,11 @@ server <- function(input, output, session) {
   
   ##--- Province information
   province <- reactive({
-    if (is.null(cate_data()) | is.null(input$brand) | is.null(input$region))
+    if (is.null(cate_data()) | is.null(input$region))
       return(NULL)
     
     summary <- cate_data()
-    summary <- summary[summary$Brand_CN %in% input$brand, ]
+    # summary <- summary[summary$Brand_CN %in% input$brand, ]
     
     if ("ALL" %in% input$region) {
       summary <- summary
@@ -290,8 +289,7 @@ server <- function(input, output, session) {
     provlist <- c("ALL", provlist)
   })
   
-  observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
-                 cate_data(), input$brand, input$region), {
+  observeEvent(c(cate_data(), input$region), {
     updateSelectInput(session, 
                       "province",
                       choices =  province(),
@@ -300,11 +298,11 @@ server <- function(input, output, session) {
   
   ##--- City information
   city <- reactive({
-    if (is.null(cate_data()) | is.null(input$brand) | is.null(input$region) | is.null(input$province))
+    if (is.null(cate_data()) | is.null(input$region) | is.null(input$province))
       return(NULL)
     
     summary <- cate_data()
-    summary <- summary[summary$Brand_CN %in% input$brand, ]
+    # summary <- summary[summary$Brand_CN %in% input$brand, ]
     
     if ("ALL" %in% input$region) {
       summary <- summary
@@ -323,8 +321,7 @@ server <- function(input, output, session) {
     citylist <- c("ALL", citylist)
   })
   
-  observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
-                 cate_data(), input$brand, input$region, input$province), {
+  observeEvent(c(cate_data(), input$region, input$province), {
     updateSelectInput(session,
                       "city", 
                       choices = city(),
@@ -333,11 +330,11 @@ server <- function(input, output, session) {
   
   ##--- Decile information
   decile <- reactive({
-    if (is.null(cate_data()) | is.null(input$brand) | is.null(input$region) | is.null(input$province) | is.null(input$city))
+    if (is.null(cate_data()) | is.null(input$region) | is.null(input$province) | is.null(input$city))
       return(NULL)
     
     summary <- cate_data()
-    summary <- summary[summary$Brand_CN %in% input$brand, ]
+    # summary <- summary[summary$Brand_CN %in% input$brand, ]
     
     if ("ALL" %in% input$region) {
       summary <- summary
@@ -365,8 +362,7 @@ server <- function(input, output, session) {
     total_list[total_list %in% decile_list]
   })
   
-  observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
-                 cate_data(), input$brand, input$region, input$province, input$city), {
+  observeEvent(c(cate_data(), input$region, input$province, input$city), {
     updateSelectInput(session,
                       "decile",
                       choices = decile(),
@@ -783,57 +779,63 @@ server <- function(input, output, session) {
         | is.null(input$decile1) | is.null(input$value1) | is.null(input$period1))
       return(NULL)
     
-    summary <- cate_data()
-    
-    if ("ALL" %in% input$region1) {
-      summary <- summary
-    } else {
-      summary <- summary[summary$Region %in% input$region1, ]
-    }
-    
-    if ("ALL" %in% input$province1) {
-      summary <- summary
-    } else {
-      summary <- summary[summary$Province_CN %in% input$province1, ]
-    }
-    
-    if ("ALL" %in% input$city1) {
-      summary <- summary
-    } else {
-      summary <- summary[summary$City_CN %in% input$city1, ]
-    }
-    
-    if ("ALL" %in% input$decile1) {
-      summary <- summary
-    } else {
-      summary <- summary[summary$Decile %in% input$decile1, ]
-    }
-    
-    # region <- unique(summary$Region)
-    # province <- unique(summary$Province_CN)
-    # city <- unique(summary$City_CN)
-    # decile <- unique(summary$Decile)
-    
-    ddd_hospital(summary, main(), input$value1, input$period1)
+    input$goButton
+    isolate({
+      summary <- cate_data()
+      
+      if ("ALL" %in% input$region1) {
+        summary <- summary
+      } else {
+        summary <- summary[summary$Region %in% input$region1, ]
+      }
+      
+      if ("ALL" %in% input$province1) {
+        summary <- summary
+      } else {
+        summary <- summary[summary$Province_CN %in% input$province1, ]
+      }
+      
+      if ("ALL" %in% input$city1) {
+        summary <- summary
+      } else {
+        summary <- summary[summary$City_CN %in% input$city1, ]
+      }
+      
+      if ("ALL" %in% input$decile1) {
+        summary <- summary
+      } else {
+        summary <- summary[summary$Decile %in% input$decile1, ]
+      }
+      
+      # region <- unique(summary$Region)
+      # province <- unique(summary$Province_CN)
+      # city <- unique(summary$City_CN)
+      # decile <- unique(summary$Decile)
+      
+      ddd_hospital(summary, main(), input$value1, input$period1)
+    })
   })
   
   ##--- rank
   rank <- reactive({
-    if (is.null(result2()) | is.null(input$name))
+    if (is.null(input$name))
       return(NULL)
     
-    r <- result2()$rank
-    r <- r %>%
-      filter(Veeva.name == input$name)
-    
-    if (dim(r)[1] == 0)
-      return(NULL)
-    
-    r[is.na(r)] <- "-"
-    r[r == NaN] <- "-"
-    r[r == Inf] <- "-"
-    
-    return(r)
+    input$name
+    isolate({
+      r <- result2()$rank
+      r <- r %>%
+        filter(Veeva.name == input$name)
+      
+      if (dim(r)[1] == 0)
+        return(NULL)
+      
+      r[is.na(r)] <- "-"
+      r[r == NaN] <- "-"
+      r[r == Inf] <- "-"
+      
+      return(r)
+    })
   })
   
   output$rank1 <- renderDataTable({
@@ -1032,33 +1034,36 @@ server <- function(input, output, session) {
   
   ##--- table contents
   ot1 <- reactive({
-    if (is.null(result2()) | is.null(input$name))
+    if (is.null(input$name))
       return(NULL)
     
-    ot1 <- result2()$table
-    ot1 <- ot1 %>%
-      filter(`Veeva.name` == input$name)
-    
-    if (dim(ot1)[1] == 0)
-      return(NULL)
-    
-    rank_data <- ot1[c("Brand_CN", "MANU_CN", 
-                       grep("ms|gth", 
-                            grep(paste0(input$period1, "_RMB"), names(ot1), value = TRUE), 
-                            invert = TRUE, value = TRUE))]
-    names(rank_data) <- c("Brand_CN", "MANU_CN", "ranking")
-    rank_data <- rank_data %>% 
-      arrange(-`ranking`) %>% 
-      select(`Brand_CN`, `MANU_CN`)
-    
-    ot1_names <- c("Brand_CN", "MANU_CN", grep(paste0(input$period1, "_", input$value1), names(ot1), value = TRUE))
-    ot1 <- ot1[ot1_names]
-    
-    t <- rank_data %>% 
-      left_join(ot1, by = c("Brand_CN", "MANU_CN"))
-    colnames(t) <- c("产品", "厂商", "产出", "市场份额", "增长率")
-    
-    return(t)
+    input$name
+    isolate({
+      ot1 <- result2()$table
+      ot1 <- ot1 %>%
+        filter(`Veeva.name` == input$name)
+      
+      if (dim(ot1)[1] == 0)
+        return(NULL)
+      
+      rank_data <- ot1[c("Brand_CN", "MANU_CN", 
+                         grep("ms|gth", 
+                              grep(paste0(input$period1, "_RMB"), names(ot1), value = TRUE), 
+                              invert = TRUE, value = TRUE))]
+      names(rank_data) <- c("Brand_CN", "MANU_CN", "ranking")
+      rank_data <- rank_data %>% 
+        arrange(-`ranking`) %>% 
+        select(`Brand_CN`, `MANU_CN`)
+      
+      ot1_names <- c("Brand_CN", "MANU_CN", grep(paste0(input$period1, "_", input$value1), names(ot1), value = TRUE))
+      ot1 <- ot1[ot1_names]
+      
+      t <- rank_data %>% 
+        left_join(ot1, by = c("Brand_CN", "MANU_CN"))
+      colnames(t) <- c("产品", "厂商", "产出", "市场份额", "增长率")
+      
+      return(t)
+    })
   })
   
   output$contents_hosp <- renderDataTable({
@@ -1190,19 +1195,19 @@ server <- function(input, output, session) {
     if (dim(pd)[1] == 0)
       return(NULL)
     
-    # if (input$period1 == "mat" | input$period1 == "ytd") {
-    #   names(pd) <- c("Brand_CN", "MANU_CN", 1, 2)
-    #   x.range <- c(-1, 2)
-    #   
-    # } else if (input$period1 == "qtr") {
-    #   pd <- pd[c("Brand_CN", "MANU_CN", tail(names(pd), 13))]
-    #   names(pd) <- c("Brand_CN", "MANU_CN", 1:13)
-    #   x.range <- c(-1, 13)
-    #   
-    # } else if (input$period1 == "mth") {
-    #   names(pd) <- c("Brand_CN", "MANU_CN", 1:24)
-    #   x.range <- c(-1, 24)
-    # }
+    if (input$period1 == "mat" | input$period1 == "ytd") {
+      names(pd) <- c("Brand_CN", "MANU_CN", 1, 2)
+      x.range <- c(-1, 2)
+
+    } else if (input$period1 == "qtr") {
+      pd <- pd[c("Brand_CN", "MANU_CN", tail(names(pd), 13))]
+      names(pd) <- c("Brand_CN", "MANU_CN", 1:13)
+      x.range <- c(-1, 13)
+
+    } else if (input$period1 == "mth") {
+      names(pd) <- c("Brand_CN", "MANU_CN", 1:24)
+      x.range <- c(-1, 24)
+    }
     
     pd_names1 <- tail(pd_names, length(pd)-2)
     for (i in 1:(length(pd)-2)) {
@@ -1221,7 +1226,8 @@ server <- function(input, output, session) {
       distinct() %>% 
       arrange(Brand_CN, Date)
     
-    p <- plot_ly(hoverinfo = "name + x + y")
+    p <- plot_ly(x = pd3[pd3$Brand_CN == i, "Date"],
+                 hoverinfo = "name + x + y")
     
     for (i in brand) {
       p <- p %>%
@@ -1259,7 +1265,7 @@ server <- function(input, output, session) {
         ),
         showlegend = TRUE,
         xaxis = list(
-          # range = x.range,
+          range = x.range,
           type = "category",
           zeroline = FALSE,
           title = "",
@@ -1267,6 +1273,7 @@ server <- function(input, output, session) {
           mirror = "ticks"
         ),
         yaxis = list(
+          range = c(0, round(max(pd3$Share) * 1.1, 0)),
           zeroline = FALSE,
           title = paste0("Market share (", input$value1, ")"),
           ticksuffix = "%",
@@ -1303,19 +1310,19 @@ server <- function(input, output, session) {
     if (dim(pd)[1] == 0)
       return(NULL)
     
-    # if (input$period1 == "mat" | input$period1 == "ytd") {
-    #   names(pd) <- c("Brand_CN", "MANU_CN", 1, 2)
-    #   x.range <- c(-1, 2)
-    #   
-    # } else if (input$period1 == "qtr") {
-    #   pd <- pd[c("Brand_CN", "MANU_CN", tail(names(pd), 13))]
-    #   names(pd) <- c("Brand_CN", "MANU_CN", 1:13)
-    #   x.range <- c(-1, 13)
-    #   
-    # } else if (input$period1 == "mth") {
-    #   names(pd) <- c("Brand_CN", "MANU_CN", 1:24)
-    #   x.range <- c(-1, 24)
-    # }
+    if (input$period1 == "mat" | input$period1 == "ytd") {
+      names(pd) <- c("Brand_CN", "MANU_CN", 1, 2)
+      x.range <- c(-1, 2)
+
+    } else if (input$period1 == "qtr") {
+      pd <- pd[c("Brand_CN", "MANU_CN", tail(names(pd), 13))]
+      names(pd) <- c("Brand_CN", "MANU_CN", 1:13)
+      x.range <- c(-1, 13)
+
+    } else if (input$period1 == "mth") {
+      names(pd) <- c("Brand_CN", "MANU_CN", 1:24)
+      x.range <- c(-1, 24)
+    }
     
     pd_names1 <- tail(pd_names, length(pd)-2)
     for (i in 1:(length(pd)-2)) {
@@ -1372,7 +1379,7 @@ server <- function(input, output, session) {
         ),
         showlegend = TRUE,
         xaxis = list(
-          # range = x.range,
+          range = x.range,
           type = "category",
           zeroline = FALSE,
           title = "",
@@ -1380,6 +1387,7 @@ server <- function(input, output, session) {
           mirror = "ticks"
         ),
         yaxis = list(
+          range = c(0, round(max(pd3$Sales) * 1.1, 0)),
           zeroline = FALSE,
           title = paste0("Production (", input$value1, ")"),
           ticksuffix = "",
@@ -1416,14 +1424,14 @@ server <- function(input, output, session) {
     if (dim(pd)[1] == 0)
       return(NULL)
     
-    # if (input$period1 == "qtr") {
-    #   names(pd) <- c("Brand_CN", "MANU_CN", 1:10)
-    #   x.range <- c(-1, 10)
-    #   
-    # } else if (input$period1 == "mth") {
-    #   names(pd) <- c("Brand_CN", "MANU_CN", 1:12)
-    #   x.range <- c(-1, 12)
-    # }
+    if (input$period1 == "qtr") {
+      names(pd) <- c("Brand_CN", "MANU_CN", 1:10)
+      x.range <- c(-1, 10)
+
+    } else if (input$period1 == "mth") {
+      names(pd) <- c("Brand_CN", "MANU_CN", 1:12)
+      x.range <- c(-1, 12)
+    }
     
     pd_names1 <- tail(pd_names, length(pd)-2)
     for (i in 1:(length(pd)-2)) {
@@ -1443,7 +1451,7 @@ server <- function(input, output, session) {
       distinct() %>% 
       arrange(Brand_CN, Date)
     
-    p <- plot_ly(x = uniq(pd3$Date),
+    p <- plot_ly(x = unique(pd3$Date),
                  hoverinfo = "name + x + y")
     
     for (i in brand) {
@@ -1482,7 +1490,7 @@ server <- function(input, output, session) {
         ),
         showlegend = TRUE,
         xaxis = list(
-          # range = x.range,
+          range = x.range,
           type = "category",
           zeroline = FALSE,
           title = "",
