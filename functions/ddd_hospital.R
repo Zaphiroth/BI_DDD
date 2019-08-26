@@ -33,7 +33,7 @@ ddd_hospital <- function(salesdata, main, value, period) {
   category <- unique(salesdata$Category)
   subcategory <- unique(salesdata$Sub.category)
   
-  data_names <- c("Sub.category", "Veeva.name", "Decile", "Brand_CN", "MANU_CN",
+  data_names <- c("Sub.category", "Veeva.name", "Decile", "Brand_CN", "Corporation",
                   grep("mat_RMB", names(salesdata), value = TRUE),
                   grep("ytd_RMB", names(salesdata), value = TRUE),
                   grep("qtr_RMB", names(salesdata), value = TRUE),
@@ -53,12 +53,12 @@ ddd_hospital <- function(salesdata, main, value, period) {
   #   filter(Sub.category %in% subcategory)
   
   # data2 <- data1 %>%
-  #   group_by(Sub.category, Veeva.name, Decile, Brand_CN, MANU_CN) %>%
+  #   group_by(Sub.category, Veeva.name, Decile, Brand_CN, Corporation) %>%
   #   summarise_all(sum) %>%
   #   ungroup()
   
   data3 <- data1 %>% 
-    select(-`Sub.category`, -`Brand_CN`, -`MANU_CN`) %>%
+    select(-`Sub.category`, -`Brand_CN`, -`Corporation`) %>%
     group_by(Veeva.name, Decile) %>%
     summarise_all(sum) %>%
     ungroup()
@@ -72,13 +72,13 @@ ddd_hospital <- function(salesdata, main, value, period) {
   
   # date <- names(data1)[(fmr+1):length(data1)]
   
-  # data2 <- data1[c("Veeva.name", "Decile", "Brand_CN", "MANU_CN", date)] %>%
-  #   group_by(Veeva.name, Decile, Brand_CN, MANU_CN) %>%
+  # data2 <- data1[c("Veeva.name", "Decile", "Brand_CN", "Corporation", date)] %>%
+  #   group_by(Veeva.name, Decile, Brand_CN, Corporation) %>%
   #   summarise_all(sum) %>%
   #   ungroup()
   # 
   # hospital <- data2 %>%
-  #   select(-Brand_CN, -Decile, -MANU_CN) %>%
+  #   select(-Brand_CN, -Decile, -Corporation) %>%
   #   group_by(Veeva.name) %>%
   #   summarise_all(sum) %>%
   #   ungroup()
@@ -86,7 +86,7 @@ ddd_hospital <- function(salesdata, main, value, period) {
   
   data4 <- data1 %>% 
     select(-`Sub.category`, -`Decile`) %>% 
-    group_by(Veeva.name, MANU_CN, Brand_CN) %>% 
+    group_by(Veeva.name, Corporation, Brand_CN) %>% 
     summarise_all(sum) %>% 
     ungroup() %>% 
     left_join(data3, by = c("Veeva.name"))
@@ -126,7 +126,7 @@ ddd_hospital <- function(salesdata, main, value, period) {
   
   date <- substr(tail(data_names, 1), 9, 15)
   
-  table_names <- c("Veeva.name", "Brand_CN", "MANU_CN", 
+  table_names <- c("Veeva.name", "Brand_CN", "Corporation", 
                    grep("mkt", grep(date, names(data4), value = TRUE), value = TRUE, invert = TRUE))
   data5 <- data4[table_names]
   
@@ -186,15 +186,15 @@ ddd_hospital <- function(salesdata, main, value, period) {
       select(-`Brand_CN`)
     
   } else if (main == "HTN" && category == "ARB") {
-    data7 <- data1[c("Sub.category", "Veeva.name", "Decile", "MANU_CN", paste0(period, "_RMB_", date))] %>% 
+    data7 <- data1[c("Sub.category", "Veeva.name", "Decile", "Corporation", paste0(period, "_RMB_", date))] %>% 
       filter(Sub.category %in% subcategory) %>%
-      filter(MANU_CN == "德国勃林格殷格翰国际公司") %>%
-      select(-`Sub.category`, -`MANU_CN`)
+      filter(Corporation == "B.INGELHEIM") %>%
+      select(-`Sub.category`, -`Corporation`)
     
   } else {
-    data7 <- data1[c("Veeva.name", "Decile", "MANU_CN", paste0(period, "_RMB_", date))] %>%
-      filter(MANU_CN == "德国勃林格殷格翰国际公司") %>%
-      select(-`MANU_CN`)
+    data7 <- data1[c("Veeva.name", "Decile", "Corporation", paste0(period, "_RMB_", date))] %>%
+      filter(Corporation == "B.INGELHEIM") %>%
+      select(-`Corporation`)
   }
   
   names(data7) <- c("Veeva.name", "Decile", "recent_bi")
@@ -264,9 +264,9 @@ ddd_hospital <- function(salesdata, main, value, period) {
   #          recent = round(recent)) %>%
   #   select(-past)
   
-  # data7 <- data2[c("Veeva.name", "Decile", "MANU_CN", date[length(date)])] %>%
-  #   filter(MANU_CN == "德国勃林格殷格翰国际公司") %>%
-  #   select(-MANU_CN)
+  # data7 <- data2[c("Veeva.name", "Decile", "Corporation", date[length(date)])] %>%
+  #   filter(Corporation == "B.INGELHEIM") %>%
+  #   select(-Corporation)
   # names(data7) <- c("Veeva.name", "Decile", "recent")
   # data7 <- data7 %>%
   #   group_by(Veeva.name, Decile) %>%
@@ -296,7 +296,7 @@ ddd_hospital <- function(salesdata, main, value, period) {
   #          "Brand_CN",
   #          date)
   
-  # bi_brand <- salesdata$Brand_CN[salesdata$MANU_CN == "德国勃林格殷格翰国际公司"]
+  # bi_brand <- salesdata$Brand_CN[salesdata$Corporation == "B.INGELHEIM"]
   # bi_brand <- bi_brand[!duplicated(bi_brand)]
   # bi_brand <- as.character(bi_brand)[!is.na(bi_brand)]
   

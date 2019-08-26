@@ -68,10 +68,10 @@ server <- function(input, output, session) {
              Brand_CN = ifelse(is.na(Brand_CN),
                                "-",
                                Brand_CN),
-             MANU_CN = as.character(MANU_CN),
-             MANU_CN = ifelse(is.na(MANU_CN),
+             Corporation = as.character(Corporation),
+             Corporation = ifelse(is.na(Corporation),
                               "-",
-                              MANU_CN))
+                              Corporation))
     tmp$Note <- as.character(tmp$Note)
     tmp
   })
@@ -821,7 +821,7 @@ server <- function(input, output, session) {
     if (is.null(input$name))
       return(NULL)
     
-    input$name
+    c(input$name, input$value1, input$period1)
     isolate({
       r <- result2()$rank
       r <- r %>%
@@ -1037,7 +1037,7 @@ server <- function(input, output, session) {
     if (is.null(input$name))
       return(NULL)
     
-    input$name
+    c(input$name, input$value1, input$period1)
     isolate({
       ot1 <- result2()$table
       ot1 <- ot1 %>%
@@ -1046,20 +1046,20 @@ server <- function(input, output, session) {
       if (dim(ot1)[1] == 0)
         return(NULL)
       
-      rank_data <- ot1[c("Brand_CN", "MANU_CN", 
+      rank_data <- ot1[c("Brand_CN", "Corporation", 
                          grep("ms|gth", 
                               grep(paste0(input$period1, "_RMB"), names(ot1), value = TRUE), 
                               invert = TRUE, value = TRUE))]
-      names(rank_data) <- c("Brand_CN", "MANU_CN", "ranking")
+      names(rank_data) <- c("Brand_CN", "Corporation", "ranking")
       rank_data <- rank_data %>% 
         arrange(-`ranking`) %>% 
-        select(`Brand_CN`, `MANU_CN`)
+        select(`Brand_CN`, `Corporation`)
       
-      ot1_names <- c("Brand_CN", "MANU_CN", grep(paste0(input$period1, "_", input$value1), names(ot1), value = TRUE))
+      ot1_names <- c("Brand_CN", "Corporation", grep(paste0(input$period1, "_", input$value1), names(ot1), value = TRUE))
       ot1 <- ot1[ot1_names]
       
       t <- rank_data %>% 
-        left_join(ot1, by = c("Brand_CN", "MANU_CN"))
+        left_join(ot1, by = c("Brand_CN", "Corporation"))
       colnames(t) <- c("产品", "厂商", "产出", "市场份额", "增长率")
       
       return(t)
@@ -1185,7 +1185,7 @@ server <- function(input, output, session) {
     )
       return(NULL)
     
-    pd_names <- c("Brand_CN", "MANU_CN", 
+    pd_names <- c("Brand_CN", "Corporation", 
                   grep("ms", grep(paste0(input$period1, "_", input$value1), 
                                   names(result2()$plot), value = TRUE), value = TRUE))
     pd <- result2()$plot %>% 
@@ -1196,16 +1196,16 @@ server <- function(input, output, session) {
       return(NULL)
     
     if (input$period1 == "mat" | input$period1 == "ytd") {
-      names(pd) <- c("Brand_CN", "MANU_CN", 1, 2)
+      names(pd) <- c("Brand_CN", "Corporation", 1, 2)
       x.range <- c(-1, 2)
 
     } else if (input$period1 == "qtr") {
-      pd <- pd[c("Brand_CN", "MANU_CN", tail(names(pd), 13))]
-      names(pd) <- c("Brand_CN", "MANU_CN", 1:13)
+      pd <- pd[c("Brand_CN", "Corporation", tail(names(pd), 13))]
+      names(pd) <- c("Brand_CN", "Corporation", 1:13)
       x.range <- c(-1, 13)
 
     } else if (input$period1 == "mth") {
-      names(pd) <- c("Brand_CN", "MANU_CN", 1:24)
+      names(pd) <- c("Brand_CN", "Corporation", 1:24)
       x.range <- c(-1, 24)
     }
     
@@ -1220,14 +1220,16 @@ server <- function(input, output, session) {
     brand <- input$brand_3
     
     pd3 <- pd %>%
-      melt(id.vars = c("Brand_CN", "MANU_CN"), variable.name = "Date", value.name = "Share") %>%
+      melt(id.vars = c("Brand_CN", "Corporation"), variable.name = "Date", value.name = "Share") %>%
       mutate(Share = Share * 100,
              Share = round(Share, 2)) %>% 
       distinct() %>% 
-      arrange(Brand_CN, Date)
+      arrange(Brand_CN, Date) %>% 
+      mutate(Share = ifelse(is.na(Share),
+                            -Inf,
+                            Share))
     
-    p <- plot_ly(x = pd3[pd3$Brand_CN == i, "Date"],
-                 hoverinfo = "name + x + y")
+    p <- plot_ly(hoverinfo = "name + x + y")
     
     for (i in brand) {
       p <- p %>%
@@ -1273,7 +1275,7 @@ server <- function(input, output, session) {
           mirror = "ticks"
         ),
         yaxis = list(
-          range = c(0, round(max(pd3$Share) * 1.1, 0)),
+          # range = c(0, round(max(pd3$Share) * 1.1, 0)),
           zeroline = FALSE,
           title = paste0("Market share (", input$value1, ")"),
           ticksuffix = "%",
@@ -1300,7 +1302,7 @@ server <- function(input, output, session) {
     )
       return(NULL)
     
-    pd_names <- c("Brand_CN", "MANU_CN", 
+    pd_names <- c("Brand_CN", "Corporation", 
                   grep("mkt|ms|gth", grep(paste0(input$period1, "_", input$value1), 
                                           names(result2()$plot), value = TRUE), invert = TRUE, value = TRUE))
     pd <- result2()$plot %>% 
@@ -1311,16 +1313,16 @@ server <- function(input, output, session) {
       return(NULL)
     
     if (input$period1 == "mat" | input$period1 == "ytd") {
-      names(pd) <- c("Brand_CN", "MANU_CN", 1, 2)
+      names(pd) <- c("Brand_CN", "Corporation", 1, 2)
       x.range <- c(-1, 2)
 
     } else if (input$period1 == "qtr") {
-      pd <- pd[c("Brand_CN", "MANU_CN", tail(names(pd), 13))]
-      names(pd) <- c("Brand_CN", "MANU_CN", 1:13)
+      pd <- pd[c("Brand_CN", "Corporation", tail(names(pd), 13))]
+      names(pd) <- c("Brand_CN", "Corporation", 1:13)
       x.range <- c(-1, 13)
 
     } else if (input$period1 == "mth") {
-      names(pd) <- c("Brand_CN", "MANU_CN", 1:24)
+      names(pd) <- c("Brand_CN", "Corporation", 1:24)
       x.range <- c(-1, 24)
     }
     
@@ -1336,9 +1338,12 @@ server <- function(input, output, session) {
     # brand <- unique(pd$Brand_CN)
     
     pd3 <- pd %>%
-      melt(id.vars = c("Brand_CN", "MANU_CN"), variable.name = "Date", value.name = "Sales") %>% 
+      melt(id.vars = c("Brand_CN", "Corporation"), variable.name = "Date", value.name = "Sales") %>% 
       distinct() %>% 
-      arrange(Brand_CN, Date)
+      arrange(Brand_CN, Date) %>% 
+      mutate(Sales = ifelse(is.na(Sales),
+                            -Inf,
+                            Sales))
     
     p <- plot_ly(hoverinfo = "name+text")
     
@@ -1387,7 +1392,7 @@ server <- function(input, output, session) {
           mirror = "ticks"
         ),
         yaxis = list(
-          range = c(0, round(max(pd3$Sales) * 1.1, 0)),
+          # range = c(0, round(max(pd3$Sales) * 1.1, 0)),
           zeroline = FALSE,
           title = paste0("Production (", input$value1, ")"),
           ticksuffix = "",
@@ -1414,7 +1419,7 @@ server <- function(input, output, session) {
         input$period1 == "mat" | input$period1 == "ytd")
       return(NULL)
     
-    pd_names <- c("Brand_CN", "MANU_CN", 
+    pd_names <- c("Brand_CN", "Corporation", 
                   grep("gth", grep(paste0(input$period1, "_", input$value1), 
                                    names(result2()$plot), value = TRUE), value = TRUE))
     pd <- result2()$plot %>% 
@@ -1425,11 +1430,11 @@ server <- function(input, output, session) {
       return(NULL)
     
     if (input$period1 == "qtr") {
-      names(pd) <- c("Brand_CN", "MANU_CN", 1:10)
+      names(pd) <- c("Brand_CN", "Corporation", 1:10)
       x.range <- c(-1, 10)
 
     } else if (input$period1 == "mth") {
-      names(pd) <- c("Brand_CN", "MANU_CN", 1:12)
+      names(pd) <- c("Brand_CN", "Corporation", 1:12)
       x.range <- c(-1, 12)
     }
     
@@ -1445,14 +1450,16 @@ server <- function(input, output, session) {
     # brand <- pd$Brand_CN
     
     pd3 <- pd %>%
-      melt(id.vars = c("Brand_CN", "MANU_CN"), variable.name = "Date", value.name = "Growth") %>%
+      melt(id.vars = c("Brand_CN", "Corporation"), variable.name = "Date", value.name = "Growth") %>%
       mutate(Growth = Growth * 100,
              Growth = round(Growth, 2)) %>% 
       distinct() %>% 
-      arrange(Brand_CN, Date)
+      arrange(Brand_CN, Date) %>% 
+      mutate(Growth = ifelse(is.na(Growth),
+                             -Inf,
+                             Growth))
     
-    p <- plot_ly(x = unique(pd3$Date),
-                 hoverinfo = "name + x + y")
+    p <- plot_ly(hoverinfo = "name + x + y")
     
     for (i in brand) {
       p <- p %>%
