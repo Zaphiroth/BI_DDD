@@ -172,13 +172,12 @@ ddd_hospital <- function(salesdata, main, value, period) {
   }
   
   data6 <- data3[c("Veeva.name", "Decile", 
-                   names(data3)[which(names(data3) == paste0("mkt_", period, "_", value, "_", date)) - df], 
-                   paste0("mkt_", period, "_", value, "_", date),
+                   names(data3)[which(names(data3) == paste0("mkt_", period, "_RMB_", date)) - df], 
                    paste0("mkt_", period, "_RMB_", date))]
-  names(data6) <- c("Veeva.name", "Decile", "past", "recent", "product")
+  names(data6) <- c("Veeva.name", "Decile", "past", "recent")
   data6 <- data6 %>% 
     mutate(growth = recent / past - 1) %>%
-    select(-`past`, -`product`)
+    select(-`past`)
   
   if (main == "Out hospital") {
     data7 <- data1[c("Brand_CN", "Veeva.name", "Decile", paste0(period, "_RMB_", date))] %>%

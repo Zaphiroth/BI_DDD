@@ -236,10 +236,7 @@ ddd_summary <-
              Decile %in% decile) %>%
       group_by(Region, Province_CN, City_CN, Veeva.code, Veeva.name, Decile) %>%
       dplyr::summarise(pp_sel = sum(pp, na.rm = TRUE),
-                cc_sel = sum(cc, na.rm = TRUE)
-                # bi_pp_sel = sum(pp * ifelse(Manufactory == "B.INGELHEIM", 1, 0), na.rm = TRUE),
-                # bi_cc_sel = sum(cc * ifelse(Manufactory == "B.INGELHEIM", 1, 0), na.rm = TRUE)
-                ) %>% 
+                       cc_sel = sum(cc, na.rm = TRUE)) %>% 
       ungroup() %>% 
       setDF()
     
