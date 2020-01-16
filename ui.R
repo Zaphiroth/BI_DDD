@@ -242,8 +242,8 @@ ui <- dashboardPage(
                            selected = "qtr",
                            multiple = FALSE
                          )),
-                  column(2, selectInput("code", label = "Veeva Code", "", multiple = FALSE)),
-                  column(4, selectInput("name", label = "Hospital Name", "", multiple = FALSE)),
+                  column(2, selectInput("code", label = "Veeva Code", "", multiple = TRUE)),
+                  column(4, selectInput("name", label = "Hospital Name", "", multiple = TRUE)),
                   # column(12, selectInput("brand1", label = "Brand", "", multiple = TRUE)),
                   style = "color: #1F497D"
                 ),

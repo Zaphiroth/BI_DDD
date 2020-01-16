@@ -732,11 +732,16 @@ server <- function(input, output, session) {
     c_n <- summary[, c("Veeva.code", "Veeva.name")]
     
     if (nrow(c_n) == 0) {
-      c_n <- data.frame("Veeva.code" = "-",
+      c_n_m <- data.frame("Veeva.code" = "-",
                         "Veeva.name" = "-")
     } else {
-      c_n <- distinct(c_n)
+      c_n_m <- data.frame("Veeva.code" = "ALL",
+                        "Veeva.name" = "ALL") %>% 
+        bind_rows(c_n) %>% 
+        distinct()
     }
+    
+    c_n_m
   })
   
   observeEvent(c(# input$category, input$subcategory, input$bl, input$note, 
@@ -824,11 +829,33 @@ server <- function(input, output, session) {
     c(input$name, input$value1, input$period1)
     isolate({
       r <- result2()$rank
+      
+      if ("ALL" %in% input$name) {
+        hosp_sel <- r$Veeva.name
+      } else {
+        hosp_sel <- input$name
+      }
+      
       r <- r %>%
-        filter(Veeva.name == input$name)
+        filter(Veeva.name %in% hosp_sel)
       
       if (dim(r)[1] == 0)
         return(NULL)
+      
+      if (length(hosp_sel) > 1) {
+        r <- r %>% 
+          group_by(Veeva.name = "Sel") %>% 
+          summarise(`医院排名` = "-",
+                    `BI 排名` = "-",
+                    `医院产出` = sum(`医院产出`, na.rm = TRUE),
+                    `品类增长率` = sum(`医院产出`, na.rm = TRUE) / sum(past, na.rm = TRUE) - 1,
+                    `全国医院等级` = "-") %>% 
+          ungroup()
+        
+      } else {
+        r <- r %>% 
+          select(-past)
+      }
       
       r[is.na(r)] <- "-"
       r[r == NaN] <- "-"
@@ -1040,29 +1067,48 @@ server <- function(input, output, session) {
     c(input$name, input$value1, input$period1)
     isolate({
       ot1 <- result2()$table
+      
+      if ("ALL" %in% input$name) {
+        hosp_sel <- ot1$Veeva.name
+      } else {
+        hosp_sel <- input$name
+      }
+      
       ot1 <- ot1 %>%
-        filter(`Veeva.name` == input$name)
+        filter(`Veeva.name` %in% hosp_sel)
       
       if (dim(ot1)[1] == 0)
         return(NULL)
       
       rank_data <- ot1[c("Brand_CN", "Corporation", 
-                         grep("ms|gth", 
+                         grep("ms|gth|past", 
                               grep(paste0(input$period1, "_RMB"), names(ot1), value = TRUE), 
-                              invert = TRUE, value = TRUE))]
+                              invert = TRUE, value = TRUE))] %>% 
+        group_by(Brand_CN, Corporation) %>% 
+        summarise_all(sum, na.rm = TRUE) %>% 
+        ungroup()
       names(rank_data) <- c("Brand_CN", "Corporation", "ranking")
+      
       rank_data <- rank_data %>% 
         arrange(-`ranking`) %>% 
         select(`Brand_CN`, `Corporation`)
       
-      ot1_names <- c("Brand_CN", "Corporation", grep(paste0(input$period1, "_", input$value1), names(ot1), value = TRUE))
+      ot1_names <- c("Veeva.name", "Brand_CN", "Corporation", grep(paste0(input$period1, "_", input$value1), names(ot1), value = TRUE))
       ot1 <- ot1[ot1_names]
+      names(ot1) <- c("Veeva.name", "Brand_CN", "Corporation", "sales", "ms", "gth", "past")
       
-      t <- rank_data %>% 
-        left_join(ot1, by = c("Brand_CN", "Corporation"))
-      colnames(t) <- c("产品", "厂商", "产出", "市场份额", "增长率")
+      ot2 <- ot1 %>% 
+        group_by(Brand_CN, Corporation) %>% 
+        summarise(sales = sum(sales, na.rm = TRUE),
+                  past = sum(past, na.rm = TRUE)) %>% 
+        ungroup() %>% 
+        mutate(ms = sales / sum(sales, na.rm = TRUE),
+               gth = sales / past - 1) %>% 
+        select(Brand_CN, Corporation, sales, ms, gth) %>% 
+        right_join(rank_data, by = c("Brand_CN", "Corporation"))
+      colnames(ot2) <- c("产品", "厂商", "产出", "市场份额", "增长率")
       
-      return(t)
+      return(ot2)
     })
   })
   
@@ -1180,17 +1226,26 @@ server <- function(input, output, session) {
   })
   
   plot1 <- eventReactive(c(input$value1, input$period1, input$brand_3), {
-    if (is.null(result2()) | is.null(brand_3())
-        # | is.null(input$brand1)
-    )
+    if (is.null(result2()) | is.null(brand_3()))
       return(NULL)
     
     pd_names <- c("Brand_CN", "Corporation", 
-                  grep("ms", grep(paste0(input$period1, "_", input$value1), 
-                                  names(result2()$plot), value = TRUE), value = TRUE))
+                  grep("mkt|ms|gth|past", grep(paste0(input$period1, "_", input$value1), 
+                                  names(result2()$plot), value = TRUE), 
+                       invert = TRUE, value = TRUE))
+    
+    if ("ALL" %in% input$name) {
+      hosp_sel <- result2()$plot$Veeva.name
+    } else {
+      hosp_sel <- input$name
+    }
+    
     pd <- result2()$plot %>% 
-      filter(Veeva.name == input$name) %>%
-      select(pd_names)
+      filter(Veeva.name %in% hosp_sel) %>%
+      select(pd_names) %>% 
+      group_by(Brand_CN, Corporation) %>% 
+      summarise_all(sum, na.rm = TRUE) %>% 
+      ungroup()
     
     if (dim(pd)[1] == 0)
       return(NULL)
@@ -1219,9 +1274,13 @@ server <- function(input, output, session) {
     
     brand <- input$brand_3
     
-    pd3 <- pd %>%
-      melt(id.vars = c("Brand_CN", "Corporation"), variable.name = "Date", value.name = "Share") %>%
-      mutate(Share = Share * 100,
+    pd3 <- pd %>% 
+      setDT() %>% 
+      melt(id.vars = c("Brand_CN", "Corporation"), variable.name = "Date", value.name = "Sales") %>% 
+      group_by(Date) %>% 
+      mutate(Market = sum(Sales, na.rm = TRUE)) %>% 
+      ungroup() %>% 
+      mutate(Share = Sales / Market * 100,
              Share = round(Share, 2)) %>% 
       distinct() %>% 
       arrange(Brand_CN, Date) %>% 
@@ -1233,8 +1292,8 @@ server <- function(input, output, session) {
     
     for (i in brand) {
       p <- p %>%
-        add_trace(x = pd3[pd3$Brand_CN == i, "Date"],
-                  y = pd3[pd3$Brand_CN == i, "Share"],
+        add_trace(x = pd3$Date[pd3$Brand_CN == i],
+                  y = pd3$Share[pd3$Brand_CN == i],
                   type = "scatter",
                   mode = "lines+markers",
                   marker = list(size = 7),
@@ -1349,13 +1408,13 @@ server <- function(input, output, session) {
     
     for (i in brand) {
       p <- p %>%
-        add_trace(x = pd3[pd3$Brand_CN == i, "Date"],
-                  y = round(pd3[pd3$Brand_CN == i, "Sales"], 0),
+        add_trace(x = pd3$Date[pd3$Brand_CN == i],
+                  y = round(pd3$Sales[pd3$Brand_CN == i], 0),
                   type = "scatter",
                   mode = "lines+markers",
                   marker = list(size = 7),
                   name = i,
-                  text = paste0("(", pd3[pd3$Brand_CN == i, "Date"], ", ", format(round(pd3[pd3$Brand_CN == i, "Sales"], 0), big.mark = ","), ")"))
+                  text = paste0("(", pd3$Date[pd3$Brand_CN == i], ", ", format(round(pd3$Sales[pd3$Brand_CN == i], 0), big.mark = ","), ")"))
     }
     
     p <- p %>%
@@ -1463,8 +1522,8 @@ server <- function(input, output, session) {
     
     for (i in brand) {
       p <- p %>%
-        add_trace(x = pd3[pd3$Brand_CN == i, "Date"],
-                  y = pd3[pd3$Brand_CN == i, "Growth"],
+        add_trace(x = pd3$Date[pd3$Brand_CN == i],
+                  y = pd3$Growth[pd3$Brand_CN == i],
                   type = "scatter",
                   mode = "lines+markers",
                   marker = list(size = 7),

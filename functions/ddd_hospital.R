@@ -60,7 +60,7 @@ ddd_hospital <- function(salesdata, main, value, period) {
   data3 <- data1 %>% 
     select(-`Sub.category`, -`Brand_CN`, -`Corporation`) %>%
     group_by(Veeva.name, Decile) %>%
-    summarise_all(sum) %>%
+    summarise_all(sum, na.rm = TRUE) %>%
     ungroup()
   names(data3) <- c("Veeva.name", "Decile", paste0("mkt_", names(data3)[3:length(data3)]))
   
@@ -87,7 +87,7 @@ ddd_hospital <- function(salesdata, main, value, period) {
   data4 <- data1 %>% 
     select(-`Sub.category`, -`Decile`) %>% 
     group_by(Veeva.name, Corporation, Brand_CN) %>% 
-    summarise_all(sum) %>% 
+    summarise_all(sum, na.rm = TRUE) %>% 
     ungroup() %>% 
     left_join(data3, by = c("Veeva.name"))
   
@@ -110,18 +110,22 @@ ddd_hospital <- function(salesdata, main, value, period) {
   
   for (i in grep("mat_", growth_names, value = TRUE)) {
     data4[paste0("gth_", i)] <- data4[i] / data4[which(names(data4) == i) - 1] - 1
+    data4[paste0("past_", i)] <- data4[which(names(data4) == i) - 1]
   }
   
   for (i in grep("ytd_", growth_names, value = TRUE)) {
     data4[paste0("gth_", i)] <- data4[i] / data4[which(names(data4) == i) - 1] - 1
+    data4[paste0("past_", i)] <- data4[which(names(data4) == i) - 1]
   }
   
   for (i in grep("qtr_", growth_names, value = TRUE)) {
     data4[paste0("gth_", i)] <- data4[i] / data4[which(names(data4) == i) - 12] - 1
+    data4[paste0("past_", i)] <- data4[which(names(data4) == i) - 12]
   }
   
   for (i in grep("mth_", growth_names, value = TRUE)) {
     data4[paste0("gth_", i)] <- data4[i] / data4[which(names(data4) == i) - 12] - 1
+    data4[paste0("past_", i)] <- data4[which(names(data4) == i) - 12]
   }
   
   date <- substr(tail(data_names, 1), 9, 15)
@@ -178,7 +182,7 @@ ddd_hospital <- function(salesdata, main, value, period) {
   names(data6) <- c("Veeva.name", "Decile", "past", "recent", "hosp_ranking")
   data6 <- data6 %>% 
     mutate(growth = recent / past - 1) %>%
-    select("Veeva.name", "Decile", "recent", "growth", "hosp_ranking")
+    select("Veeva.name", "Decile", "recent", "past", "growth", "hosp_ranking")
   
   if (main == "Out hospital") {
     data7 <- data1[c("Brand_CN", "Veeva.name", "Decile", paste0(period, "_RMB_", date))] %>%
@@ -200,7 +204,7 @@ ddd_hospital <- function(salesdata, main, value, period) {
   names(data7) <- c("Veeva.name", "Decile", "bi_ranking")
   data7 <- data7 %>% 
     group_by(Veeva.name, Decile) %>%
-    summarise_all(sum) %>%
+    summarise_all(sum, na.rm = TRUE) %>%
     ungroup()
   
   # if (nrow(data7) > 0) {
@@ -232,7 +236,8 @@ ddd_hospital <- function(salesdata, main, value, period) {
            "BI 排名" = "BI_rank",
            "医院产出" = "recent",
            "品类增长率" = "growth",
-           "全国医院等级" = "Decile")
+           "全国医院等级" = "Decile",
+           "past")
   # } else {
   #   data8 <- data6 %>% 
   #     mutate(BI_rank = "-",
