@@ -13,3 +13,5 @@ test_data/
 
 final data/
 .Rproj.user
+
+*.Rproj
