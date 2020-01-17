@@ -736,7 +736,7 @@ server <- function(input, output, session) {
                         "Veeva.name" = "-")
     } else {
       c_n_m <- data.frame("Veeva.code" = "ALL",
-                        "Veeva.name" = "ALL") %>% 
+                          "Veeva.name" = "ALL") %>% 
         bind_rows(c_n) %>% 
         distinct()
     }
@@ -767,7 +767,7 @@ server <- function(input, output, session) {
                       inputId = "name",
                       label = "Hospital Name",
                       choices = c_n()$`Veeva.name`,
-                      selected = c_n()[c_n()$`Veeva.code` == input$code, "Veeva.name"])
+                      selected = c_n()$`Veeva.name`[c_n()$`Veeva.code` %in% input$code])
   })
   
   observeEvent(c(input$name), ignoreInit = TRUE, {
@@ -775,7 +775,7 @@ server <- function(input, output, session) {
                       inputId = "code",
                       label = "Veeva Code",
                       choices = c_n()$`Veeva.code`,
-                      selected = c_n()[c_n()$`Veeva.name` == input$name, "Veeva.code"])
+                      selected = c_n()$`Veeva.code`[c_n()$`Veeva.name` %in% input$name])
   })
   
   ##--- result2
@@ -823,10 +823,10 @@ server <- function(input, output, session) {
   
   ##--- rank
   rank <- reactive({
-    if (is.null(input$name))
+    if (is.null(input$code) | is.null(input$name) | is.null(result2()))
       return(NULL)
     
-    c(input$name, input$value1, input$period1)
+    c(input$code, input$name, result2())
     isolate({
       r <- result2()$rank
       
@@ -862,7 +862,7 @@ server <- function(input, output, session) {
       r[r == Inf] <- "-"
       
       return(r)
-    })
+    }) 
   })
   
   output$rank1 <- renderDataTable({
@@ -1061,10 +1061,10 @@ server <- function(input, output, session) {
   
   ##--- table contents
   ot1 <- reactive({
-    if (is.null(input$name))
+    if (is.null(input$code) | is.null(input$name) | is.null(result2()))
       return(NULL)
     
-    c(input$name, input$value1, input$period1)
+    c(input$code, input$name, result2())
     isolate({
       ot1 <- result2()$table
       
@@ -1093,7 +1093,8 @@ server <- function(input, output, session) {
         arrange(-`ranking`) %>% 
         select(`Brand_CN`, `Corporation`)
       
-      ot1_names <- c("Veeva.name", "Brand_CN", "Corporation", grep(paste0(input$period1, "_", input$value1), names(ot1), value = TRUE))
+      ot1_names <- c("Veeva.name", "Brand_CN", "Corporation", 
+                     grep(paste0(input$period1, "_", input$value1), names(ot1), value = TRUE))
       ot1 <- ot1[ot1_names]
       names(ot1) <- c("Veeva.name", "Brand_CN", "Corporation", "sales", "ms", "gth", "past")
       
@@ -1225,7 +1226,7 @@ server <- function(input, output, session) {
                       selected = brand_3()[c(1, 2, 3)])
   })
   
-  plot1 <- eventReactive(c(input$value1, input$period1, input$brand_3), {
+  plot1 <- eventReactive(c(input$code, input$name, result2(), input$brand_3), {
     if (is.null(result2()) | is.null(brand_3()))
       return(NULL)
     
@@ -1305,7 +1306,7 @@ server <- function(input, output, session) {
         displaylogo = FALSE,
         toImageButtonOptions = list(
           # format = "svg",
-          filename = paste0(input$name, "(", c_n()$`Veeva.code`[which(c_n()$`Veeva.name` == input$name)], 
+          filename = paste0(input$name, "(", c_n()$`Veeva.code`[c_n()$`Veeva.name` %in% input$name], 
                             ")-市场份额趋势 (", toupper(input$period1), ")")
           # width = 600,
           # height = 700
@@ -1355,18 +1356,26 @@ server <- function(input, output, session) {
     }
   })
   
-  plot2 <- eventReactive(c(input$value1, input$period1, input$brand_3), {
-    if (is.null(result2()) | is.null(brand_3())
-        # | is.null(input$brand1)
-    )
+  plot2 <- eventReactive(c(input$code, input$name, result2(), input$brand_3), {
+    if (is.null(result2()) | is.null(brand_3()))
       return(NULL)
     
     pd_names <- c("Brand_CN", "Corporation", 
-                  grep("mkt|ms|gth", grep(paste0(input$period1, "_", input$value1), 
+                  grep("mkt|ms|gth|past", grep(paste0(input$period1, "_", input$value1), 
                                           names(result2()$plot), value = TRUE), invert = TRUE, value = TRUE))
+    
+    if ("ALL" %in% input$name) {
+      hosp_sel <- result2()$plot$Veeva.name
+    } else {
+      hosp_sel <- input$name
+    }
+    
     pd <- result2()$plot %>% 
-      filter(Veeva.name == input$name) %>%
-      select(pd_names)
+      filter(Veeva.name %in% hosp_sel) %>%
+      select(pd_names) %>% 
+      group_by(Brand_CN, Corporation) %>% 
+      summarise_all(sum, na.rm = TRUE) %>% 
+      ungroup()
     
     if (dim(pd)[1] == 0)
       return(NULL)
@@ -1394,9 +1403,9 @@ server <- function(input, output, session) {
     }
     
     brand <- input$brand_3
-    # brand <- unique(pd$Brand_CN)
     
-    pd3 <- pd %>%
+    pd3 <- pd %>% 
+      setDT() %>% 
       melt(id.vars = c("Brand_CN", "Corporation"), variable.name = "Date", value.name = "Sales") %>% 
       distinct() %>% 
       arrange(Brand_CN, Date) %>% 
@@ -1422,7 +1431,7 @@ server <- function(input, output, session) {
         displaylogo = FALSE,
         toImageButtonOptions = list(
           # format = "svg",
-          filename = paste0(input$name, "(", c_n()$`Veeva.code`[which(c_n()$`Veeva.name` == input$name)], 
+          filename = paste0(input$name, "(", c_n()$`Veeva.code`[c_n()$`Veeva.name` %in% input$name], 
                             ")-产出趋势 (", toupper(input$period1), ")")
           # width = 600,
           # height = 700
@@ -1472,51 +1481,71 @@ server <- function(input, output, session) {
     }
   )
   
-  plot3 <- eventReactive(c(input$value1, input$period1, input$brand_3), {
-    if (is.null(result2()) | is.null(brand_3()) |
-        # is.null(input$brand1) |
-        input$period1 == "mat" | input$period1 == "ytd")
+  plot3 <- eventReactive(c(input$code, input$name, result2(), input$brand_3), {
+    if (is.null(result2()) | is.null(brand_3()) | input$period1 == "mat" | input$period1 == "ytd")
       return(NULL)
     
     pd_names <- c("Brand_CN", "Corporation", 
-                  grep("gth", grep(paste0(input$period1, "_", input$value1), 
-                                   names(result2()$plot), value = TRUE), value = TRUE))
+                  grep("mkt|ms|gth", grep(paste0(input$period1, "_", input$value1), 
+                                          names(result2()$plot), value = TRUE), 
+                       invert = TRUE, value = TRUE))
+    
+    if ("ALL" %in% input$name) {
+      hosp_sel <- result2()$plot$Veeva.name
+    } else {
+      hosp_sel <- input$name
+    }
+    
     pd <- result2()$plot %>% 
-      filter(Veeva.name == input$name) %>%
-      select(pd_names)
+      filter(Veeva.name %in% hosp_sel) %>%
+      select(pd_names) %>% 
+      group_by(Brand_CN, Corporation) %>% 
+      summarise_all(sum, na.rm = TRUE) %>% 
+      ungroup()
     
     if (dim(pd)[1] == 0)
       return(NULL)
     
     if (input$period1 == "qtr") {
-      names(pd) <- c("Brand_CN", "Corporation", 1:10)
+      # names(pd) <- c("Brand_CN", "Corporation", 1:10)
       x.range <- c(-1, 10)
 
     } else if (input$period1 == "mth") {
-      names(pd) <- c("Brand_CN", "Corporation", 1:12)
+      # names(pd) <- c("Brand_CN", "Corporation", 1:12)
       x.range <- c(-1, 12)
     }
     
-    pd_names1 <- tail(pd_names, length(pd)-2)
-    for (i in 1:(length(pd)-2)) {
-      x <- pd_names1[i]
-      y <- regexpr(paste0(input$period1, "_", input$value1, "_"), x, useBytes = TRUE)
-      z <- attr(y,"match.length")
-      names(pd)[i+2] <- substring(gsub("[.]", "", x), y[1]+z)
-    }
+    # pd_names1 <- tail(pd_names, length(pd)-2)
+    # for (i in 1:(length(pd)-2)) {
+    #   x <- pd_names1[i]
+    #   y <- regexpr(paste0(input$period1, "_", input$value1, "_"), x, useBytes = TRUE)
+    #   z <- attr(y,"match.length")
+    #   names(pd)[i+2] <- substring(gsub("[.]", "", x), y[1]+z)
+    # }
     
     brand <- input$brand_3
-    # brand <- pd$Brand_CN
     
-    pd3 <- pd %>%
-      melt(id.vars = c("Brand_CN", "Corporation"), variable.name = "Date", value.name = "Growth") %>%
-      mutate(Growth = Growth * 100,
-             Growth = round(Growth, 2)) %>% 
-      distinct() %>% 
+    pd3 <- pd %>% 
+      setDT() %>% 
+      melt(id.vars = c("Brand_CN", "Corporation")) %>% 
+      separate(variable, c("Period", "Date"), sep = paste0("_", input$value1, "_")) %>% 
+      group_by(Brand_CN, Corporation, Date) %>% 
+      filter(n() == 2) %>% 
+      ungroup() %>% 
+      mutate(Period = if_else(Period == input$period1, "current", "past")) %>% 
+      setDT() %>% 
+      dcast(Brand_CN + Corporation + Date ~ Period, value.var = "value") %>% 
       arrange(Brand_CN, Date) %>% 
+      mutate(Growth = round((current / past - 1) * 100, 2),
+             Date = stri_replace_all_fixed(Date, ".", ""),
+             Date = factor(Date)) %>% 
       mutate(Growth = ifelse(is.na(Growth),
                              -Inf,
                              Growth))
+    
+    plot_data <- pd3 %>% 
+      setDT() %>% 
+      dcast(Brand_CN + Corporation ~ Date, value.var = "Growth")
     
     p <- plot_ly(hoverinfo = "name + x + y")
     
@@ -1535,7 +1564,7 @@ server <- function(input, output, session) {
         displaylogo = FALSE,
         toImageButtonOptions = list(
           # format = "svg",
-          filename = paste0(input$name, "(", c_n()$`Veeva.code`[which(c_n()$`Veeva.name` == input$name)], 
+          filename = paste0(input$name, "(", c_n()$`Veeva.code`[c_n()$`Veeva.name` %in% input$name], 
                             ")-增长率趋势 (", toupper(input$period1), ")")
           # width = 600,
           # height = 700
@@ -1573,7 +1602,7 @@ server <- function(input, output, session) {
       )
     
     return(list(plot = p,
-                plot_data = pd))
+                plot_data = plot_data))
   })
   
   output$plot3 <- renderPlotly({
@@ -1661,13 +1690,14 @@ server <- function(input, output, session) {
   
   output$downloadTable <- downloadHandler(
     filename = function() {
-      paste0(input$name, "(", input$code, ")_detail.xlsx")
+      paste0(paste0(input$name, collapse = "&"), "(", paste0(input$code, collapse = "&"), ")_detail.xlsx")
     },
     
     content = function(file) {
       ot1 <- ot1() %>% 
         as.data.frame()
-      ot1[ot1 == Inf] <- NA
+      
+      ot1[ot1 == Inf | ot1 == -Inf | ot1 == 0] <- NA
       ot1[is.na(ot1)] <- NA
       
       wb <- createWorkbook()
@@ -1694,13 +1724,15 @@ server <- function(input, output, session) {
     pd1 <- plot1()$plot_data %>% 
       right_join(ot1()[, "产品"], by = c("Brand_CN" = "产品")) %>% 
       as.data.frame()
-    pd1[pd1 == Inf] <- NA
+    
+    pd1[pd1 == Inf | pd1 == -Inf | pd1 == 0] <- NA
     pd1[is.na(pd1)] <- NA
     
     pd2 <- plot2()$plot_data %>% 
       right_join(ot1()[, "产品"], by = c("Brand_CN" = "产品")) %>% 
       as.data.frame()
-    pd2[pd2 == Inf] <- NA
+    
+    pd2[pd2 == Inf | pd2 == -Inf | pd2 == 0] <- NA
     pd2[is.na(pd2)] <- NA
     
     if (input$period1 == "mat" | input$period1 == "ytd") {
@@ -1711,7 +1743,8 @@ server <- function(input, output, session) {
     pd3 <- plot3()$plot_data %>% 
       right_join(ot1()[, "产品"], by = c("Brand_CN" = "产品")) %>% 
       as.data.frame()
-    pd3[pd3 == Inf] <- NA
+    
+    pd3[pd3 == Inf | pd3 == -Inf | pd3 == 0] <- NA
     pd3[is.na(pd3)] <- NA
     
     return(list(pd1 = pd1,
@@ -1721,7 +1754,7 @@ server <- function(input, output, session) {
   
   output$downloadPlotData <- downloadHandler(
     filename = function() {
-      paste0(input$name, "(", input$code, ")_plot.xlsx")
+      paste0(paste0(input$name, collapse = "&"), "(", paste0(input$code, collapse = "&"), ")_plot.xlsx")
     },
     
     content = function(file) {
