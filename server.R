@@ -651,7 +651,7 @@ server <- function(input, output, session) {
                  cate_data(), input$region1, input$province1), {
                    updateSelectInput(session,
                                      "city1",
-                                     choices =  city1(),
+                                     choices = city1(),
                                      selected = city1()[1])
                  })
   
