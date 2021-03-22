@@ -651,7 +651,7 @@ server <- function(input, output, session) {
                  cate_data(), input$region1, input$province1), {
                    updateSelectInput(session,
                                      "city1",
-                                     choices =  city1(),
+                                     choices = city1(),
                                      selected = city1()[1])
                  })
   
@@ -1126,15 +1126,17 @@ server <- function(input, output, session) {
       pageLength <- 20
     }
     
-    rows <- (dim(ot1)[1] %/% pageLength + 1) * pageLength
-    ot <- tibble(`产品` = rep(" ", rows), `厂商` = rep(" ", rows), `产出` = rep(" ", rows), `市场份额` = rep(" ", rows), `增长率` = rep(" ", rows))
+    rows <- (nrow(ot1) %/% pageLength + 1) * pageLength - nrow(ot1)
+    ot2 <- tibble(`产品` = rep(NA, rows), 
+                  `厂商` = rep(NA, rows), 
+                  `产出` = rep(NA, rows), 
+                  `市场份额` = rep(NA, rows), 
+                  `增长率` = rep(NA, rows))
     
-    for (i in 1:dim(ot1)[1]) {
-      ot[i, ] <- ot1[i, ]
-    }
+    ot <- bind_rows(ot1, ot2)
     
     ot <- ot %>%
-      mutate(`排名` = 1:rows) %>%
+      mutate(`排名` = 1:nrow(ot)) %>%
       dplyr::select(
         "排名",
         "产品",
@@ -1143,9 +1145,9 @@ server <- function(input, output, session) {
         "市场份额",
         "产出"
       )
-    ot[is.na(ot)] <- "-"
-    ot[ot == Inf] <- "-"
-    ot[ot == NaN] <- "-"
+    # ot[is.na(ot)] <- "-"
+    # ot[ot == Inf] <- "-"
+    # ot[ot == NaN] <- "-"
     
     dat <- DT::datatable(
       ot,
@@ -1202,7 +1204,7 @@ server <- function(input, output, session) {
       ) %>%
       formatStyle("排名",
                   target = "row",
-                  backgroundColor = styleEqual(1:rows, rep(c('#DCE6F0', 'white'), rows/2))) %>%
+                  backgroundColor = styleEqual(1:nrow(ot), rep(c('#DCE6F0', 'white'), nrow(ot)/2))) %>%
       formatPercentage(c("增长率"), 2) %>%
       formatPercentage(c("市场份额"), 2) %>%
       formatRound(c("产出"), 0)
